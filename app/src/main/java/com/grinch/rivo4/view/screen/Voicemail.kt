@@ -37,13 +37,14 @@ import com.grinch.rivo4.view.components.BottomBar
 import com.grinch.rivo4.view.components.PermissionDeniedView
 import com.grinch.rivo4.view.components.RivoAvatar
 import com.grinch.rivo4.view.components.RivoDivider
+import com.grinch.rivo4.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
+@Destination<RootGraph>(style = NoTransitions::class)
 @Composable
 fun VoicemailListScreen(
     navController: NavController,
