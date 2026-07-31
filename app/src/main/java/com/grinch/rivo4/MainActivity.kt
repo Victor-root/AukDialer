@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import com.grinch.rivo4.controller.util.PreferenceManager
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
 import com.grinch.rivo4.controller.util.openLink
+import com.grinch.rivo4.controller.vvm.VvmNotifier
 import com.grinch.rivo4.view.components.RivoDialog
 import com.grinch.rivo4.view.screen.onboarding.MorphingOnboardingScreen
 import com.grinch.rivo4.view.screen.transitions.AppTransitions
@@ -53,6 +54,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContactEditScreen
 import com.ramcosta.composedestinations.generated.destinations.ContactScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DefaultDialerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.RecentScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext
@@ -194,6 +196,11 @@ class MainActivity : ComponentActivity() {
             "com.grinch.rivo4.ACTION_VIEW_RECENTS" -> {
                 navController.navigate(RecentScreenDestination.route) {
                     popUpTo(navController.graph.startDestinationId)
+                    launchSingleTop = true
+                }
+            }
+            VvmNotifier.ACTION_VIEW_VOICEMAIL -> {
+                navController.navigate(VoicemailListScreenDestination.route) {
                     launchSingleTop = true
                 }
             }

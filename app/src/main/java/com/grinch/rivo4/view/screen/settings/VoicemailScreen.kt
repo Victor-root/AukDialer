@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Vibration
@@ -24,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.grinch.rivo4.R
+import com.grinch.rivo4.controller.VoicemailViewModel
 import com.grinch.rivo4.controller.util.PreferenceManager
 import com.grinch.rivo4.controller.util.getSystemVoicemailNumber
 import com.grinch.rivo4.controller.util.makeCall
@@ -32,8 +34,11 @@ import com.grinch.rivo4.view.components.RivoListItem
 import com.grinch.rivo4.view.components.RivoSwitchListItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -43,7 +48,10 @@ fun VoicemailScreen(
 ) {
     val context = LocalContext.current
     val prefs = koinInject<PreferenceManager>()
-    
+    val voicemailViewModel: VoicemailViewModel = koinActivityViewModel()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     var voicemailNumber by remember { mutableStateOf(prefs.getString(PreferenceManager.KEY_VOICEMAIL_NUMBER, "") ?: "") }
     var vibrationEnabled by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_VOICEMAIL_VIBRATION, true)) }
     var ringtoneUri by remember { mutableStateOf(prefs.getString(PreferenceManager.KEY_VOICEMAIL_RINGTONE, null)) }
@@ -94,7 +102,8 @@ fun VoicemailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -199,6 +208,8 @@ fun VoicemailScreen(
             }
 
             item {
+                val setupSentLabel = stringResource(R.string.settings_voicemail_visual_setup_sent)
+                val setupFailedLabel = stringResource(R.string.settings_voicemail_visual_setup_failed)
                 RivoExpressiveCard(
                     title = stringResource(R.string.settings_voicemail_visual_header),
                     icon = Icons.Outlined.Voicemail
@@ -207,6 +218,34 @@ fun VoicemailScreen(
                         stringResource(R.string.settings_voicemail_visual_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    RivoListItem(
+                        headline = stringResource(R.string.settings_voicemail_visual_open),
+                        leadingIcon = Icons.Outlined.Voicemail,
+                        onClick = { navigator.navigate(VoicemailListScreenDestination) }
+                    )
+
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+
+                    RivoListItem(
+                        headline = stringResource(R.string.settings_voicemail_visual_setup),
+                        supporting = stringResource(R.string.settings_voicemail_visual_setup_supporting),
+                        leadingIcon = Icons.Outlined.CloudSync,
+                        onClick = {
+                            voicemailViewModel.requestProvisioning { anySent ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        if (anySent) setupSentLabel else setupFailedLabel
+                                    )
+                                }
+                            }
+                        }
                     )
                 }
             }

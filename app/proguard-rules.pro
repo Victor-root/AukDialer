@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Jakarta Mail (com.sun.mail:android-mail) locates its IMAP providers, MIME
+# content handlers and SASL mechanisms reflectively through META-INF resources.
+# Stripping any of them breaks the carrier IMAP connection at runtime with a
+# misleading NoSuchProviderException.
+-keep class javax.mail.** { *; }
+-keep class com.sun.mail.** { *; }
+-keep class javax.activation.** { *; }
+-dontwarn javax.mail.**
+-dontwarn com.sun.mail.**
+-dontwarn javax.activation.**

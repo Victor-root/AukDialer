@@ -32,6 +32,7 @@ android {
         release {
             minifyEnabled = true
             shrinkResources = true
+            proguardFiles 'proguard-rules.pro'
             signingConfig = signingConfigs.release
             debuggable = false
         }
@@ -61,6 +62,22 @@ android {
 
     androidResources {
         generateLocaleConfig = true
+    }
+
+    // android-mail and android-activation each ship their own META-INF license
+    // files; without this the resource merger aborts on the duplicates.
+    packaging {
+        resources {
+            excludes += [
+                'META-INF/LICENSE.md',
+                'META-INF/LICENSE.txt',
+                'META-INF/LICENSE',
+                'META-INF/NOTICE.md',
+                'META-INF/NOTICE.txt',
+                'META-INF/NOTICE',
+                'META-INF/DEPENDENCIES',
+            ]
+        }
     }
 
     splits {
@@ -133,6 +150,12 @@ dependencies {
     // Image & Utility
     implementation "io.coil-kt:coil-compose:2.7.0"
     implementation 'com.google.zxing:core:3.5.4'
+
+    // Visual voicemail: encrypted credential storage, background sync, carrier IMAP
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
+    implementation 'com.sun.mail:android-mail:1.6.7'
+    implementation 'com.sun.mail:android-activation:1.6.7'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

@@ -1,0 +1,237 @@
+package com.grinch.rivo4.controller.util
+
+import android.content.ContentUris
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.os.Handler
+import android.os.Looper
+import android.provider.VoicemailContract
+
+/**
+ * Single-instance MediaPlayer wrapper for voicemail audio streamed from the
+ * voicemail provider.
+ *
+ * All interaction stays on the main thread, audio focus is requested on play and
+ * abandoned on release, and every native call is guarded: vendor MediaPlayer
+ * implementations throw where AOSP does not.
+ */
+class VoicemailPlayer(
+    private val context: Context,
+    private val onUpdate: (playingId: Long?, isPlaying: Boolean, positionMs: Int, durationMs: Int) -> Unit,
+    private val onError: (message: String) -> Unit,
+    private val onAudioUnavailable: () -> Unit,
+) {
+    private var player: MediaPlayer? = null
+    private var currentItemId: Long? = null
+    private var preparing = false
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val progressRunnable = object : Runnable {
+        override fun run() {
+            notifyUpdate()
+            handler.postDelayed(this, PROGRESS_INTERVAL_MS)
+        }
+    }
+
+    fun toggle(voicemailId: Long) {
+        try {
+            if (currentItemId == voicemailId && preparing) return
+            if (currentItemId == voicemailId && player != null) {
+                togglePlayPause()
+                return
+            }
+            release()
+            startNew(voicemailId)
+        } catch (e: Exception) {
+            release()
+            onError(e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    fun seekTo(positionMs: Int) {
+        if (preparing) return
+        try {
+            player?.seekTo(positionMs)
+            notifyUpdate()
+        } catch (_: Exception) {
+        }
+    }
+
+    fun release() {
+        stopProgressTimer()
+        try {
+            player?.let {
+                try {
+                    if (!preparing && it.isPlaying) it.stop()
+                } catch (_: Exception) {
+                }
+                it.release()
+            }
+        } catch (_: Exception) {
+        }
+        player = null
+        currentItemId = null
+        preparing = false
+        abandonFocus()
+        notifyUpdate()
+    }
+
+    private fun togglePlayPause() {
+        val mp = player ?: return
+        try {
+            if (mp.isPlaying) {
+                mp.pause()
+                stopProgressTimer()
+                notifyUpdate()
+            } else if (requestFocus()) {
+                mp.start()
+                startProgressTimer()
+                notifyUpdate()
+            }
+        } catch (e: Exception) {
+            release()
+            onError(e.message ?: e.javaClass.simpleName)
+        }
+    }
+
+    private fun startNew(voicemailId: Long) {
+        val uri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, voicemailId)
+        val mp = MediaPlayer()
+        mp.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+        )
+        mp.setOnPreparedListener {
+            preparing = false
+            try {
+                if (requestFocus()) {
+                    it.start()
+                    startProgressTimer()
+                }
+                notifyUpdate()
+            } catch (e: Exception) {
+                release()
+                onError(e.message ?: e.javaClass.simpleName)
+            }
+        }
+        mp.setOnCompletionListener {
+            stopProgressTimer()
+            try {
+                it.seekTo(0)
+            } catch (_: Exception) {
+            }
+            notifyUpdate()
+        }
+        mp.setOnErrorListener { _, what, extra ->
+            release()
+            onError("MediaPlayer error: $what/$extra")
+            true
+        }
+        preparing = true
+        try {
+            mp.setDataSource(context, uri)
+            mp.prepareAsync()
+        } catch (e: java.io.FileNotFoundException) {
+            // The row survives in the provider but its audio file was purged,
+            // typically a stale row the owning source never cleaned up.
+            preparing = false
+            runCatching { mp.release() }
+            onAudioUnavailable()
+            return
+        } catch (e: Exception) {
+            preparing = false
+            runCatching { mp.release() }
+            onError(e.message ?: e.javaClass.simpleName)
+            return
+        }
+        player = mp
+        currentItemId = voicemailId
+        // Emit the preparing state without touching native getters: querying
+        // duration or position while PREPARING raises a native error on some
+        // vendor builds, which then aborts playback through onError.
+        onUpdate(currentItemId, false, 0, 0)
+    }
+
+    private fun startProgressTimer() {
+        handler.removeCallbacks(progressRunnable)
+        handler.post(progressRunnable)
+    }
+
+    private fun stopProgressTimer() {
+        handler.removeCallbacks(progressRunnable)
+    }
+
+    private fun notifyUpdate() {
+        val mp = player
+        if (mp == null || preparing) {
+            onUpdate(currentItemId, false, 0, 0)
+            return
+        }
+        val isPlaying = try {
+            mp.isPlaying
+        } catch (_: Exception) {
+            false
+        }
+        val position = try {
+            mp.currentPosition
+        } catch (_: Exception) {
+            0
+        }
+        val duration = try {
+            mp.duration.coerceAtLeast(0)
+        } catch (_: Exception) {
+            0
+        }
+        onUpdate(currentItemId, isPlaying, position, duration)
+    }
+
+    private val audioFocusListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                runCatching { player?.pause() }
+                stopProgressTimer()
+                notifyUpdate()
+            }
+        }
+    }
+
+    private fun requestFocus(): Boolean {
+        return try {
+            val audioManager = context.getSystemService(AudioManager::class.java) ?: return true
+            val request = audioFocusRequest ?: AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
+                .setOnAudioFocusChangeListener(audioFocusListener)
+                .build()
+            audioFocusRequest = request
+            audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    private fun abandonFocus() {
+        try {
+            val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+            audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+            audioFocusRequest = null
+        } catch (_: Exception) {
+        }
+    }
+
+    companion object {
+        private const val PROGRESS_INTERVAL_MS = 250L
+    }
+}

@@ -451,7 +451,12 @@
     <string name="settings_voicemail_vibration">Vibration</string>
     <string name="settings_voicemail_vibration_supporting">Vibrer pour les nouveaux messages vocaux</string>
     <string name="settings_voicemail_visual_header">Messagerie vocale visuelle</string>
-    <string name="settings_voicemail_visual_description">La messagerie vocale visuelle est actuellement gérée par votre opérateur. Assurez-vous que l’application de votre opérateur est installée pour une expérience optimale.</string>
+    <string name="settings_voicemail_visual_description">Récupérez vos messages vocaux depuis votre opérateur et écoutez-les directement ici.</string>
+    <string name="settings_voicemail_visual_open">Ouvrir la messagerie vocale visuelle</string>
+    <string name="settings_voicemail_visual_setup">Configurer avec l’opérateur</string>
+    <string name="settings_voicemail_visual_setup_supporting">Demander les paramètres de la boîte vocale à votre opérateur</string>
+    <string name="settings_voicemail_visual_setup_sent">Demande envoyée à votre opérateur</string>
+    <string name="settings_voicemail_visual_setup_failed">Votre opérateur n’a pas accepté la demande</string>
 
     <!-- Settings > About -->
     <string name="about_title">À propos</string>
@@ -476,6 +481,26 @@
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Développeur principal</string>
     <string name="contributor_role_developer">Développeur</string>
+
+    <!-- Visual voicemail -->
+    <string name="voicemail_title">Messagerie vocale</string>
+    <string name="voicemail_play">Lire</string>
+    <string name="voicemail_pause">Pause</string>
+    <string name="voicemail_sync_now">Synchroniser</string>
+    <string name="voicemail_more_options">Plus d’options</string>
+    <string name="voicemail_mark_read">Marquer comme lu</string>
+    <string name="voicemail_mark_unread">Marquer comme non lu</string>
+    <string name="voicemail_empty_title">Aucun message vocal</string>
+    <string name="voicemail_empty_description">Les nouveaux messages vocaux de votre opérateur apparaîtront ici.</string>
+    <string name="voicemail_audio_unavailable">Cet enregistrement n’est plus disponible.</string>
+    <string name="voicemail_needs_default_dialer_title">Messagerie vocale visuelle indisponible</string>
+    <string name="voicemail_needs_default_dialer_description">Rivo doit être votre application de téléphone par défaut pour recevoir les messages vocaux de votre opérateur.</string>
+    <string name="notif_channel_voicemail">Messagerie vocale</string>
+    <string name="voicemail_notif_title">Nouveau message vocal</string>
+    <plurals name="voicemail_notif_text">
+        <item quantity="one">Vous avez %1$d nouveau message vocal</item>
+        <item quantity="other">Vous avez %1$d nouveaux messages vocaux</item>
+    </plurals>
 
     <!-- Video calling app picker -->
     <string name="video_call_title">Appel vidéo</string>

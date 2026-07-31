@@ -451,7 +451,12 @@
     <string name="settings_voicemail_vibration">Vibration</string>
     <string name="settings_voicemail_vibration_supporting">Vibrate for new voicemail notifications</string>
     <string name="settings_voicemail_visual_header">Visual Voicemail</string>
-    <string name="settings_voicemail_visual_description">Visual Voicemail is currently managed by your carrier. Ensure your carrier app is installed for the best experience.</string>
+    <string name="settings_voicemail_visual_description">Fetch your voicemails from your carrier and listen to them right here.</string>
+    <string name="settings_voicemail_visual_open">Open visual voicemail</string>
+    <string name="settings_voicemail_visual_setup">Set up with carrier</string>
+    <string name="settings_voicemail_visual_setup_supporting">Ask your carrier for the mailbox settings</string>
+    <string name="settings_voicemail_visual_setup_sent">Request sent to your carrier</string>
+    <string name="settings_voicemail_visual_setup_failed">Your carrier did not accept the request</string>
 
     <!-- Settings > About -->
     <string name="about_title">About</string>
@@ -476,6 +481,26 @@
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Lead Developer</string>
     <string name="contributor_role_developer">Developer</string>
+
+    <!-- Visual voicemail -->
+    <string name="voicemail_title">Voicemail</string>
+    <string name="voicemail_play">Play</string>
+    <string name="voicemail_pause">Pause</string>
+    <string name="voicemail_sync_now">Sync now</string>
+    <string name="voicemail_more_options">More options</string>
+    <string name="voicemail_mark_read">Mark as read</string>
+    <string name="voicemail_mark_unread">Mark as unread</string>
+    <string name="voicemail_empty_title">No voicemails</string>
+    <string name="voicemail_empty_description">New voicemails from your carrier will appear here.</string>
+    <string name="voicemail_audio_unavailable">This recording is no longer available.</string>
+    <string name="voicemail_needs_default_dialer_title">Visual voicemail unavailable</string>
+    <string name="voicemail_needs_default_dialer_description">Rivo must be your default phone app to receive voicemails from your carrier.</string>
+    <string name="notif_channel_voicemail">Voicemail</string>
+    <string name="voicemail_notif_title">New voicemail</string>
+    <plurals name="voicemail_notif_text">
+        <item quantity="one">You have %1$d new voicemail</item>
+        <item quantity="other">You have %1$d new voicemails</item>
+    </plurals>
 
     <!-- Video calling app picker -->
     <string name="video_call_title">Video Call</string>
