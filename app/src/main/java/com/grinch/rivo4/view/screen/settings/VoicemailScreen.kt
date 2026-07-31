@@ -34,7 +34,6 @@ import com.grinch.rivo4.view.components.RivoListItem
 import com.grinch.rivo4.view.components.RivoSwitchListItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -221,17 +220,6 @@ fun VoicemailScreen(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    RivoListItem(
-                        headline = stringResource(R.string.settings_voicemail_visual_open),
-                        leadingIcon = Icons.Outlined.Voicemail,
-                        onClick = { navigator.navigate(VoicemailListScreenDestination) }
-                    )
-
-                    HorizontalDivider(
-                        Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
 
                     RivoListItem(
                         headline = stringResource(R.string.settings_voicemail_visual_setup),

@@ -3,6 +3,7 @@ package com.grinch.rivo4.view.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Voicemail
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,6 +19,7 @@ import com.grinch.rivo4.R
 import com.grinch.rivo4.controller.util.PreferenceManager
 import com.ramcosta.composedestinations.generated.destinations.ContactScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.RecentScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 
@@ -37,7 +39,8 @@ fun BottomBar(navController: NavController, navigator: DestinationsNavigator) {
 
     val tabs = listOf(
         NavigationTab(RecentScreenDestination.route, stringResource(R.string.nav_recents), Icons.Default.History, 0),
-        NavigationTab(ContactScreenDestination.route, stringResource(R.string.nav_contacts), Icons.Default.Person, 1)
+        NavigationTab(ContactScreenDestination.route, stringResource(R.string.nav_contacts), Icons.Default.Person, 1),
+        NavigationTab(VoicemailListScreenDestination.route, stringResource(R.string.nav_voicemail), Icons.Default.Voicemail, 2)
     )
 
     val organizedTabs = if (flipBar) tabs.reversed() else tabs

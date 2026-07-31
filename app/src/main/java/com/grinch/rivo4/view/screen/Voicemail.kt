@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.grinch.rivo4.R
 import com.grinch.rivo4.controller.VoicemailViewModel
 import com.grinch.rivo4.controller.util.formatDate
@@ -33,6 +33,7 @@ import com.grinch.rivo4.controller.util.formatDuration
 import com.grinch.rivo4.controller.util.formatPhoneNumber
 import com.grinch.rivo4.controller.util.getDefaultDialerIntent
 import com.grinch.rivo4.modal.data.Voicemail
+import com.grinch.rivo4.view.components.BottomBar
 import com.grinch.rivo4.view.components.PermissionDeniedView
 import com.grinch.rivo4.view.components.RivoAvatar
 import com.grinch.rivo4.view.components.RivoDivider
@@ -45,6 +46,7 @@ import org.koin.compose.viewmodel.koinActivityViewModel
 @Destination<RootGraph>
 @Composable
 fun VoicemailListScreen(
+    navController: NavController,
     navigator: DestinationsNavigator
 ) {
     val context = LocalContext.current
@@ -89,14 +91,6 @@ fun VoicemailListScreen(
                 title = {
                     Text(stringResource(R.string.voicemail_title), fontWeight = FontWeight.Bold)
                 },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.action_back)
-                        )
-                    }
-                },
                 actions = {
                     if (isDefaultDialer) {
                         IconButton(onClick = { viewModel.syncNow() }, enabled = !isSyncing) {
@@ -109,6 +103,7 @@ fun VoicemailListScreen(
                 }
             )
         },
+        bottomBar = { BottomBar(navController, navigator) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {

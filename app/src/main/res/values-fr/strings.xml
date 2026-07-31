@@ -52,6 +52,7 @@
     <string name="date_yesterday">Hier</string>
     <string name="nav_contacts">Contacts</string>
     <string name="nav_recents">Récents</string>
+    <string name="nav_voicemail">Messagerie</string>
     <string name="call_type_incoming">Entrant</string>
     <string name="call_type_outgoing">Sortant</string>
     <string name="call_type_missed">Manqué</string>
@@ -452,7 +453,6 @@
     <string name="settings_voicemail_vibration_supporting">Vibrer pour les nouveaux messages vocaux</string>
     <string name="settings_voicemail_visual_header">Messagerie vocale visuelle</string>
     <string name="settings_voicemail_visual_description">Récupérez vos messages vocaux depuis votre opérateur et écoutez-les directement ici.</string>
-    <string name="settings_voicemail_visual_open">Ouvrir la messagerie vocale visuelle</string>
     <string name="settings_voicemail_visual_setup">Configurer avec l’opérateur</string>
     <string name="settings_voicemail_visual_setup_supporting">Demander les paramètres de la boîte vocale à votre opérateur</string>
     <string name="settings_voicemail_visual_setup_sent">Demande envoyée à votre opérateur</string>
