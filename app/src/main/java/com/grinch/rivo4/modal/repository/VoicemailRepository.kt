@@ -37,10 +37,6 @@ class VoicemailRepository(
     private val contactsRepo: IContactsRepository
 ) : IVoicemailRepository {
 
-    override fun hasReadPermission(): Boolean {
-        return context.checkSelfPermission(READ_VOICEMAIL_PERMISSION) == PackageManager.PERMISSION_GRANTED
-    }
-
     override fun isDefaultDialer(): Boolean {
         return try {
             isAlreadyDefaultDialer(context)
@@ -49,8 +45,28 @@ class VoicemailRepository(
         }
     }
 
+    /**
+     * Reads every voicemail the provider lets us see, whichever app imported it.
+     *
+     * Deliberately not gated on a READ_VOICEMAIL check: that permission is
+     * privileged and a third-party app never holds it, yet the provider grants
+     * the default dialer full read access anyway. Checking it first would
+     * report an empty mailbox on every device.
+     */
     override fun getVoicemails(): List<Voicemail> {
-        if (!hasReadPermission()) return emptyList()
+        // Exclude soft-deleted rows: the provider keeps them until the owning
+        // source syncs the deletion, but their audio file is already gone.
+        val deletedFilter = "${VoicemailContract.Voicemails.DELETED} = 0"
+        val items = queryVoicemails(deletedFilter)
+            // Vendor providers occasionally lack the DELETED column and reject
+            // the selection outright; an unfiltered read beats no read at all.
+            ?: queryVoicemails(null)
+            ?: return emptyList()
+        return resolveContacts(items)
+    }
+
+    /** Returns null when the query itself failed, as opposed to an empty mailbox. */
+    private fun queryVoicemails(selection: String?): List<Voicemail>? {
         val projection = arrayOf(
             VoicemailContract.Voicemails._ID,
             VoicemailContract.Voicemails.NUMBER,
@@ -61,12 +77,8 @@ class VoicemailRepository(
             VoicemailContract.Voicemails.SOURCE_PACKAGE,
             VoicemailContract.Voicemails.PHONE_ACCOUNT_ID,
         )
-        // Exclude soft-deleted rows: the provider keeps them until the owning
-        // source syncs the deletion, but their audio file is already gone.
-        val selection = "${VoicemailContract.Voicemails.DELETED} = 0"
-
         val items = mutableListOf<Voicemail>()
-        try {
+        return try {
             context.contentResolver.query(
                 VoicemailContract.Voicemails.CONTENT_URI,
                 projection,
@@ -88,12 +100,12 @@ class VoicemailRepository(
                         )
                     )
                 }
+                items
             }
         } catch (e: Exception) {
-            Log.w(LOG_TAG, "Voicemail query failed", e)
-            return emptyList()
+            Log.w(LOG_TAG, "Voicemail query failed (selection=$selection)", e)
+            null
         }
-        return resolveContacts(items)
     }
 
     /** Resolves each distinct number once, so a mailbox full of the same caller costs one lookup. */
@@ -355,7 +367,6 @@ class VoicemailRepository(
 
     companion object {
         private const val LOG_TAG = "VoicemailRepository"
-        const val READ_VOICEMAIL_PERMISSION = "com.android.voicemail.permission.READ_VOICEMAIL"
         private const val SEND_SMS_PERMISSION = "android.permission.SEND_SMS"
         private const val MAX_ITEMS = 200
 

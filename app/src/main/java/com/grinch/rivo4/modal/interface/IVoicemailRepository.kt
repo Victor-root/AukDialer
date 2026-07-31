@@ -4,7 +4,6 @@ import com.grinch.rivo4.modal.data.Voicemail
 import com.grinch.rivo4.modal.data.VoicemailProbeResult
 
 interface IVoicemailRepository {
-    fun hasReadPermission(): Boolean
     fun isDefaultDialer(): Boolean
     fun getVoicemails(): List<Voicemail>
     fun markAsRead(id: Long, isRead: Boolean): Result<Unit>

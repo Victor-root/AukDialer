@@ -87,8 +87,6 @@ class VoicemailViewModel(
         }
     }
 
-    fun hasReadPermission(): Boolean = voicemailRepo.hasReadPermission()
-
     fun isDefaultDialer(): Boolean = voicemailRepo.isDefaultDialer()
 
     fun fetchVoicemails() {
