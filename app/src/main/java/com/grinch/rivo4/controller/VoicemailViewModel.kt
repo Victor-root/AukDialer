@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.grinch.rivo4.controller.util.VoicemailPlayer
 import com.grinch.rivo4.modal.`interface`.IVoicemailRepository
 import com.grinch.rivo4.modal.data.Voicemail
+import com.grinch.rivo4.modal.data.VoicemailStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,6 +55,12 @@ class VoicemailViewModel(
     private val _isSpeakerOn = MutableStateFlow(true)
     val isSpeakerOn: StateFlow<Boolean> = _isSpeakerOn.asStateFlow()
 
+    private val _status = MutableStateFlow(VoicemailStatus.Ready)
+    val status: StateFlow<VoicemailStatus> = _status.asStateFlow()
+
+    private val _syncFailed = MutableStateFlow(false)
+    val syncFailed: StateFlow<Boolean> = _syncFailed.asStateFlow()
+
     private val player = VoicemailPlayer(
         context = context.applicationContext,
         onUpdate = { playingId, isPlaying, positionMs, durationMs ->
@@ -95,7 +102,12 @@ class VoicemailViewModel(
 
     fun fetchVoicemails() {
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) { voicemailRepo.getVoicemails() }
+            val result = withContext(Dispatchers.IO) {
+                // Status is read alongside the rows so the screen never shows an
+                // empty list without knowing whether that is normal.
+                _status.value = voicemailRepo.getStatus()
+                voicemailRepo.getVoicemails()
+            }
             _voicemails.value = result
             _isLoading.value = false
         }
@@ -116,6 +128,9 @@ class VoicemailViewModel(
             _isSyncing.value = false
             onResult(result.getOrNull())
             fetchVoicemails()
+            // A list that already has messages hides a broken sync, so the
+            // failure is announced rather than left to the empty state.
+            if (result.isFailure) _syncFailed.value = true
         }
     }
 
@@ -164,5 +179,9 @@ class VoicemailViewModel(
 
     fun consumeAudioUnavailable() {
         _audioUnavailable.value = false
+    }
+
+    fun consumeSyncFailed() {
+        _syncFailed.value = false
     }
 }

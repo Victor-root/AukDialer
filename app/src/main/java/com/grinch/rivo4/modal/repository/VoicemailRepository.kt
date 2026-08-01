@@ -10,6 +10,7 @@ import android.telephony.TelephonyManager
 import android.telephony.VisualVoicemailSmsFilterSettings
 import android.util.Log
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
+import com.grinch.rivo4.controller.vvm.ProvisioningState
 import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
 import com.grinch.rivo4.controller.vvm.VvmImapClient
@@ -22,6 +23,7 @@ import com.grinch.rivo4.modal.`interface`.IVoicemailRepository
 import com.grinch.rivo4.modal.data.Contact
 import com.grinch.rivo4.modal.data.Voicemail
 import com.grinch.rivo4.modal.data.VoicemailProbeResult
+import com.grinch.rivo4.modal.data.VoicemailStatus
 
 /**
  * Reads and writes Android's voicemail provider, and drives the carrier-side
@@ -42,6 +44,33 @@ class VoicemailRepository(
         } catch (_: Exception) {
             false
         }
+    }
+
+    /**
+     * Works down from the conditions that make everything else moot: without the
+     * dialer role nothing is routed here, without a protocol we understand
+     * nothing can be asked, and without credentials nothing can be fetched. Only
+     * once all of that holds does a failed sync become the interesting answer.
+     */
+    override fun getStatus(): VoicemailStatus {
+        if (!isDefaultDialer()) return VoicemailStatus.NotDefaultDialer
+
+        val supported = VvmCarrierConfig.readAll(context).filter { it.isSupported }
+        if (supported.isEmpty()) return VoicemailStatus.CarrierUnsupported
+
+        val store = VvmCredentialsStore(context)
+        val credentials = supported.mapNotNull { store.load(it.subscriptionId) }
+        if (credentials.none { it.hasUsableImapCredentials() }) {
+            val states = credentials.map { it.provisioningState }
+            return when {
+                states.any { it == ProvisioningState.NEW_USER } -> VoicemailStatus.ActivationPending
+                states.any {
+                    it == ProvisioningState.BLOCKED || it == ProvisioningState.UNKNOWN_USER
+                } -> VoicemailStatus.ServiceRefused
+                else -> VoicemailStatus.NotProvisioned
+            }
+        }
+        return lastSyncFailure ?: VoicemailStatus.Ready
     }
 
     /**
@@ -251,9 +280,24 @@ class VoicemailRepository(
             val outcomes = VvmSyncEngine(context).syncAllProvisionedSubscriptions()
             val failure = outcomes.firstOrNull { !it.success }
             if (outcomes.isNotEmpty() && outcomes.none { it.success }) {
+                lastSyncFailure = classifyFailure(failure?.errorType)
                 throw IllegalStateException(failure?.errorMessage ?: "sync failed")
             }
+            lastSyncFailure = null
             outcomes.sumOf { it.writtenNew }
+        }
+    }
+
+    /**
+     * Credentials the carrier itself issued being refused is a different problem
+     * from not reaching the server, and points somewhere else entirely, so the
+     * two are worth telling apart.
+     */
+    private fun classifyFailure(errorType: String?): VoicemailStatus {
+        return if (errorType?.contains("Authentication", ignoreCase = true) == true) {
+            VoicemailStatus.AuthenticationRejected
+        } else {
+            VoicemailStatus.ServerUnreachable
         }
     }
 
@@ -370,5 +414,9 @@ class VoicemailRepository(
 
         @Volatile
         private var lastAutoProvisionAttemptMs: Long = 0L
+
+        /** Cleared by the next successful sync, so a fixed problem stops being reported. */
+        @Volatile
+        private var lastSyncFailure: VoicemailStatus? = null
     }
 }

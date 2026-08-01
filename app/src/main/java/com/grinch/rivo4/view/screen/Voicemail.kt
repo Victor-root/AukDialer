@@ -37,6 +37,7 @@ import com.grinch.rivo4.controller.util.formatTime
 import com.grinch.rivo4.controller.util.getDefaultDialerIntent
 import com.grinch.rivo4.debug.VoicemailDebugMenu
 import com.grinch.rivo4.modal.data.Voicemail
+import com.grinch.rivo4.modal.data.VoicemailStatus
 import com.grinch.rivo4.view.components.BottomBar
 import com.grinch.rivo4.view.components.PermissionDeniedView
 import com.grinch.rivo4.view.components.RivoAvatar
@@ -46,6 +47,7 @@ import com.grinch.rivo4.view.components.RivoSectionHeader
 import com.grinch.rivo4.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.VoicemailScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
@@ -67,6 +69,8 @@ fun VoicemailListScreen(
     val message by viewModel.message.collectAsState()
     val audioUnavailable by viewModel.audioUnavailable.collectAsState()
     val isSpeakerOn by viewModel.isSpeakerOn.collectAsState()
+    val status by viewModel.status.collectAsState()
+    val syncFailed by viewModel.syncFailed.collectAsState()
 
     var isDefaultDialer by remember { mutableStateOf(viewModel.isDefaultDialer()) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -107,6 +111,14 @@ fun VoicemailListScreen(
         if (audioUnavailable) {
             snackbarHostState.showSnackbar(audioUnavailableText)
             viewModel.consumeAudioUnavailable()
+        }
+    }
+
+    val syncFailedText = stringResource(statusTitle(status))
+    LaunchedEffect(syncFailed) {
+        if (syncFailed) {
+            snackbarHostState.showSnackbar(syncFailedText)
+            viewModel.consumeSyncFailed()
         }
     }
 
@@ -155,7 +167,10 @@ fun VoicemailListScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     if (voicemails.isEmpty()) {
-                        VoicemailEmptyState()
+                        VoicemailStatusState(
+                            status = status,
+                            onOpenSettings = { navigator.navigate(VoicemailScreenDestination) }
+                        )
                     } else {
                         val groupedVoicemails = remember(voicemails) {
                             voicemails.groupBy { formatDateHeader(context, it.date) }
@@ -388,8 +403,21 @@ private fun buildRowSubtitle(
     }
 }
 
+/**
+ * Fills the empty list with what is actually going on. An empty mailbox and a
+ * carrier that never answered look identical otherwise, and only one of them is
+ * something the user can act on.
+ */
 @Composable
-private fun VoicemailEmptyState() {
+private fun VoicemailStatusState(
+    status: VoicemailStatus,
+    onOpenSettings: () -> Unit
+) {
+    val title = stringResource(statusTitle(status))
+    val description = stringResource(statusDescription(status))
+    val offersSettings = status == VoicemailStatus.NotProvisioned ||
+        status == VoicemailStatus.AuthenticationRejected
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -413,16 +441,44 @@ private fun VoicemailEmptyState() {
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = stringResource(R.string.voicemail_empty_title),
+            text = title,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
         Text(
-            text = stringResource(R.string.voicemail_empty_description),
+            text = description,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
         )
+        if (offersSettings) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onOpenSettings) {
+                Text(stringResource(R.string.voicemail_status_open_settings))
+            }
+        }
     }
+}
+
+private fun statusTitle(status: VoicemailStatus): Int = when (status) {
+    VoicemailStatus.CarrierUnsupported -> R.string.voicemail_status_unsupported_title
+    VoicemailStatus.NotProvisioned -> R.string.voicemail_status_not_provisioned_title
+    VoicemailStatus.ActivationPending -> R.string.voicemail_status_activation_title
+    VoicemailStatus.ServiceRefused -> R.string.voicemail_status_refused_title
+    VoicemailStatus.AuthenticationRejected -> R.string.voicemail_status_auth_title
+    VoicemailStatus.ServerUnreachable -> R.string.voicemail_status_unreachable_title
+    // NotDefaultDialer never reaches here: the screen shows its own prompt.
+    VoicemailStatus.Ready, VoicemailStatus.NotDefaultDialer -> R.string.voicemail_empty_title
+}
+
+private fun statusDescription(status: VoicemailStatus): Int = when (status) {
+    VoicemailStatus.CarrierUnsupported -> R.string.voicemail_status_unsupported_description
+    VoicemailStatus.NotProvisioned -> R.string.voicemail_status_not_provisioned_description
+    VoicemailStatus.ActivationPending -> R.string.voicemail_status_activation_description
+    VoicemailStatus.ServiceRefused -> R.string.voicemail_status_refused_description
+    VoicemailStatus.AuthenticationRejected -> R.string.voicemail_status_auth_description
+    VoicemailStatus.ServerUnreachable -> R.string.voicemail_status_unreachable_description
+    VoicemailStatus.Ready, VoicemailStatus.NotDefaultDialer -> R.string.voicemail_empty_description
 }
