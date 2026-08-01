@@ -215,7 +215,10 @@ private fun VoicemailRow(
                         contentDescription = stringResource(
                             if (isPlaying) R.string.voicemail_pause else R.string.voicemail_play
                         ),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        // A triangle and two bars cover less of their box than
+                        // the overflow dots, so at equal size they read smaller.
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }
