@@ -208,13 +208,29 @@ private fun VoicemailRow(
             }
 
             if (voicemail.hasContent) {
-                IconButton(onClick = onToggle) {
+                FilledIconButton(
+                    onClick = onToggle,
+                    shape = RoundedCornerShape(if (isPlaying) 14.dp else 20.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = if (isCurrent) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer
+                        },
+                        contentColor = if (isCurrent) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        }
+                    ),
+                    modifier = Modifier.size(40.dp)
+                ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = stringResource(
                             if (isPlaying) R.string.voicemail_pause else R.string.voicemail_play
                         ),
-                        tint = MaterialTheme.colorScheme.primary
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
@@ -261,14 +277,47 @@ private fun VoicemailRow(
         }
 
         if (isCurrent && durationMs > 0) {
-            Slider(
-                value = positionMs.coerceIn(0, durationMs).toFloat(),
-                onValueChange = { onSeek(it.toInt()) },
-                valueRange = 0f..durationMs.toFloat(),
-                modifier = Modifier.padding(top = 4.dp)
-            )
+            // While dragging, follow the finger rather than the player: the
+            // player only reports the new position once the seek lands, which
+            // otherwise makes the handle snap back under the finger.
+            var scrubPositionMs by remember(voicemail.id) { mutableStateOf<Float?>(null) }
+            val shownPositionMs = scrubPositionMs?.toInt() ?: positionMs.coerceIn(0, durationMs)
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 2.dp)
+            ) {
+                Text(
+                    text = formatPlaybackTime(shownPositionMs),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Slider(
+                    value = shownPositionMs.toFloat(),
+                    onValueChange = { scrubPositionMs = it },
+                    onValueChangeFinished = {
+                        scrubPositionMs?.let { onSeek(it.toInt()) }
+                        scrubPositionMs = null
+                    },
+                    valueRange = 0f..durationMs.toFloat(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp)
+                )
+                Text(
+                    text = formatPlaybackTime(durationMs),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
+}
+
+/** Playback clock as m:ss, independent of the locale-aware list duration label. */
+private fun formatPlaybackTime(millis: Int): String {
+    val totalSeconds = (millis / 1000).coerceAtLeast(0)
+    return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
 }
 
 private fun buildRowSubtitle(
