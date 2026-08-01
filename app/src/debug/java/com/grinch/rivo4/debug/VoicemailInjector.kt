@@ -1,5 +1,6 @@
 package com.grinch.rivo4.debug
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.provider.VoicemailContract
@@ -102,28 +103,49 @@ object VoicemailInjector {
      * lingers forever. Restoring one is a way to exercise the list against
      * rows whose audio file is long gone.
      *
-     * Restricted to rows this app owns unless [includeOtherSources] is set,
-     * since writing into another source's rows is normally off limits.
+     * Covers rows from any source package: being the default dialer is what
+     * grants write access to the mailbox, not owning the row.
      */
-    fun restoreDeleted(context: Context, includeOtherSources: Boolean = true): Int {
+    fun restoreDeleted(context: Context): Int {
+        val ids = deletedRowIds(context)
+        if (ids.isEmpty()) {
+            Log.i(LOG_TAG, "No soft-deleted row to restore")
+            return 0
+        }
         val values = ContentValues().apply {
             put(VoicemailContract.Voicemails.DELETED, 0)
         }
-        val uri = if (includeOtherSources) {
-            VoicemailContract.Voicemails.CONTENT_URI
-        } else {
-            VoicemailContract.Voicemails.buildSourceUri(context.packageName)
+        // The provider rejects a bulk update with a where clause, so each row
+        // has to be addressed by its own URI.
+        var restored = 0
+        for (id in ids) {
+            try {
+                val rowUri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, id)
+                if (context.contentResolver.update(rowUri, values, null, null) > 0) restored++
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "Restore failed for id=$id", e)
+            }
         }
+        Log.i(LOG_TAG, "Restored $restored of ${ids.size} deleted row(s)")
+        return restored
+    }
+
+    private fun deletedRowIds(context: Context): List<Long> {
         return try {
-            context.contentResolver.update(
-                uri,
-                values,
+            context.contentResolver.query(
+                VoicemailContract.Voicemails.CONTENT_URI,
+                arrayOf(VoicemailContract.Voicemails._ID),
                 "${VoicemailContract.Voicemails.DELETED} = 1",
                 null,
-            ).also { Log.i(LOG_TAG, "Restored $it deleted row(s)") }
+                null,
+            )?.use { cursor ->
+                val ids = mutableListOf<Long>()
+                while (cursor.moveToNext()) ids.add(cursor.getLong(0))
+                ids
+            } ?: emptyList()
         } catch (e: Exception) {
-            Log.w(LOG_TAG, "Restore failed", e)
-            0
+            Log.w(LOG_TAG, "Could not list deleted rows", e)
+            emptyList()
         }
     }
 
