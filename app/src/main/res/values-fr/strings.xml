@@ -488,6 +488,8 @@
     <string name="voicemail_play">Lire</string>
     <string name="voicemail_pause">Pause</string>
     <string name="voicemail_sync_now">Synchroniser</string>
+    <string name="voicemail_route_speaker">Lecture sur haut-parleur, basculer sur l’écouteur</string>
+    <string name="voicemail_route_earpiece">Lecture sur écouteur, basculer sur le haut-parleur</string>
     <string name="voicemail_more_options">Plus d’options</string>
     <string name="voicemail_mark_read">Marquer comme lu</string>
     <string name="voicemail_mark_unread">Marquer comme non lu</string>

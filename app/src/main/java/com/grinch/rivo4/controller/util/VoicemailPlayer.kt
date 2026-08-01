@@ -3,11 +3,14 @@ package com.grinch.rivo4.controller.util
 import android.content.ContentUris
 import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.VoicemailContract
 
 /**
@@ -28,6 +31,8 @@ class VoicemailPlayer(
     private var currentItemId: Long? = null
     private var preparing = false
     private var audioFocusRequest: AudioFocusRequest? = null
+    private var proximityWakeLock: PowerManager.WakeLock? = null
+    private var speakerOn = true
     private val handler = Handler(Looper.getMainLooper())
 
     private val progressRunnable = object : Runnable {
@@ -61,6 +66,17 @@ class VoicemailPlayer(
         }
     }
 
+    /**
+     * Switches between the loudspeaker and the earpiece. Takes effect
+     * immediately, mid-playback included, and drives the proximity lock so
+     * holding the phone to your ear blanks the screen as it does on a call.
+     */
+    fun setSpeakerOn(enabled: Boolean) {
+        speakerOn = enabled
+        applyAudioRoute()
+        updateProximityLock()
+    }
+
     fun release() {
         stopProgressTimer()
         try {
@@ -76,6 +92,8 @@ class VoicemailPlayer(
         player = null
         currentItemId = null
         preparing = false
+        releaseProximityLock()
+        restoreAudioMode()
         abandonFocus()
         notifyUpdate()
     }
@@ -86,10 +104,12 @@ class VoicemailPlayer(
             if (mp.isPlaying) {
                 mp.pause()
                 stopProgressTimer()
+                updateProximityLock()
                 notifyUpdate()
             } else if (requestFocus()) {
                 mp.start()
                 startProgressTimer()
+                updateProximityLock()
                 notifyUpdate()
             }
         } catch (e: Exception) {
@@ -101,9 +121,12 @@ class VoicemailPlayer(
     private fun startNew(voicemailId: Long) {
         val uri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, voicemailId)
         val mp = MediaPlayer()
+        // Voice-communication usage rather than media: it is what lets the
+        // stream be steered to the earpiece, and it keeps a single audio setup
+        // for both routes so toggling never has to rebuild the player.
         mp.setAudioAttributes(
             AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
         )
@@ -111,8 +134,11 @@ class VoicemailPlayer(
             preparing = false
             try {
                 if (requestFocus()) {
+                    enterCommunicationMode()
+                    applyAudioRoute()
                     it.start()
                     startProgressTimer()
+                    updateProximityLock()
                 }
                 notifyUpdate()
             } catch (e: Exception) {
@@ -126,6 +152,7 @@ class VoicemailPlayer(
                 it.seekTo(0)
             } catch (_: Exception) {
             }
+            releaseProximityLock()
             notifyUpdate()
         }
         mp.setOnErrorListener { _, what, extra ->
@@ -198,6 +225,7 @@ class VoicemailPlayer(
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                 runCatching { player?.pause() }
                 stopProgressTimer()
+                releaseProximityLock()
                 notifyUpdate()
             }
         }
@@ -231,7 +259,80 @@ class VoicemailPlayer(
         }
     }
 
+    /** Communication mode is what makes the earpiece an available output. */
+    private fun enterCommunicationMode() {
+        try {
+            val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun restoreAudioMode() {
+        try {
+            val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                audioManager.clearCommunicationDevice()
+            }
+            audioManager.mode = AudioManager.MODE_NORMAL
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun applyAudioRoute() {
+        try {
+            val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val wanted = if (speakerOn) {
+                    AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+                } else {
+                    AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                }
+                audioManager.availableCommunicationDevices
+                    .firstOrNull { it.type == wanted }
+                    ?.let { audioManager.setCommunicationDevice(it) }
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.isSpeakerphoneOn = speakerOn
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun updateProximityLock() {
+        val playing = try {
+            player?.isPlaying == true
+        } catch (_: Exception) {
+            false
+        }
+        if (!speakerOn && playing) acquireProximityLock() else releaseProximityLock()
+    }
+
+    private fun acquireProximityLock() {
+        try {
+            val powerManager = context.getSystemService(PowerManager::class.java) ?: return
+            if (!powerManager.isWakeLockLevelSupported(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK)) return
+            val lock = proximityWakeLock ?: powerManager.newWakeLock(
+                PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,
+                "RivoPhoneApp::VoicemailProximity",
+            ).also { proximityWakeLock = it }
+            if (!lock.isHeld) lock.acquire(PROXIMITY_LOCK_TIMEOUT_MS)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun releaseProximityLock() {
+        try {
+            proximityWakeLock?.let { if (it.isHeld) it.release() }
+        } catch (_: Exception) {
+        }
+    }
+
     companion object {
         private const val PROGRESS_INTERVAL_MS = 250L
+
+        /** Safety net: no voicemail runs this long, and a stuck lock would
+         *  leave the screen dead until the next power press. */
+        private const val PROXIMITY_LOCK_TIMEOUT_MS = 10 * 60 * 1000L
     }
 }

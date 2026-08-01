@@ -50,6 +50,10 @@ class VoicemailViewModel(
     private val _audioUnavailable = MutableStateFlow(false)
     val audioUnavailable: StateFlow<Boolean> = _audioUnavailable.asStateFlow()
 
+    /** Loudspeaker by default, as when playing back any recording. */
+    private val _isSpeakerOn = MutableStateFlow(true)
+    val isSpeakerOn: StateFlow<Boolean> = _isSpeakerOn.asStateFlow()
+
     private val player = VoicemailPlayer(
         context = context.applicationContext,
         onUpdate = { playingId, isPlaying, positionMs, durationMs ->
@@ -130,6 +134,12 @@ class VoicemailViewModel(
     }
 
     fun seekTo(positionMs: Int) = player.seekTo(positionMs)
+
+    fun toggleSpeaker() {
+        val enabled = !_isSpeakerOn.value
+        _isSpeakerOn.value = enabled
+        player.setSpeakerOn(enabled)
+    }
 
     fun markAsRead(id: Long, isRead: Boolean) {
         viewModelScope.launch {

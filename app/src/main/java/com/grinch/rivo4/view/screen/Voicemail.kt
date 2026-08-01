@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MarkEmailRead
 import androidx.compose.material.icons.outlined.MarkEmailUnread
@@ -60,6 +62,7 @@ fun VoicemailListScreen(
     val playback by viewModel.playback.collectAsState()
     val message by viewModel.message.collectAsState()
     val audioUnavailable by viewModel.audioUnavailable.collectAsState()
+    val isSpeakerOn by viewModel.isSpeakerOn.collectAsState()
 
     var isDefaultDialer by remember { mutableStateOf(viewModel.isDefaultDialer()) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -145,8 +148,10 @@ fun VoicemailListScreen(
                                     isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
                                     positionMs = playback.positionMs,
                                     durationMs = playback.durationMs,
+                                    isSpeakerOn = isSpeakerOn,
                                     onToggle = { viewModel.togglePlayback(voicemail) },
                                     onSeek = { viewModel.seekTo(it) },
+                                    onToggleSpeaker = { viewModel.toggleSpeaker() },
                                     onToggleRead = { viewModel.markAsRead(voicemail.id, !voicemail.isRead) },
                                     onDelete = { viewModel.delete(voicemail.id) }
                                 )
@@ -167,8 +172,10 @@ private fun VoicemailRow(
     isPlaying: Boolean,
     positionMs: Int,
     durationMs: Int,
+    isSpeakerOn: Boolean,
     onToggle: () -> Unit,
     onSeek: (Int) -> Unit,
+    onToggleSpeaker: () -> Unit,
     onToggleRead: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -297,6 +304,20 @@ private fun VoicemailRow(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                IconButton(onClick = onToggleSpeaker) {
+                    Icon(
+                        imageVector = if (isSpeakerOn) {
+                            Icons.AutoMirrored.Filled.VolumeUp
+                        } else {
+                            Icons.Default.Phone
+                        },
+                        contentDescription = stringResource(
+                            if (isSpeakerOn) R.string.voicemail_route_speaker
+                            else R.string.voicemail_route_earpiece
+                        ),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
