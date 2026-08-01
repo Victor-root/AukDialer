@@ -44,8 +44,14 @@ fun formatDateHeader(context: Context, timestamp: Long): String {
     val relative = getRelativeDay(context, timestamp)
     if (relative != null) return relative
 
-    val pattern = if (isSameYear(timestamp, System.currentTimeMillis())) "MMMM d" else "MMMM d, yyyy"
-    return SimpleDateFormat(pattern, Locale.getDefault()).format(Date(timestamp))
+    // A literal "MMMM d, yyyy" only ever translates the month name, so every
+    // locale inherited the American field order: "mars 22, 2025". Asking for
+    // the fields instead lets each locale order and punctuate them its own way,
+    // and English still resolves to the exact same pattern as before.
+    val locale = Locale.getDefault()
+    val skeleton = if (isSameYear(timestamp, System.currentTimeMillis())) "MMMMd" else "MMMMdyyyy"
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
+    return SimpleDateFormat(pattern, locale).format(Date(timestamp))
 }
 
 fun formatDate(context: Context, timestamp: Long): String {
