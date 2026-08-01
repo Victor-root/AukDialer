@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import com.grinch.rivo4.modal.`interface`.IContactsRepository
+import com.grinch.rivo4.modal.`interface`.IVoicemailRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,9 +34,11 @@ import org.koin.compose.koinInject
 fun VoicemailDebugMenu(onChanged: () -> Unit) {
     val context = LocalContext.current
     val contactsRepo = koinInject<IContactsRepository>()
+    val voicemailRepo = koinInject<IVoicemailRepository>()
     val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
+    var showOverrideDialog by remember { mutableStateOf(false) }
 
     fun run(action: suspend () -> Unit) {
         expanded = false
@@ -110,6 +113,13 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
         )
         HorizontalDivider()
         DropdownMenuItem(
+            text = { Text("Carrier voicemail config") },
+            onClick = {
+                expanded = false
+                showOverrideDialog = true
+            }
+        )
+        DropdownMenuItem(
             text = { Text("Copy diagnostics") },
             onClick = {
                 expanded = false
@@ -120,6 +130,30 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
                     // the IDE without going through the clipboard.
                     VoicemailDiagnostics.log(report)
                     Toast.makeText(context, "Diagnostics copied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    if (showOverrideDialog) {
+        VvmOverrideDialog(
+            onDismiss = { showOverrideDialog = false },
+            onApplied = { message ->
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                scope.launch {
+                    // The filter has to be re-registered before asking: it is
+                    // what routes the carrier's reply back to us.
+                    val outcome = withContext(Dispatchers.IO) {
+                        voicemailRepo.registerSmsFilter()
+                        voicemailRepo.requestProvisioning()
+                    }
+                    val summary = outcome.joinToString("\n") {
+                        "${it.carrierName.ifBlank { "subId ${it.subscriptionId}" }}: ${it.message}"
+                    }
+                    if (summary.isNotBlank()) {
+                        Toast.makeText(context, summary, Toast.LENGTH_LONG).show()
+                    }
+                    onChanged()
                 }
             }
         )

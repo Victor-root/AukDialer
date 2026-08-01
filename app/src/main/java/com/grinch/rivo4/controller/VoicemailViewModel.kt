@@ -1,11 +1,16 @@
 package com.grinch.rivo4.controller
 
+import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.database.ContentObserver
 import android.os.Handler
 import android.os.Looper
 import android.provider.VoicemailContract
+import android.telephony.CarrierConfigManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grinch.rivo4.controller.util.VoicemailPlayer
@@ -70,8 +75,23 @@ class VoicemailViewModel(
         onAudioUnavailable = { _audioUnavailable.value = true },
     )
 
+    private val appContext = context.applicationContext
+
     private val contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
+            fetchVoicemails()
+        }
+    }
+
+    /**
+     * A SIM's carrier config arrives asynchronously and can land well after the
+     * screen has already read it. Without this, a config that showed up late
+     * would leave the app on the answer it reached while the SIM was still
+     * coming up.
+     */
+    private val carrierConfigReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            registerSmsFilter()
             fetchVoicemails()
         }
     }
@@ -86,6 +106,16 @@ class VoicemailViewModel(
         } catch (e: SecurityException) {
             e.printStackTrace()
         }
+        try {
+            ContextCompat.registerReceiver(
+                appContext,
+                carrierConfigReceiver,
+                IntentFilter(CarrierConfigManager.ACTION_CARRIER_CONFIG_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onCleared() {
@@ -93,6 +123,11 @@ class VoicemailViewModel(
         player.release()
         try {
             contentResolver.unregisterContentObserver(contentObserver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        try {
+            appContext.unregisterReceiver(carrierConfigReceiver)
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -22,6 +22,15 @@ data class VvmCarrierConfig(
     val clientPrefix: String,
     val sslEnabled: Boolean,
     val cellularDataRequired: Boolean,
+    /**
+     * False when the values are Android's built-in defaults rather than anything
+     * matched to this SIM, which happens while a SIM is still initialising.
+     * Telling the two apart avoids reading "no voicemail service" into a config
+     * that has simply not loaded yet.
+     */
+    val configApplied: Boolean = false,
+    /** True when the settings came from [VvmConfigOverride] instead of the platform. */
+    val isOverridden: Boolean = false,
 ) {
     /**
      * True only for the OMTP dialect this app implements. Other carriers use
@@ -63,12 +72,25 @@ data class VvmCarrierConfig(
             } catch (_: Exception) {
                 PersistableBundle.EMPTY
             }
+            val declaredType = bundle.getString(CarrierConfigManager.KEY_VVM_TYPE_STRING, "") ?: ""
+            val declaredDestination =
+                bundle.getString(CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING, "") ?: ""
+
+            // Only stand in for a carrier the platform says nothing about. The
+            // vendor config database is the authority wherever it has an answer.
+            val override = if (declaredType.isBlank() && declaredDestination.isBlank()) {
+                VvmConfigOverride.load(context, subscriptionId)
+            } else {
+                null
+            }
+
             return VvmCarrierConfig(
                 subscriptionId = subscriptionId,
                 carrierName = carrierName,
-                vvmType = bundle.getString(CarrierConfigManager.KEY_VVM_TYPE_STRING, "") ?: "",
-                destinationNumber = bundle.getString(CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING, "") ?: "",
-                portNumber = bundle.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0),
+                vvmType = if (override != null) TelephonyManager.VVM_TYPE_OMTP else declaredType,
+                destinationNumber = override?.destinationNumber ?: declaredDestination,
+                portNumber = override?.portNumber
+                    ?: bundle.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0),
                 clientPrefix = bundle.getString(CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING, "")
                     ?.takeIf { it.isNotEmpty() }
                     ?: DEFAULT_CLIENT_PREFIX,
@@ -77,6 +99,8 @@ data class VvmCarrierConfig(
                     CarrierConfigManager.KEY_VVM_CELLULAR_DATA_REQUIRED_BOOL,
                     false,
                 ),
+                configApplied = CarrierConfigManager.isConfigForIdentifiedCarrier(bundle),
+                isOverridden = override != null,
             )
         }
     }

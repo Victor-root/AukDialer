@@ -7,6 +7,8 @@ import android.net.NetworkCapabilities
 import android.provider.VoicemailContract
 import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
+import android.telephony.VisualVoicemailService
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
 import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
@@ -28,6 +30,9 @@ object VoicemailDiagnostics {
         appendLine("app=${appVersion(context)}")
         appendLine("defaultDialer=${runCatching { isAlreadyDefaultDialer(context) }.getOrDefault(false)}")
         appendLine("sendSms=${granted(context, "android.permission.SEND_SMS")}")
+        // Carrier config is unreadable without it, which looks exactly like a
+        // carrier that declares nothing.
+        appendLine("readPhoneState=${granted(context, "android.permission.READ_PHONE_STATE")}")
         appendLine("readVoicemail=${granted(context, "com.android.voicemail.permission.READ_VOICEMAIL")}")
         appendLine("addVoicemail=${granted(context, "com.android.voicemail.permission.ADD_VOICEMAIL")}")
         appendLine("postNotifications=${granted(context, "android.permission.POST_NOTIFICATIONS")}")
@@ -42,7 +47,28 @@ object VoicemailDiagnostics {
         appendLine()
         appendStatusRows(context)
         appendLine()
+        appendVoicemailApps(context)
+        appendLine()
         appendImapCheck(context)
+    }
+
+    /**
+     * Other apps implementing a visual voicemail service. A vendor dialer owning
+     * the service is the usual reason a device carries no carrier config we can
+     * read: its own voicemail stack never needed one published.
+     */
+    private fun StringBuilder.appendVoicemailApps(context: Context) {
+        appendLine("-- Other visual voicemail apps on the device --")
+        try {
+            val intent = android.content.Intent(VisualVoicemailService.SERVICE_INTERFACE)
+            val services = context.packageManager.queryIntentServices(intent, 0)
+                .mapNotNull { it.serviceInfo?.packageName }
+                .filter { it != context.packageName }
+                .distinct()
+            appendLine(services.joinToString(", ").ifBlank { "<none>" })
+        } catch (e: Exception) {
+            appendLine("lookup failed: ${e.javaClass.simpleName}")
+        }
     }
 
     /** Which route is live matters: many carrier mailboxes refuse Wi-Fi. */
@@ -91,8 +117,14 @@ object VoicemailDiagnostics {
             if (sub != null) {
                 appendLine("  mccMnc=${sub.mccString ?: "?"}-${sub.mncString ?: "?"} country=${sub.countryIso}")
                 appendLine("  embedded=${sub.isEmbedded} slot=${sub.simSlotIndex}")
+                // The two identifiers a carrier config entry is keyed on.
+                appendLine("  carrierId=${sub.carrierId} gid1=${groupIdLevel1(context, config.subscriptionId)}")
             }
             appendLine("  vvmType=${config.vvmType.ifBlank { "<none>" }} supported=${config.isSupported}")
+            appendLine("  source=${if (config.isOverridden) "manual override" else "platform"}")
+            // Says which of two very different problems an empty config is: one
+            // that never loaded, or one that loaded carrying no voicemail entry.
+            appendLine("  configApplied=${config.configApplied}")
             appendLine("  destination=${mask(config.destinationNumber)}")
             appendLine("  port=${config.portNumber}")
             appendLine("  clientPrefix=${config.clientPrefix}")
@@ -112,8 +144,10 @@ object VoicemailDiagnostics {
             context.getSystemService(CarrierConfigManager::class.java)
                 ?.getConfigForSubId(subscriptionId) ?: return
         } catch (_: Exception) {
+            appendLine("  carrier config unreadable")
             return
         }
+        appendLine("  configKeys=${bundle.size()}")
         appendLine("  legacyMode=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_LEGACY_MODE_ENABLED_BOOL, false)}")
         appendLine("  prefetch=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_PREFETCH_BOOL, false)}")
         val disabled = bundle.getStringArray(CarrierConfigManager.KEY_VVM_DISABLED_CAPABILITIES_STRING_ARRAY)
@@ -294,6 +328,18 @@ object VoicemailDiagnostics {
 
     private fun granted(context: Context, permission: String): Boolean =
         context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+
+    private fun groupIdLevel1(context: Context, subscriptionId: Int): String {
+        return try {
+            context.getSystemService(TelephonyManager::class.java)
+                ?.createForSubscriptionId(subscriptionId)
+                ?.groupIdLevel1
+                ?.takeIf { it.isNotBlank() }
+                ?: "<none>"
+        } catch (_: Exception) {
+            "<unreadable>"
+        }
+    }
 
     private fun appVersion(context: Context): String {
         return try {
