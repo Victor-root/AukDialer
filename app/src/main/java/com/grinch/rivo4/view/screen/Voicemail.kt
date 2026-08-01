@@ -7,19 +7,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MarkEmailRead
 import androidx.compose.material.icons.outlined.MarkEmailUnread
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Voicemail
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -209,22 +208,14 @@ private fun VoicemailRow(
             }
 
             if (voicemail.hasContent) {
-                // Filled variant with a transparent container: it keeps the
-                // app's background-less icon buttons while exposing the shape
-                // parameter, so the press ripple is rounded rather than round.
-                FilledIconButton(
-                    onClick = onToggle,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
+                IconButton(onClick = onToggle) {
                     Icon(
-                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        // Rounded variants: same glyphs with softened corners.
+                        imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                         contentDescription = stringResource(
                             if (isPlaying) R.string.voicemail_pause else R.string.voicemail_play
-                        )
+                        ),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
