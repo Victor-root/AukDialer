@@ -101,16 +101,21 @@ class VoicemailViewModel(
     fun isDefaultDialer(): Boolean = voicemailRepo.isDefaultDialer()
 
     fun fetchVoicemails() {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                // Status is read alongside the rows so the screen never shows an
-                // empty list without knowing whether that is normal.
-                _status.value = voicemailRepo.getStatus()
-                voicemailRepo.getVoicemails()
-            }
-            _voicemails.value = result
-            _isLoading.value = false
+        viewModelScope.launch { load() }
+    }
+
+    /**
+     * Reads the rows and the status together, and only returns once both are
+     * published. Callers that report a failure afterwards depend on that: acting
+     * on a status that has not caught up yet describes the previous state.
+     */
+    private suspend fun load() {
+        val (status, rows) = withContext(Dispatchers.IO) {
+            voicemailRepo.getStatus() to voicemailRepo.getVoicemails()
         }
+        _status.value = status
+        _voicemails.value = rows
+        _isLoading.value = false
     }
 
     /** Registers the carrier SMS filter. Safe to call on every screen entry. */
@@ -127,7 +132,8 @@ class VoicemailViewModel(
             val result = withContext(Dispatchers.IO) { voicemailRepo.syncNow() }
             _isSyncing.value = false
             onResult(result.getOrNull())
-            fetchVoicemails()
+            // Awaited, so the status describes this sync and not the last one.
+            load()
             // A list that already has messages hides a broken sync, so the
             // failure is announced rather than left to the empty state.
             if (result.isFailure) _syncFailed.value = true
