@@ -456,6 +456,10 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
          * the extensions that change how deletion behaves.
          */
         private val PROBED_CAPABILITIES = listOf(
+            // Baseline ones first: a server answering none of these means the
+            // probe found nothing, rather than the server being minimal.
+            "IMAP4rev1",
+            "IMAP4",
             "STARTTLS",
             "LOGINDISABLED",
             "AUTH=PLAIN",

@@ -11,6 +11,7 @@ import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
 import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
 import com.grinch.rivo4.controller.vvm.VvmImapClient
+import com.grinch.rivo4.controller.vvm.VvmNetwork
 
 /**
  * Debug-only snapshot of everything the voicemail feature depends on, meant to
@@ -235,16 +236,21 @@ object VoicemailDiagnostics {
                 appendLine("subId=$subId skipped: credentials incomplete")
                 continue
             }
-            // Goes through the same connection setup as the real sync, so a
-            // passing report cannot disagree with what the app actually does.
-            // That matters: a diagnostic connecting its own way would have shown
-            // green throughout the SASL breakage.
-            val inspection = VvmImapClient(credentials).inspect()
+            // Same connection setup as the real sync, and the same route: a
+            // carrier demanding its own network must be reached over it here
+            // too, or the report would describe a path the app never takes.
+            val config = VvmCarrierConfig.read(context, subId)
+            appendLine("subId=$subId route=${if (config.cellularDataRequired) "carrier cellular" else "default"}")
+            val inspection = if (config.cellularDataRequired) {
+                VvmNetwork.onCellular(context, subId) { VvmImapClient(credentials).inspect() }
+            } else {
+                VvmImapClient(credentials).inspect()
+            }
             if (!inspection.connected) {
-                appendLine("subId=$subId FAILED over ${inspection.protocol}: ${inspection.error}")
+                appendLine("  FAILED over ${inspection.protocol}: ${inspection.error}")
                 continue
             }
-            appendLine("subId=$subId OK over ${inspection.protocol}")
+            appendLine("  OK over ${inspection.protocol}")
             appendLine("  messages=${inspection.messageCount} unread=${inspection.unseenCount}")
             appendLine("  capabilities=${inspection.capabilities.joinToString(",").ifBlank { "<none advertised>" }}")
             appendLine("  newest=${inspection.newestMessageShape ?: "<no message to inspect>"}")
