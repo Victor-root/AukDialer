@@ -54,13 +54,17 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
             onClick = { run { VoicemailInjector.insertBatch(context) } }
         )
         DropdownMenuItem(
-            text = { Text("Add from a contact") },
+            text = { Text("Add from a random contact") },
             onClick = {
                 run {
+                    // Random rather than the first match: names, photos and
+                    // number formats vary wildly, and always picking the same
+                    // contact would only ever exercise one layout.
                     val number = contactsRepo.getContacts()
-                        .firstOrNull { it.phoneNumbers.isNotEmpty() }
+                        .filter { it.phoneNumbers.isNotEmpty() }
+                        .randomOrNull()
                         ?.phoneNumbers
-                        ?.first()
+                        ?.random()
                     if (number != null) {
                         VoicemailInjector.insertFromNumber(context, number)
                     } else {
