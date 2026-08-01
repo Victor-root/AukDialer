@@ -90,7 +90,7 @@ object VoicemailDiagnostics {
     }
 
     private fun StringBuilder.appendVoicemails(context: Context) {
-        appendLine("-- Voicemail rows --")
+        appendLine("-- Voicemail rows (raw, deleted=1 rows are hidden in the app) --")
         val projection = arrayOf(
             VoicemailContract.Voicemails._ID,
             VoicemailContract.Voicemails.NUMBER,
@@ -176,10 +176,19 @@ object VoicemailDiagnostics {
                 appendLine("subId=$subId skipped: credentials incomplete")
                 continue
             }
-            when (val result = VvmImapClient(credentials).runHealthCheck()) {
-                is VvmImapClient.HealthCheckResult.Success ->
-                    appendLine("subId=$subId OK: ${result.inboxMessageCount} message(s), ${result.inboxUnseenCount} unread")
-                is VvmImapClient.HealthCheckResult.Failed ->
+            // Runs the real sync path, but reports every message as already
+            // known so nothing is decoded or written. Exercising the production
+            // code rather than a parallel connect routine is the point: a
+            // diagnostic that connected its own way could pass while the real
+            // one fails, which is exactly how the SASL breakage hid itself.
+            val result = VvmImapClient(credentials).syncNewMessages(
+                isAlreadyKnown = { true },
+                onNewMessage = { false },
+            )
+            when (result) {
+                is VvmImapClient.SyncResult.Success ->
+                    appendLine("subId=$subId OK: ${result.total} message(s) on the server")
+                is VvmImapClient.SyncResult.Failed ->
                     appendLine("subId=$subId FAILED: ${result.errorType}: ${result.errorMessage}")
             }
         }

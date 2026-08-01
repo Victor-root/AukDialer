@@ -23,11 +23,6 @@ import javax.mail.internet.MimeBodyPart
  */
 class VvmImapClient(private val credentials: OmtpStatusMessage) {
 
-    sealed class HealthCheckResult {
-        data class Success(val inboxMessageCount: Int, val inboxUnseenCount: Int) : HealthCheckResult()
-        data class Failed(val errorType: String, val errorMessage: String) : HealthCheckResult()
-    }
-
     /**
      * One decoded IMAP message. [audioBytes] holds the first MIME part whose
      * Content-Type starts with "audio", or null when the message carries none.
@@ -49,33 +44,6 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
     sealed class FlagUpdateResult {
         object Success : FlagUpdateResult()
         data class Failed(val errorType: String, val errorMessage: String) : FlagUpdateResult()
-    }
-
-    fun runHealthCheck(): HealthCheckResult {
-        val (server, port, username, password) = imapEndpoint()
-            ?: return HealthCheckResult.Failed("BadConfig", "credentials incomplete")
-
-        var store: Store? = null
-        var inbox: Folder? = null
-        return try {
-            val session = Session.getInstance(imapProperties(server, port))
-            store = session.getStore(protocolStoreName)
-            store.connect(server, port, username, password)
-            inbox = store.getFolder("INBOX")
-            inbox.open(Folder.READ_ONLY)
-            val total = inbox.messageCount
-            val unseen = try {
-                inbox.unreadMessageCount
-            } catch (_: Exception) {
-                0
-            }
-            HealthCheckResult.Success(total, unseen)
-        } catch (e: Exception) {
-            Log.w(LOG_TAG, "IMAP health check failed", e)
-            HealthCheckResult.Failed(e.javaClass.simpleName, e.message ?: "<no message>")
-        } finally {
-            closeSilently(inbox, store)
-        }
     }
 
     /**
