@@ -32,6 +32,7 @@ import com.grinch.rivo4.controller.util.formatDate
 import com.grinch.rivo4.controller.util.formatDuration
 import com.grinch.rivo4.controller.util.formatPhoneNumber
 import com.grinch.rivo4.controller.util.getDefaultDialerIntent
+import com.grinch.rivo4.debug.VoicemailDebugMenu
 import com.grinch.rivo4.modal.data.Voicemail
 import com.grinch.rivo4.view.components.BottomBar
 import com.grinch.rivo4.view.components.PermissionDeniedView
@@ -93,6 +94,7 @@ fun VoicemailListScreen(
                     Text(stringResource(R.string.voicemail_title), fontWeight = FontWeight.Bold)
                 },
                 actions = {
+                    VoicemailDebugMenu(onChanged = { viewModel.fetchVoicemails() })
                     if (isDefaultDialer) {
                         IconButton(onClick = { viewModel.syncNow() }, enabled = !isSyncing) {
                             Icon(
