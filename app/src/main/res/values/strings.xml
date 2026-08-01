@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RivoPhone</string>
+    <string name="app_name" translatable="false">RivoPhone</string>
 
     <!-- Shared actions / generic labels reused across multiple screens -->
     <string name="action_cancel">Cancel</string>

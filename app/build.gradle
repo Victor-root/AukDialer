@@ -37,6 +37,11 @@ android {
             debuggable = false
         }
         debug {
+            // Distinct package so a test build installs beside the real app
+            // instead of demanding it be uninstalled first, which would cost a
+            // tester their settings.
+            applicationIdSuffix = '.debug'
+            versionNameSuffix = '-debug'
         }
     }
 

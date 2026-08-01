@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      Overrides the launcher name for debug builds only, so a test build is
+      recognisable at a glance next to the real app. Applies to every language
+      because app_name is a brand name and lives only in the default resources.
+    -->
+    <string name="app_name" translatable="false">RivoPhone (D)</string>
+
+</resources>
