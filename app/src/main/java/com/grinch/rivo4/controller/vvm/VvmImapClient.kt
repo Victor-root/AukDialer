@@ -284,11 +284,15 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
                 // matching the transport the carrier declared.
                 put("$prefix.starttls.enable", "true")
             }
-            // Let the library negotiate whichever scheme the carrier accepts.
+            // Jakarta Mail's own AUTHENTICATE PLAIN / LOGIN implementations,
+            // which is what carrier mailboxes expect.
             put("$prefix.auth.plain.disable", "false")
             put("$prefix.auth.login.disable", "false")
-            put("$prefix.sasl.enable", "true")
-            put("$prefix.sasl.mechanisms", "PLAIN LOGIN CRAM-MD5 DIGEST-MD5")
+            // SASL stays off on purpose. Routing auth through it makes Jakarta
+            // Mail call javax.security.sasl, whose mechanism providers Android
+            // does not ship, so every login fails with "SASL authentication
+            // failed" no matter how good the credentials are.
+            put("$prefix.sasl.enable", "false")
             // Carriers rarely support COMPRESS=DEFLATE and probing costs a slow
             // round-trip.
             put("$prefix.compress.enable", "false")
