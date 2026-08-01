@@ -80,6 +80,22 @@ fun VoicemailListScreen(
         }
     }
 
+    // Re-read on every return to the screen. The provider does notify us of new
+    // rows, but the system freezes backgrounded apps, so a message imported
+    // while the phone was locked can land without that notice ever arriving,
+    // leaving a stale list in front of someone who just tapped the notification.
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                isDefaultDialer = viewModel.isDefaultDialer()
+                if (isDefaultDialer) viewModel.fetchVoicemails()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     LaunchedEffect(message) {
         message?.let {
             snackbarHostState.showSnackbar(it)
