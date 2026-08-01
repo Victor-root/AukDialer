@@ -8,6 +8,7 @@ import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
+import com.grinch.rivo4.controller.vvm.VvmImapClient
 
 /**
  * Debug-only snapshot of everything the voicemail feature depends on, meant to
@@ -33,6 +34,8 @@ object VoicemailDiagnostics {
         appendVoicemails(context)
         appendLine()
         appendStatusRows(context)
+        appendLine()
+        appendImapCheck(context)
     }
 
     private fun StringBuilder.appendSubscriptions(context: Context) {
@@ -143,10 +146,10 @@ object VoicemailDiagnostics {
                 }
                 while (cursor.moveToNext()) {
                     val source = cursor.columnValue(VoicemailContract.Status.SOURCE_PACKAGE)
-                    val config = cursor.columnValue(VoicemailContract.Status.CONFIGURATION_STATE)
-                    val dataChannel = cursor.columnValue(VoicemailContract.Status.DATA_CHANNEL_STATE)
-                    val notifChannel = cursor.columnValue(VoicemailContract.Status.NOTIFICATION_CHANNEL_STATE)
-                    appendLine("  source=$source config=$config data=$dataChannel notif=$notifChannel")
+                    val config = configurationStateLabel(cursor.columnInt(VoicemailContract.Status.CONFIGURATION_STATE))
+                    val data = dataChannelLabel(cursor.columnInt(VoicemailContract.Status.DATA_CHANNEL_STATE))
+                    val notif = notificationChannelLabel(cursor.columnInt(VoicemailContract.Status.NOTIFICATION_CHANNEL_STATE))
+                    appendLine("  source=$source config=$config data=$data notif=$notif")
                 }
             } ?: appendLine("query returned no cursor")
         } catch (e: Exception) {
@@ -154,9 +157,67 @@ object VoicemailDiagnostics {
         }
     }
 
+    /**
+     * Connects to the carrier mailbox with the stored credentials, so a report
+     * proves the whole chain works without waiting for someone to leave an
+     * actual message.
+     */
+    private fun StringBuilder.appendImapCheck(context: Context) {
+        appendLine("-- Carrier mailbox connection --")
+        val store = VvmCredentialsStore(context)
+        val subs = store.listProvisionedSubscriptions()
+        if (subs.isEmpty()) {
+            appendLine("skipped: no credentials to connect with")
+            return
+        }
+        for (subId in subs) {
+            val credentials = store.load(subId)
+            if (credentials == null || !credentials.hasUsableImapCredentials()) {
+                appendLine("subId=$subId skipped: credentials incomplete")
+                continue
+            }
+            when (val result = VvmImapClient(credentials).runHealthCheck()) {
+                is VvmImapClient.HealthCheckResult.Success ->
+                    appendLine("subId=$subId OK: ${result.inboxMessageCount} message(s), ${result.inboxUnseenCount} unread")
+                is VvmImapClient.HealthCheckResult.Failed ->
+                    appendLine("subId=$subId FAILED: ${result.errorType}: ${result.errorMessage}")
+            }
+        }
+    }
+
+    private fun configurationStateLabel(value: Int?): String = when (value) {
+        null -> "<absent>"
+        VoicemailContract.Status.CONFIGURATION_STATE_OK -> "OK"
+        VoicemailContract.Status.CONFIGURATION_STATE_NOT_CONFIGURED -> "NOT_CONFIGURED"
+        VoicemailContract.Status.CONFIGURATION_STATE_CAN_BE_CONFIGURED -> "CAN_BE_CONFIGURED"
+        VoicemailContract.Status.CONFIGURATION_STATE_DISABLED -> "DISABLED"
+        else -> "code $value"
+    }
+
+    private fun dataChannelLabel(value: Int?): String = when (value) {
+        null -> "<absent>"
+        VoicemailContract.Status.DATA_CHANNEL_STATE_OK -> "OK"
+        VoicemailContract.Status.DATA_CHANNEL_STATE_NO_CONNECTION -> "NO_CONNECTION"
+        else -> "code $value"
+    }
+
+    private fun notificationChannelLabel(value: Int?): String = when (value) {
+        null -> "<absent>"
+        VoicemailContract.Status.NOTIFICATION_CHANNEL_STATE_OK -> "OK"
+        VoicemailContract.Status.NOTIFICATION_CHANNEL_STATE_NO_CONNECTION -> "NO_CONNECTION"
+        VoicemailContract.Status.NOTIFICATION_CHANNEL_STATE_MESSAGE_WAITING -> "MESSAGE_WAITING"
+        else -> "code $value"
+    }
+
     private fun android.database.Cursor.columnValue(column: String): String {
         val index = getColumnIndex(column)
         return if (index < 0) "<absent>" else runCatching { getString(index) }.getOrNull() ?: "<null>"
+    }
+
+    private fun android.database.Cursor.columnInt(column: String): Int? {
+        val index = getColumnIndex(column)
+        if (index < 0) return null
+        return runCatching { if (isNull(index)) null else getInt(index) }.getOrNull()
     }
 
     private fun granted(context: Context, permission: String): Boolean =
