@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.grinch.rivo4.R
 import com.grinch.rivo4.controller.VoicemailViewModel
+import com.grinch.rivo4.controller.util.PreferenceManager
 import com.grinch.rivo4.controller.util.formatDateHeader
 import com.grinch.rivo4.controller.util.formatDuration
 import com.grinch.rivo4.controller.util.formatPhoneNumber
@@ -46,6 +47,7 @@ import com.grinch.rivo4.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -199,6 +201,8 @@ private fun VoicemailRow(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
+    val prefs = koinInject<PreferenceManager>()
+    val showSim = prefs.getBoolean(PreferenceManager.KEY_SHOW_SIM_ICON_HISTORY, true)
     var showMenu by remember { mutableStateOf(false) }
 
     val displayName = voicemail.contactName
@@ -225,7 +229,7 @@ private fun VoicemailRow(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = buildRowSubtitle(context, voicemail),
+                    text = buildRowSubtitle(context, voicemail, showSim),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -348,16 +352,23 @@ private fun formatPlaybackTime(millis: Int): String {
     return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
 }
 
-/** Time only: the day already labels the group this row sits in. */
+/**
+ * Mirrors the call log's supporting line: SIM, then time. The day is omitted
+ * because the group this row sits in already carries it.
+ */
 private fun buildRowSubtitle(
     context: android.content.Context,
-    voicemail: Voicemail
-): String {
-    val time = formatTime(context, voicemail.date)
-    return if (voicemail.durationSeconds > 0) {
-        "$time  ·  ${formatDuration(voicemail.durationSeconds.toLong())}"
-    } else {
-        time
+    voicemail: Voicemail,
+    showSim: Boolean
+): String = buildString {
+    if (showSim && voicemail.simLabel != null) {
+        append(voicemail.simLabel)
+        append(" • ")
+    }
+    append(formatTime(context, voicemail.date))
+    if (voicemail.durationSeconds > 0) {
+        append("  ·  ")
+        append(formatDuration(voicemail.durationSeconds.toLong()))
     }
 }
 

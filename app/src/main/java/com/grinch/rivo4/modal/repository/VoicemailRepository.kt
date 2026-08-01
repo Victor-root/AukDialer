@@ -62,7 +62,39 @@ class VoicemailRepository(
             // the selection outright; an unfiltered read beats no read at all.
             ?: queryVoicemails(null)
             ?: return emptyList()
-        return resolveContacts(items)
+        return resolveContacts(withSimLabels(items))
+    }
+
+    /**
+     * Attaches the SIM display name to each row. The provider stores the phone
+     * account id, which is either the SIM's iccId or its subscription id
+     * depending on which app imported the message, so both are looked up.
+     */
+    private fun withSimLabels(items: List<Voicemail>): List<Voicemail> {
+        if (items.none { !it.phoneAccountId.isNullOrBlank() }) return items
+        val labels = simLabelsByAccountId()
+        if (labels.isEmpty()) return items
+        return items.map { item ->
+            val label = item.phoneAccountId?.let { labels[it] }
+            if (label == null) item else item.copy(simLabel = label)
+        }
+    }
+
+    private fun simLabelsByAccountId(): Map<String, String> {
+        return try {
+            val subs = activeSubscriptions() ?: return emptyMap()
+            buildMap {
+                for (sub in subs) {
+                    val label = sub.displayName?.toString()?.takeIf { it.isNotBlank() }
+                        ?: sub.carrierName?.toString()?.takeIf { it.isNotBlank() }
+                        ?: continue
+                    sub.iccId?.takeIf { it.isNotBlank() }?.let { put(it, label) }
+                    put(sub.subscriptionId.toString(), label)
+                }
+            }
+        } catch (_: Exception) {
+            emptyMap()
+        }
     }
 
     /** Returns null when the query itself failed, as opposed to an empty mailbox. */

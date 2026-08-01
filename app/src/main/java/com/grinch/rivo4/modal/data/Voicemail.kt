@@ -10,7 +10,9 @@ data class Voicemail(
     val sourcePackage: String?,
     val phoneAccountId: String?,
     val contactName: String? = null,
-    val photoUri: String? = null
+    val photoUri: String? = null,
+    /** Display name of the SIM this message arrived on, when it can be resolved. */
+    val simLabel: String? = null
 ) {
     /** True when this row was imported by Rivo rather than another voicemail app. */
     fun isOwnedBy(packageName: String): Boolean = sourcePackage == packageName
