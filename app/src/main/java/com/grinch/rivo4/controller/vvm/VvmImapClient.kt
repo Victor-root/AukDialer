@@ -47,6 +47,114 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
     }
 
     /**
+     * What a carrier's server looks like from here. Used to report an unfamiliar
+     * carrier's behaviour without shipping its mailbox contents anywhere.
+     */
+    data class ServerInspection(
+        val connected: Boolean,
+        val protocol: String,
+        val error: String?,
+        val capabilities: List<String>,
+        val messageCount: Int,
+        val unseenCount: Int,
+        val newestMessageShape: String?,
+    )
+
+    /**
+     * Connects and describes the server: advertised capabilities, and the shape
+     * of the newest message's MIME tree.
+     *
+     * Internal, and only the debug variant calls it: the point is to diagnose
+     * carriers nobody here can test against, and it deliberately runs through
+     * the same connection setup as the real sync so a passing report cannot
+     * disagree with what the app actually does.
+     *
+     * Nothing identifying leaves this method. Part sizes and content types are
+     * structural, header names are reported without their values, and no audio
+     * or address is read.
+     */
+    internal fun inspect(): ServerInspection {
+        val (server, port, username, password) = imapEndpoint()
+            ?: return ServerInspection(
+                connected = false,
+                protocol = protocolStoreName,
+                error = "credentials incomplete",
+                capabilities = emptyList(),
+                messageCount = 0,
+                unseenCount = 0,
+                newestMessageShape = null,
+            )
+
+        var store: Store? = null
+        var inbox: Folder? = null
+        return try {
+            val session = Session.getInstance(imapProperties(server, port))
+            store = session.getStore(protocolStoreName)
+            store.connect(server, port, username, password)
+            val capabilities = PROBED_CAPABILITIES.filter { capability ->
+                runCatching { (store as? com.sun.mail.imap.IMAPStore)?.hasCapability(capability) }
+                    .getOrNull() == true
+            }
+            inbox = store.getFolder("INBOX")
+            inbox.open(Folder.READ_ONLY)
+            val total = inbox.messageCount
+            val unseen = runCatching { inbox.unreadMessageCount }.getOrDefault(0)
+            val shape = if (total > 0) {
+                runCatching { describeShape(inbox.getMessage(total)) }.getOrNull()
+            } else {
+                null
+            }
+            ServerInspection(true, protocolStoreName, null, capabilities, total, unseen, shape)
+        } catch (e: Exception) {
+            ServerInspection(
+                connected = false,
+                protocol = protocolStoreName,
+                error = "${e.javaClass.simpleName}: ${e.message ?: "<no message>"}",
+                capabilities = emptyList(),
+                messageCount = 0,
+                unseenCount = 0,
+                newestMessageShape = null,
+            )
+        } finally {
+            closeSilently(inbox, store)
+        }
+    }
+
+    /** Header names and part types only, never a header value. */
+    private fun describeShape(message: javax.mail.Message): String = buildString {
+        val headerNames = runCatching {
+            val names = mutableSetOf<String>()
+            val iterator = message.allHeaders
+            while (iterator.hasMoreElements()) names += iterator.nextElement().name
+            names.sorted()
+        }.getOrDefault(emptyList())
+        append("headers=[").append(headerNames.joinToString(",")).append(']')
+
+        val duration = DURATION_HEADERS.firstOrNull { header ->
+            runCatching { message.getHeader(header)?.isNotEmpty() == true }.getOrDefault(false)
+        }
+        append(" durationHeader=").append(duration ?: "<none>")
+        append(" tree=")
+        appendPartTree(message, depth = 0)
+    }
+
+    private fun StringBuilder.appendPartTree(part: Part, depth: Int) {
+        if (depth > MAX_MIME_DEPTH) return
+        val contentType = (part.contentType ?: "").trim().substringBefore(';').trim()
+        val size = runCatching { part.size }.getOrDefault(-1)
+        append("[d").append(depth).append(' ').append(contentType).append(' ').append(size).append(']')
+        if (contentType.startsWith("multipart/", ignoreCase = true)) {
+            val content = runCatching { part.content }.getOrNull()
+            if (content is Multipart) {
+                append('(').append(content.count).append(')')
+                for (i in 0 until content.count) {
+                    appendPartTree(content.getBodyPart(i), depth + 1)
+                }
+            }
+        }
+    }
+
+    /**
      * Walks INBOX, skips every UID [isAlreadyKnown] reports as persisted, and
      * hands each new message to [onNewMessage], which returns true when the
      * caller successfully stored it.
@@ -341,6 +449,26 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
         private const val CONNECT_TIMEOUT_MS = 15_000
         private const val READ_TIMEOUT_MS = 30_000
         private const val MAX_MIME_DEPTH = 10
+
+        /**
+         * Asked about one by one because the library exposes no way to list
+         * them. Covers the authentication schemes a carrier might demand and
+         * the extensions that change how deletion behaves.
+         */
+        private val PROBED_CAPABILITIES = listOf(
+            "STARTTLS",
+            "LOGINDISABLED",
+            "AUTH=PLAIN",
+            "AUTH=LOGIN",
+            "AUTH=CRAM-MD5",
+            "AUTH=DIGEST-MD5",
+            "AUTH=XOAUTH2",
+            "AUTH=OAUTHBEARER",
+            "UIDPLUS",
+            "IDLE",
+            "NAMESPACE",
+            "COMPRESS=DEFLATE",
+        )
 
         private val DURATION_HEADERS = listOf(
             "Content-Duration",

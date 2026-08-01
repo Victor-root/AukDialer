@@ -2,7 +2,11 @@ package com.grinch.rivo4.debug
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.provider.VoicemailContract
+import android.telephony.CarrierConfigManager
+import android.telephony.SubscriptionManager
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
 import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
@@ -20,10 +24,14 @@ object VoicemailDiagnostics {
     fun build(context: Context): String = buildString {
         appendLine("== Rivo voicemail diagnostics ==")
         appendLine("android=${android.os.Build.VERSION.SDK_INT} device=${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+        appendLine("app=${appVersion(context)}")
         appendLine("defaultDialer=${runCatching { isAlreadyDefaultDialer(context) }.getOrDefault(false)}")
         appendLine("sendSms=${granted(context, "android.permission.SEND_SMS")}")
         appendLine("readVoicemail=${granted(context, "com.android.voicemail.permission.READ_VOICEMAIL")}")
         appendLine("addVoicemail=${granted(context, "com.android.voicemail.permission.ADD_VOICEMAIL")}")
+        appendLine("postNotifications=${granted(context, "android.permission.POST_NOTIFICATIONS")}")
+        appendLine()
+        appendNetwork(context)
         appendLine()
         appendSubscriptions(context)
         appendLine()
@@ -36,6 +44,34 @@ object VoicemailDiagnostics {
         appendImapCheck(context)
     }
 
+    /** Which route is live matters: many carrier mailboxes refuse Wi-Fi. */
+    private fun StringBuilder.appendNetwork(context: Context) {
+        appendLine("-- Network --")
+        try {
+            val manager = context.getSystemService(ConnectivityManager::class.java)
+            if (manager == null) {
+                appendLine("connectivity service unavailable")
+                return
+            }
+            val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
+            if (capabilities == null) {
+                appendLine("no active network")
+                return
+            }
+            val transports = buildList {
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) add("wifi")
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) add("cellular")
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) add("vpn")
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) add("ethernet")
+            }
+            appendLine("active=${transports.joinToString("+").ifBlank { "unknown" }}")
+            appendLine("validated=${capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)}")
+            appendLine("notMetered=${capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)}")
+        } catch (e: Exception) {
+            appendLine("network read failed: ${e.javaClass.simpleName}")
+        }
+    }
+
     private fun StringBuilder.appendSubscriptions(context: Context) {
         appendLine("-- SIMs and carrier config --")
         val configs = VvmCarrierConfig.readAll(context)
@@ -43,15 +79,46 @@ object VoicemailDiagnostics {
             appendLine("no active subscription")
             return
         }
+        val subs = try {
+            context.getSystemService(SubscriptionManager::class.java)?.activeSubscriptionInfoList
+        } catch (_: Exception) {
+            null
+        }
         for (config in configs) {
+            val sub = subs?.firstOrNull { it.subscriptionId == config.subscriptionId }
             appendLine("subId=${config.subscriptionId} carrier=${config.carrierName}")
+            if (sub != null) {
+                appendLine("  mccMnc=${sub.mccString ?: "?"}-${sub.mncString ?: "?"} country=${sub.countryIso}")
+                appendLine("  embedded=${sub.isEmbedded} slot=${sub.simSlotIndex}")
+            }
             appendLine("  vvmType=${config.vvmType.ifBlank { "<none>" }} supported=${config.isSupported}")
             appendLine("  destination=${mask(config.destinationNumber)}")
             appendLine("  port=${config.portNumber}")
             appendLine("  clientPrefix=${config.clientPrefix}")
             appendLine("  ssl=${config.sslEnabled}")
             appendLine("  cellularRequired=${config.cellularDataRequired}")
+            appendExtraCarrierKeys(context, config.subscriptionId)
         }
+    }
+
+    /**
+     * Keys the engine does not act on, but which explain a carrier's behaviour:
+     * a legacy-mode carrier or one shipping its own voicemail app behaves
+     * differently from a plain OMTP one.
+     */
+    private fun StringBuilder.appendExtraCarrierKeys(context: Context, subscriptionId: Int) {
+        val bundle = try {
+            context.getSystemService(CarrierConfigManager::class.java)
+                ?.getConfigForSubId(subscriptionId) ?: return
+        } catch (_: Exception) {
+            return
+        }
+        appendLine("  legacyMode=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_LEGACY_MODE_ENABLED_BOOL, false)}")
+        appendLine("  prefetch=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_PREFETCH_BOOL, false)}")
+        val disabled = bundle.getStringArray(CarrierConfigManager.KEY_VVM_DISABLED_CAPABILITIES_STRING_ARRAY)
+        appendLine("  disabledCapabilities=${disabled?.joinToString(",")?.ifBlank { "<none>" } ?: "<none>"}")
+        val packages = bundle.getStringArray(CarrierConfigManager.KEY_CARRIER_VVM_PACKAGE_NAME_STRING_ARRAY)
+        appendLine("  carrierVvmApps=${packages?.joinToString(",")?.ifBlank { "<none>" } ?: "<none>"}")
     }
 
     private fun StringBuilder.appendCredentials(context: Context) {
@@ -70,8 +137,13 @@ object VoicemailDiagnostics {
             }
             appendLine("subId=$subId state=${credentials.provisioningState.name}")
             appendLine("  usable=${credentials.hasUsableImapCredentials()}")
+            // The return code is what a carrier uses to explain a refusal.
+            appendLine("  returnCode=${credentials.returnCode ?: "<none>"} subscriberType=${credentials.subscriberType ?: "<none>"}")
             appendLine("  imapServer=${credentials.imapServer ?: "<none>"} port=${credentials.imapPort ?: 0} ssl=${credentials.imapUseSsl}")
+            appendLine("  smtpPort=${credentials.smtpPort ?: 0}")
             appendLine("  hasUser=${!credentials.imapUsername.isNullOrBlank()} hasPassword=${!credentials.imapPassword.isNullOrBlank()}")
+            appendLine("  hasTui=${!credentials.tuiAccessNumber.isNullOrBlank()} language=${credentials.language ?: "<none>"}")
+            appendLine("  maxGreetingS=${credentials.maxGreetingLengthSeconds ?: 0} maxMessageS=${credentials.maxVoicemailLengthSeconds ?: 0}")
             appendLine("  storedAt=${store.storedAtMs(subId) ?: 0}")
         }
     }
@@ -163,21 +235,19 @@ object VoicemailDiagnostics {
                 appendLine("subId=$subId skipped: credentials incomplete")
                 continue
             }
-            // Runs the real sync path, but reports every message as already
-            // known so nothing is decoded or written. Exercising the production
-            // code rather than a parallel connect routine is the point: a
-            // diagnostic that connected its own way could pass while the real
-            // one fails, which is exactly how the SASL breakage hid itself.
-            val result = VvmImapClient(credentials).syncNewMessages(
-                isAlreadyKnown = { true },
-                onNewMessage = { false },
-            )
-            when (result) {
-                is VvmImapClient.SyncResult.Success ->
-                    appendLine("subId=$subId OK: ${result.total} message(s) on the server")
-                is VvmImapClient.SyncResult.Failed ->
-                    appendLine("subId=$subId FAILED: ${result.errorType}: ${result.errorMessage}")
+            // Goes through the same connection setup as the real sync, so a
+            // passing report cannot disagree with what the app actually does.
+            // That matters: a diagnostic connecting its own way would have shown
+            // green throughout the SASL breakage.
+            val inspection = VvmImapClient(credentials).inspect()
+            if (!inspection.connected) {
+                appendLine("subId=$subId FAILED over ${inspection.protocol}: ${inspection.error}")
+                continue
             }
+            appendLine("subId=$subId OK over ${inspection.protocol}")
+            appendLine("  messages=${inspection.messageCount} unread=${inspection.unseenCount}")
+            appendLine("  capabilities=${inspection.capabilities.joinToString(",").ifBlank { "<none advertised>" }}")
+            appendLine("  newest=${inspection.newestMessageShape ?: "<no message to inspect>"}")
         }
     }
 
@@ -218,6 +288,15 @@ object VoicemailDiagnostics {
 
     private fun granted(context: Context, permission: String): Boolean =
         context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+
+    private fun appVersion(context: Context): String {
+        return try {
+            val info = context.packageManager.getPackageInfo(context.packageName, 0)
+            "${info.versionName} (${info.longVersionCode})"
+        } catch (_: Exception) {
+            "<unknown>"
+        }
+    }
 
     /** Keeps the shape of a number visible without exposing who it belongs to. */
     private fun mask(raw: String?): String {
