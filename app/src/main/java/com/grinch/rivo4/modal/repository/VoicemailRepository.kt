@@ -3,19 +3,18 @@ package com.grinch.rivo4.modal.repository
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.PersistableBundle
 import android.provider.VoicemailContract
-import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.telephony.VisualVoicemailSmsFilterSettings
 import android.util.Log
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
-import com.grinch.rivo4.controller.vvm.OmtpStatusMessage
+import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
 import com.grinch.rivo4.controller.vvm.VvmImapClient
+import com.grinch.rivo4.controller.vvm.VvmNetwork
+import com.grinch.rivo4.controller.vvm.VvmRequestSender
 import com.grinch.rivo4.controller.vvm.VvmSyncEngine
 import com.grinch.rivo4.controller.vvm.VvmSyncWorker
 import com.grinch.rivo4.modal.`interface`.IContactsRepository
@@ -191,43 +190,60 @@ class VoicemailRepository(
             val telephonyManager = context.getSystemService(TelephonyManager::class.java)
                 ?: throw IllegalStateException("TelephonyManager unavailable")
 
-            val activeSubs = activeSubscriptions()
-            var registered = 0
-            if (activeSubs.isNullOrEmpty()) {
-                telephonyManager.setVisualVoicemailSmsFilterSettings(
-                    buildSmsFilterSettings(OMTP_CLIENT_PREFIX, port = 0)
-                )
-                registered = 1
-            } else {
-                for (sub in activeSubs) {
-                    try {
-                        // The prefix and port must come from CarrierConfig: many
-                        // carriers only send binary SMS on a vendor port, which a
-                        // prefix-only filter never catches.
-                        val (prefix, port) = readFilterParams(sub.subscriptionId)
-                        telephonyManager.createForSubscriptionId(sub.subscriptionId)
-                            .setVisualVoicemailSmsFilterSettings(buildSmsFilterSettings(prefix, port))
-                        registered++
-                    } catch (e: Exception) {
-                        Log.w(LOG_TAG, "Filter registration failed subId=${sub.subscriptionId}", e)
-                    }
-                }
-                if (registered == 0) throw IllegalStateException("No subscription accepted the filter")
+            // Only SIMs whose carrier speaks our protocol. Registering a filter
+            // on the others would divert their voicemail SMS to a service that
+            // cannot read them, leaving nobody to handle the message.
+            val supported = VvmCarrierConfig.readAll(context).filter { it.isSupported }
+            if (supported.isEmpty()) {
+                throw IllegalStateException("No SIM with a supported voicemail protocol")
             }
+
+            var registered = 0
+            for (config in supported) {
+                try {
+                    // The prefix and port must come from the carrier: many only
+                    // send binary SMS on a vendor port, which a prefix-only
+                    // filter never catches.
+                    telephonyManager.createForSubscriptionId(config.subscriptionId)
+                        .setVisualVoicemailSmsFilterSettings(
+                            buildSmsFilterSettings(config.clientPrefix, config.portNumber)
+                        )
+                    registered++
+                } catch (e: Exception) {
+                    Log.w(LOG_TAG, "Filter registration failed subId=${config.subscriptionId}", e)
+                }
+            }
+            if (registered == 0) throw IllegalStateException("No subscription accepted the filter")
+
             VvmSyncWorker.ensurePeriodicSync(context)
-            autoProvisionMissingSubs()
+            autoProvisionMissingSubs(supported)
             registered
         }
     }
 
     override fun requestProvisioning(): List<VoicemailProbeResult> {
-        val configs = carrierConfigs()
-        if (configs.isEmpty()) return emptyList()
-        val telephonyManager = context.getSystemService(TelephonyManager::class.java)
-            ?: return configs.map {
-                VoicemailProbeResult(it.subscriptionId, it.carrierName, false, "TelephonyManager unavailable")
+        return VvmCarrierConfig.readAll(context).map { config ->
+            when (val result = VvmRequestSender.sendStatus(context, config)) {
+                is VvmRequestSender.Result.Sent -> VoicemailProbeResult(
+                    config.subscriptionId,
+                    config.carrierName,
+                    true,
+                    "sent to ${config.destinationNumber}",
+                )
+                is VvmRequestSender.Result.Skipped -> VoicemailProbeResult(
+                    config.subscriptionId,
+                    config.carrierName,
+                    false,
+                    result.reason,
+                )
+                is VvmRequestSender.Result.Failed -> VoicemailProbeResult(
+                    config.subscriptionId,
+                    config.carrierName,
+                    false,
+                    "${result.errorType}: ${result.errorMessage}",
+                )
             }
-        return configs.map { sendStatusProbe(telephonyManager, it) }
+        }
     }
 
     override fun syncNow(): Result<Int> {
@@ -242,87 +258,22 @@ class VoicemailRepository(
     }
 
     /**
-     * Sends a provisioning request for any SIM whose credentials are missing.
-     * Throttled in memory so repeated filter registrations don't spam the
-     * carrier, and silently skipped until SEND_SMS has been granted.
+     * Asks for credentials on any supported SIM that has none yet. Throttled in
+     * memory so repeated filter registrations do not pester the carrier.
      */
-    private fun autoProvisionMissingSubs() {
-        if (context.checkSelfPermission(SEND_SMS_PERMISSION) != PackageManager.PERMISSION_GRANTED) return
+    private fun autoProvisionMissingSubs(configs: List<VvmCarrierConfig>) {
         val now = System.currentTimeMillis()
         if (now - lastAutoProvisionAttemptMs < AUTO_PROVISION_COOLDOWN_MS) return
 
-        val configs = carrierConfigs()
-        if (configs.isEmpty()) return
         val store = VvmCredentialsStore(context)
-        val telephonyManager = context.getSystemService(TelephonyManager::class.java) ?: return
         var sentAny = false
-        for (cfg in configs) {
-            if (store.load(cfg.subscriptionId)?.hasUsableImapCredentials() == true) continue
-            sendStatusProbe(telephonyManager, cfg)
-            sentAny = true
+        for (config in configs) {
+            if (store.load(config.subscriptionId)?.hasUsableImapCredentials() == true) continue
+            if (VvmRequestSender.sendStatus(context, config) is VvmRequestSender.Result.Sent) {
+                sentAny = true
+            }
         }
         if (sentAny) lastAutoProvisionAttemptMs = now
-    }
-
-    private fun sendStatusProbe(
-        telephonyManager: TelephonyManager,
-        cfg: CarrierVvmConfig,
-    ): VoicemailProbeResult {
-        return try {
-            if (cfg.destinationNumber.isBlank()) {
-                throw IllegalStateException("No VVM destination number in CarrierConfig")
-            }
-            telephonyManager.createForSubscriptionId(cfg.subscriptionId)
-                .sendVisualVoicemailSms(cfg.destinationNumber, cfg.portNumber, OMTP_STATUS_REQUEST_BODY, null)
-            VoicemailProbeResult(cfg.subscriptionId, cfg.carrierName, true, "sent to ${cfg.destinationNumber}")
-        } catch (e: Exception) {
-            val message = "${e.javaClass.simpleName}: ${e.message ?: ""}"
-            Log.w(LOG_TAG, "Status probe failed subId=${cfg.subscriptionId}", e)
-            VoicemailProbeResult(cfg.subscriptionId, cfg.carrierName, false, message)
-        }
-    }
-
-    private data class CarrierVvmConfig(
-        val subscriptionId: Int,
-        val carrierName: String,
-        val destinationNumber: String,
-        val portNumber: Int,
-    )
-
-    private fun carrierConfigs(): List<CarrierVvmConfig> {
-        return try {
-            val manager = context.getSystemService(CarrierConfigManager::class.java) ?: return emptyList()
-            val subs = activeSubscriptions() ?: return emptyList()
-            subs.map { sub ->
-                val cfg = try {
-                    manager.getConfigForSubId(sub.subscriptionId) ?: PersistableBundle.EMPTY
-                } catch (_: Exception) {
-                    PersistableBundle.EMPTY
-                }
-                CarrierVvmConfig(
-                    subscriptionId = sub.subscriptionId,
-                    carrierName = sub.carrierName?.toString() ?: "",
-                    destinationNumber = cfg.getString(CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING, "") ?: "",
-                    portNumber = cfg.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0),
-                )
-            }
-        } catch (_: Exception) {
-            emptyList()
-        }
-    }
-
-    private fun readFilterParams(subId: Int): Pair<String, Int> {
-        val manager = context.getSystemService(CarrierConfigManager::class.java)
-            ?: return OMTP_CLIENT_PREFIX to 0
-        val cfg = try {
-            manager.getConfigForSubId(subId) ?: PersistableBundle.EMPTY
-        } catch (_: Exception) {
-            PersistableBundle.EMPTY
-        }
-        val prefix = cfg.getString(CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING, "")
-            ?.takeIf { it.isNotEmpty() }
-            ?: OMTP_CLIENT_PREFIX
-        return prefix to cfg.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0)
     }
 
     private fun buildSmsFilterSettings(prefix: String, port: Int): VisualVoicemailSmsFilterSettings {
@@ -343,14 +294,27 @@ class VoicemailRepository(
 
     private fun pushSeenFlagToServer(rowId: Long, isRead: Boolean) {
         val meta = loadOwnedRowMeta(rowId) ?: return
-        val credentials = loadCredentialsForPhoneAccount(meta.phoneAccountId) ?: return
-        VvmImapClient(credentials).setSeenFlag(meta.serverUid, isRead)
+        val subId = subscriptionIdFor(meta.phoneAccountId) ?: return
+        val credentials = VvmCredentialsStore(context).load(subId)
+            ?.takeIf { it.hasUsableImapCredentials() } ?: return
+        onCarrierNetwork(subId) { VvmImapClient(credentials).setSeenFlag(meta.serverUid, isRead) }
     }
 
     private fun pushDeleteToServer(rowId: Long) {
         val meta = loadOwnedRowMeta(rowId) ?: return
-        val credentials = loadCredentialsForPhoneAccount(meta.phoneAccountId) ?: return
-        VvmImapClient(credentials).deleteMessage(meta.serverUid)
+        val subId = subscriptionIdFor(meta.phoneAccountId) ?: return
+        val credentials = VvmCredentialsStore(context).load(subId)
+            ?.takeIf { it.hasUsableImapCredentials() } ?: return
+        onCarrierNetwork(subId) { VvmImapClient(credentials).deleteMessage(meta.serverUid) }
+    }
+
+    /** Write-backs reach the same servers as the sync, so they need the same route. */
+    private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
+        return if (VvmCarrierConfig.read(context, subscriptionId).cellularDataRequired) {
+            VvmNetwork.onCellular(context, subscriptionId, block)
+        } else {
+            block()
+        }
     }
 
     private data class OwnedRowMeta(val serverUid: String, val phoneAccountId: String?)
@@ -376,13 +340,15 @@ class VoicemailRepository(
         }
     }
 
-    private fun loadCredentialsForPhoneAccount(phoneAccountId: String?): OmtpStatusMessage? {
-        val store = VvmCredentialsStore(context)
-        val subId = phoneAccountId?.toIntOrNull()
+    /**
+     * Resolves the SIM a stored row belongs to. The single-subscription
+     * fallback deliberately gives up when several are provisioned rather than
+     * guess, since guessing would write into the wrong carrier's mailbox.
+     */
+    private fun subscriptionIdFor(phoneAccountId: String?): Int? {
+        return phoneAccountId?.toIntOrNull()
             ?: lookupSubIdByIccId(phoneAccountId)
-            ?: store.listProvisionedSubscriptions().singleOrNull()
-            ?: return null
-        return store.load(subId)?.takeIf { it.hasUsableImapCredentials() }
+            ?: VvmCredentialsStore(context).listProvisionedSubscriptions().singleOrNull()
     }
 
     private fun lookupSubIdByIccId(iccId: String?): Int? {
@@ -399,13 +365,7 @@ class VoicemailRepository(
 
     companion object {
         private const val LOG_TAG = "VoicemailRepository"
-        private const val SEND_SMS_PERMISSION = "android.permission.SEND_SMS"
         private const val MAX_ITEMS = 200
-
-        /** OMTP 1.3 standard client prefix, used when CarrierConfig declares none. */
-        private const val OMTP_CLIENT_PREFIX = "//VVM:"
-        private const val OMTP_STATUS_REQUEST_BODY = "STATUS"
-
         private const val AUTO_PROVISION_COOLDOWN_MS = 60_000L
 
         @Volatile

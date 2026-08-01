@@ -88,8 +88,31 @@ class RivoVisualVoicemailService : VisualVoicemailService() {
         Log.i(
             LOG_TAG,
             "STATUS account=$accountId state=${status.provisioningState.name} " +
-                "imapReady=${status.hasUsableImapCredentials()}",
+                "imapReady=${status.hasUsableImapCredentials()} rc=${status.returnCode ?: "<none>"}",
         )
+
+        // A carrier that recognises the line but has not switched the mailbox on
+        // answers NEW_USER and ships no credentials. Only an activation request
+        // moves it forward; without one the feature would sit there forever
+        // looking provisioned-but-empty.
+        if (subscriptionId != null && status.provisioningState == ProvisioningState.NEW_USER) {
+            requestActivation(subscriptionId)
+        }
+    }
+
+    private fun requestActivation(subscriptionId: Int) {
+        val now = System.currentTimeMillis()
+        if (now - lastActivationAttemptMs < ACTIVATION_COOLDOWN_MS) return
+        lastActivationAttemptMs = now
+        val config = VvmCarrierConfig.read(this, subscriptionId)
+        when (val result = VvmRequestSender.sendActivate(this, config)) {
+            is VvmRequestSender.Result.Sent ->
+                Log.i(LOG_TAG, "Activation requested for subId=$subscriptionId")
+            is VvmRequestSender.Result.Skipped ->
+                Log.i(LOG_TAG, "Activation skipped for subId=$subscriptionId: ${result.reason}")
+            is VvmRequestSender.Result.Failed ->
+                Log.w(LOG_TAG, "Activation failed for subId=$subscriptionId: ${result.errorMessage}")
+        }
     }
 
     override fun onSimRemoved(task: VisualVoicemailTask, phoneAccountHandle: PhoneAccountHandle) {
@@ -127,5 +150,11 @@ class RivoVisualVoicemailService : VisualVoicemailService() {
 
     companion object {
         private const val LOG_TAG = "VvmService"
+
+        /** Keeps a carrier that keeps answering NEW_USER from being spammed. */
+        private const val ACTIVATION_COOLDOWN_MS = 5 * 60 * 1000L
+
+        @Volatile
+        private var lastActivationAttemptMs = 0L
     }
 }

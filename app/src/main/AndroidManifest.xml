@@ -31,9 +31,12 @@
          The system demands it even though the message is a hidden signalling
          SMS; never used to send a user-visible SMS. -->
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <!-- Talking IMAP to the carrier voicemail server. -->
+    <!-- Talking IMAP to the carrier voicemail server. CHANGE_NETWORK_STATE lets
+         us ask for that carrier's own mobile data, which some voicemail servers
+         are only reachable from. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"

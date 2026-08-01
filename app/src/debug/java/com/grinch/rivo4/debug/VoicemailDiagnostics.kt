@@ -2,11 +2,9 @@ package com.grinch.rivo4.debug
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.PersistableBundle
 import android.provider.VoicemailContract
-import android.telephony.CarrierConfigManager
-import android.telephony.SubscriptionManager
 import com.grinch.rivo4.controller.util.isAlreadyDefaultDialer
+import com.grinch.rivo4.controller.vvm.VvmCarrierConfig
 import com.grinch.rivo4.controller.vvm.VvmCredentialsStore
 import com.grinch.rivo4.controller.vvm.VvmImapClient
 
@@ -40,30 +38,19 @@ object VoicemailDiagnostics {
 
     private fun StringBuilder.appendSubscriptions(context: Context) {
         appendLine("-- SIMs and carrier config --")
-        val subs = try {
-            context.getSystemService(SubscriptionManager::class.java)?.activeSubscriptionInfoList
-        } catch (e: Exception) {
-            appendLine("subscriptions unavailable: ${e.javaClass.simpleName}")
-            null
-        }
-        if (subs.isNullOrEmpty()) {
+        val configs = VvmCarrierConfig.readAll(context)
+        if (configs.isEmpty()) {
             appendLine("no active subscription")
             return
         }
-        val carrierConfig = context.getSystemService(CarrierConfigManager::class.java)
-        for (sub in subs) {
-            val cfg = try {
-                carrierConfig?.getConfigForSubId(sub.subscriptionId) ?: PersistableBundle.EMPTY
-            } catch (_: Exception) {
-                PersistableBundle.EMPTY
-            }
-            appendLine("subId=${sub.subscriptionId} carrier=${sub.carrierName}")
-            appendLine("  vvmType=${cfg.getString(CarrierConfigManager.KEY_VVM_TYPE_STRING, "")}")
-            appendLine("  destination=${mask(cfg.getString(CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING, ""))}")
-            appendLine("  port=${cfg.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0)}")
-            appendLine("  clientPrefix=${cfg.getString(CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING, "")}")
-            appendLine("  ssl=${cfg.getBoolean(CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL, false)}")
-            appendLine("  legacy=${cfg.getBoolean(CarrierConfigManager.KEY_VVM_LEGACY_MODE_ENABLED_BOOL, false)}")
+        for (config in configs) {
+            appendLine("subId=${config.subscriptionId} carrier=${config.carrierName}")
+            appendLine("  vvmType=${config.vvmType.ifBlank { "<none>" }} supported=${config.isSupported}")
+            appendLine("  destination=${mask(config.destinationNumber)}")
+            appendLine("  port=${config.portNumber}")
+            appendLine("  clientPrefix=${config.clientPrefix}")
+            appendLine("  ssl=${config.sslEnabled}")
+            appendLine("  cellularRequired=${config.cellularDataRequired}")
         }
     }
 

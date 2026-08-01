@@ -56,15 +56,17 @@ class VvmSyncEngine(private val context: Context) {
         }
 
         val knownUids = writer.knownServerUids(phoneAccountId)
-        val result = VvmImapClient(credentials).syncNewMessages(
-            isAlreadyKnown = { uid -> uid in knownUids },
-            onNewMessage = { fetched ->
-                when (writer.writeFetchedMessage(phoneAccountId, fetched)) {
-                    is VvmVoicemailWriter.WriteResult.Success -> true
-                    is VvmVoicemailWriter.WriteResult.Failed -> false
-                }
-            },
-        )
+        val result = onCarrierNetwork(subscriptionId) {
+            VvmImapClient(credentials).syncNewMessages(
+                isAlreadyKnown = { uid -> uid in knownUids },
+                onNewMessage = { fetched ->
+                    when (writer.writeFetchedMessage(phoneAccountId, fetched)) {
+                        is VvmVoicemailWriter.WriteResult.Success -> true
+                        is VvmVoicemailWriter.WriteResult.Failed -> false
+                    }
+                },
+            )
+        }
 
         return when (result) {
             is VvmImapClient.SyncResult.Success -> SubscriptionSyncOutcome(
@@ -87,6 +89,16 @@ class VvmSyncEngine(private val context: Context) {
                 errorType = result.errorType,
                 errorMessage = result.errorMessage,
             )
+        }
+    }
+
+    /** Pins the work to the carrier's own network when it demands one. */
+    private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
+        val config = VvmCarrierConfig.read(context, subscriptionId)
+        return if (config.cellularDataRequired) {
+            VvmNetwork.onCellular(context, subscriptionId, block)
+        } else {
+            block()
         }
     }
 
