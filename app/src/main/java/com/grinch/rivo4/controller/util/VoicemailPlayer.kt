@@ -120,6 +120,17 @@ class VoicemailPlayer(
 
     private fun startNew(voicemailId: Long) {
         val uri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, voicemailId)
+
+        // Checked up front rather than left to MediaPlayer: it swallows the
+        // missing-file error internally and surfaces an unrelated one, which
+        // would reach the user as a raw failure instead of a plain "this
+        // recording is gone". A row can outlive its audio when whichever app
+        // imported it deleted the file without clearing the row.
+        if (!isAudioReadable(uri)) {
+            onAudioUnavailable()
+            return
+        }
+
         val mp = MediaPlayer()
         // Voice-communication usage rather than media: it is what lets the
         // stream be steered to the earpiece, and it keeps a single audio setup
@@ -164,9 +175,8 @@ class VoicemailPlayer(
         try {
             mp.setDataSource(context, uri)
             mp.prepareAsync()
-        } catch (e: java.io.FileNotFoundException) {
-            // The row survives in the provider but its audio file was purged,
-            // typically a stale row the owning source never cleaned up.
+        } catch (e: java.io.IOException) {
+            // Backstop for a file that disappears between the check and here.
             preparing = false
             runCatching { mp.release() }
             onAudioUnavailable()
@@ -183,6 +193,15 @@ class VoicemailPlayer(
         // duration or position while PREPARING raises a native error on some
         // vendor builds, which then aborts playback through onError.
         onUpdate(currentItemId, false, 0, 0)
+    }
+
+    /** True when the provider can actually hand back the recording's bytes. */
+    private fun isAudioReadable(uri: android.net.Uri): Boolean {
+        return try {
+            context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { true } ?: false
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun startProgressTimer() {
