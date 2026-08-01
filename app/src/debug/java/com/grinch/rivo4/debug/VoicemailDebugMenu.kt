@@ -87,6 +87,24 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
             onClick = { run { VoicemailInjector.insertLong(context) } }
         )
         DropdownMenuItem(
+            text = { Text("Restore deleted rows") },
+            onClick = {
+                expanded = false
+                scope.launch {
+                    val restored = withContext(Dispatchers.IO) {
+                        VoicemailInjector.restoreDeleted(context)
+                    }
+                    val message = if (restored > 0) {
+                        "Restored $restored row(s)"
+                    } else {
+                        "Nothing to restore"
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    onChanged()
+                }
+            }
+        )
+        DropdownMenuItem(
             text = { Text("Delete all injected") },
             onClick = { run { VoicemailInjector.deleteAllOwned(context) } }
         )

@@ -1,5 +1,6 @@
 package com.grinch.rivo4.debug
 
+import android.content.ContentValues
 import android.content.Context
 import android.provider.VoicemailContract
 import android.util.Log
@@ -89,6 +90,41 @@ object VoicemailInjector {
             durationSeconds = 60,
             withAudio = true,
         )
+    }
+
+    /**
+     * Clears the soft-delete flag on every row carrying it, bringing back
+     * entries the app filters out.
+     *
+     * Android does not erase a deleted voicemail immediately: it flags the row
+     * and waits for the app that owns it to sync the deletion and purge. When
+     * that app is no longer the default dialer it never runs again, so the row
+     * lingers forever. Restoring one is a way to exercise the list against
+     * rows whose audio file is long gone.
+     *
+     * Restricted to rows this app owns unless [includeOtherSources] is set,
+     * since writing into another source's rows is normally off limits.
+     */
+    fun restoreDeleted(context: Context, includeOtherSources: Boolean = true): Int {
+        val values = ContentValues().apply {
+            put(VoicemailContract.Voicemails.DELETED, 0)
+        }
+        val uri = if (includeOtherSources) {
+            VoicemailContract.Voicemails.CONTENT_URI
+        } else {
+            VoicemailContract.Voicemails.buildSourceUri(context.packageName)
+        }
+        return try {
+            context.contentResolver.update(
+                uri,
+                values,
+                "${VoicemailContract.Voicemails.DELETED} = 1",
+                null,
+            ).also { Log.i(LOG_TAG, "Restored $it deleted row(s)") }
+        } catch (e: Exception) {
+            Log.w(LOG_TAG, "Restore failed", e)
+            0
+        }
     }
 
     /**
