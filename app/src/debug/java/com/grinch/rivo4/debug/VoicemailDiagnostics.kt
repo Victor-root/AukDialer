@@ -125,7 +125,10 @@ object VoicemailDiagnostics {
             // Says which of two very different problems an empty config is: one
             // that never loaded, or one that loaded carrying no voicemail entry.
             appendLine("  configApplied=${config.configApplied}")
-            appendLine("  destination=${mask(config.destinationNumber)}")
+            // Shown in full unlike every other number here: this is the
+            // carrier's service shortcode, identical for all its subscribers,
+            // and it is the one value a device missing a config needs supplied.
+            appendLine("  destination=${config.destinationNumber.ifBlank { "<none>" }}")
             appendLine("  port=${config.portNumber}")
             appendLine("  clientPrefix=${config.clientPrefix}")
             appendLine("  ssl=${config.sslEnabled}")
