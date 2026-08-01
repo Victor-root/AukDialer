@@ -3,7 +3,6 @@ package com.grinch.rivo4.view.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -30,9 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.grinch.rivo4.R
 import com.grinch.rivo4.controller.VoicemailViewModel
-import com.grinch.rivo4.controller.util.formatDate
+import com.grinch.rivo4.controller.util.formatDateHeader
 import com.grinch.rivo4.controller.util.formatDuration
 import com.grinch.rivo4.controller.util.formatPhoneNumber
+import com.grinch.rivo4.controller.util.formatTime
 import com.grinch.rivo4.controller.util.getDefaultDialerIntent
 import com.grinch.rivo4.debug.VoicemailDebugMenu
 import com.grinch.rivo4.modal.data.Voicemail
@@ -40,6 +40,8 @@ import com.grinch.rivo4.view.components.BottomBar
 import com.grinch.rivo4.view.components.PermissionDeniedView
 import com.grinch.rivo4.view.components.RivoAvatar
 import com.grinch.rivo4.view.components.RivoDivider
+import com.grinch.rivo4.view.components.RivoExpressiveCard
+import com.grinch.rivo4.view.components.RivoSectionHeader
 import com.grinch.rivo4.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -137,25 +139,42 @@ fun VoicemailListScreen(
                     if (voicemails.isEmpty()) {
                         VoicemailEmptyState()
                     } else {
+                        val groupedVoicemails = remember(voicemails) {
+                            voicemails.groupBy { formatDateHeader(context, it.date) }
+                        }
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(vertical = 8.dp)
+                            contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
-                            items(voicemails, key = { it.id }) { voicemail ->
-                                VoicemailRow(
-                                    voicemail = voicemail,
-                                    isCurrent = playback.playingId == voicemail.id,
-                                    isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
-                                    positionMs = playback.positionMs,
-                                    durationMs = playback.durationMs,
-                                    isSpeakerOn = isSpeakerOn,
-                                    onToggle = { viewModel.togglePlayback(voicemail) },
-                                    onSeek = { viewModel.seekTo(it) },
-                                    onToggleSpeaker = { viewModel.toggleSpeaker() },
-                                    onToggleRead = { viewModel.markAsRead(voicemail.id, !voicemail.isRead) },
-                                    onDelete = { viewModel.delete(voicemail.id) }
-                                )
-                                RivoDivider(Modifier.padding(horizontal = 16.dp))
+                            groupedVoicemails.forEach { (header, group) ->
+                                item(key = header) {
+                                    RivoSectionHeader(title = header)
+                                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                        RivoExpressiveCard {
+                                            group.forEachIndexed { index, voicemail ->
+                                                VoicemailRow(
+                                                    voicemail = voicemail,
+                                                    isCurrent = playback.playingId == voicemail.id,
+                                                    isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
+                                                    positionMs = playback.positionMs,
+                                                    durationMs = playback.durationMs,
+                                                    isSpeakerOn = isSpeakerOn,
+                                                    onToggle = { viewModel.togglePlayback(voicemail) },
+                                                    onSeek = { viewModel.seekTo(it) },
+                                                    onToggleSpeaker = { viewModel.toggleSpeaker() },
+                                                    onToggleRead = {
+                                                        viewModel.markAsRead(voicemail.id, !voicemail.isRead)
+                                                    },
+                                                    onDelete = { viewModel.delete(voicemail.id) }
+                                                )
+                                                if (index < group.size - 1) {
+                                                    RivoDivider(Modifier.padding(horizontal = 16.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Spacer(Modifier.height(12.dp))
+                                }
                             }
                         }
                     }
@@ -329,15 +348,16 @@ private fun formatPlaybackTime(millis: Int): String {
     return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
 }
 
+/** Time only: the day already labels the group this row sits in. */
 private fun buildRowSubtitle(
     context: android.content.Context,
     voicemail: Voicemail
 ): String {
-    val date = formatDate(context, voicemail.date)
+    val time = formatTime(context, voicemail.date)
     return if (voicemail.durationSeconds > 0) {
-        "$date  ·  ${formatDuration(voicemail.durationSeconds.toLong())}"
+        "$time  ·  ${formatDuration(voicemail.durationSeconds.toLong())}"
     } else {
-        date
+        time
     }
 }
 
