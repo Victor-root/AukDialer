@@ -29,9 +29,21 @@ data class VvmCarrierConfig(
      * that has simply not loaded yet.
      */
     val configApplied: Boolean = false,
-    /** True when the settings came from [VvmConfigOverride] instead of the platform. */
-    val isOverridden: Boolean = false,
+    /** Where the settings came from, since a fallback is far less trustworthy. */
+    val source: Source = Source.PLATFORM,
 ) {
+
+    enum class Source {
+        /** The device's own carrier database, which is always preferred. */
+        PLATFORM,
+
+        /** The table this app carries for carriers the device does not describe. */
+        BUILT_IN,
+
+        /** Values entered by hand for a carrier nothing else covers. */
+        MANUAL,
+    }
+
     /**
      * True only for the OMTP dialect this app implements. Other carriers use
      * CVVM or vendor protocols whose provisioning exchange differs, so sending
@@ -78,8 +90,9 @@ data class VvmCarrierConfig(
 
             // Only stand in for a carrier the platform says nothing about. The
             // vendor config database is the authority wherever it has an answer.
-            val override = if (declaredType.isBlank() && declaredDestination.isBlank()) {
-                VvmConfigOverride.load(context, subscriptionId)
+            val fallback = if (declaredType.isBlank() && declaredDestination.isBlank()) {
+                manualFallback(context, subscriptionId)
+                    ?: builtInFallback(context, subscriptionId)
             } else {
                 null
             }
@@ -87,21 +100,44 @@ data class VvmCarrierConfig(
             return VvmCarrierConfig(
                 subscriptionId = subscriptionId,
                 carrierName = carrierName,
-                vvmType = if (override != null) TelephonyManager.VVM_TYPE_OMTP else declaredType,
-                destinationNumber = override?.destinationNumber ?: declaredDestination,
-                portNumber = override?.portNumber
+                vvmType = if (fallback != null) TelephonyManager.VVM_TYPE_OMTP else declaredType,
+                destinationNumber = fallback?.destinationNumber ?: declaredDestination,
+                portNumber = fallback?.portNumber
                     ?: bundle.getInt(CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT, 0),
                 clientPrefix = bundle.getString(CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING, "")
                     ?.takeIf { it.isNotEmpty() }
                     ?: DEFAULT_CLIENT_PREFIX,
                 sslEnabled = bundle.getBoolean(CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL, false),
-                cellularDataRequired = bundle.getBoolean(
+                cellularDataRequired = fallback?.cellularDataRequired ?: bundle.getBoolean(
                     CarrierConfigManager.KEY_VVM_CELLULAR_DATA_REQUIRED_BOOL,
                     false,
                 ),
                 configApplied = CarrierConfigManager.isConfigForIdentifiedCarrier(bundle),
-                isOverridden = override != null,
+                source = fallback?.source ?: Source.PLATFORM,
             )
+        }
+
+        private data class Fallback(
+            val destinationNumber: String,
+            val portNumber: Int,
+            val cellularDataRequired: Boolean,
+            val source: Source,
+        )
+
+        /** Deliberately ahead of the built-in table: a person who typed a value knows better. */
+        private fun manualFallback(context: Context, subscriptionId: Int): Fallback? {
+            return VvmConfigOverride.load(context, subscriptionId)?.let {
+                // Nothing here describes this carrier, and carrier mailboxes are
+                // usually reachable from their own network only, so assume one is
+                // needed. Getting that wrong only costs a wait before falling back.
+                Fallback(it.destinationNumber, it.portNumber, true, Source.MANUAL)
+            }
+        }
+
+        private fun builtInFallback(context: Context, subscriptionId: Int): Fallback? {
+            return VvmKnownCarriers.lookup(context, subscriptionId)?.let {
+                Fallback(it.destinationNumber, it.portNumber, it.cellularDataRequired, Source.BUILT_IN)
+            }
         }
     }
 }

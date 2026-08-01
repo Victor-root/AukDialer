@@ -121,7 +121,7 @@ object VoicemailDiagnostics {
                 appendLine("  carrierId=${sub.carrierId} gid1=${groupIdLevel1(context, config.subscriptionId)}")
             }
             appendLine("  vvmType=${config.vvmType.ifBlank { "<none>" }} supported=${config.isSupported}")
-            appendLine("  source=${if (config.isOverridden) "manual override" else "platform"}")
+            appendLine("  source=${config.source.name.lowercase()}")
             // Says which of two very different problems an empty config is: one
             // that never loaded, or one that loaded carrying no voicemail entry.
             appendLine("  configApplied=${config.configApplied}")
