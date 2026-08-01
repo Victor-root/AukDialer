@@ -457,6 +457,7 @@
     <string name="settings_voicemail_visual_setup_supporting">Ask your carrier for the mailbox settings</string>
     <string name="settings_voicemail_visual_setup_sent">Request sent to your carrier</string>
     <string name="settings_voicemail_visual_setup_failed">Your carrier did not accept the request</string>
+    <string name="settings_voicemail_visual_setup_denied">SMS permission is required to ask your carrier</string>
 
     <!-- Settings > About -->
     <string name="about_title">About</string>

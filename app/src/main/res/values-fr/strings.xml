@@ -457,6 +457,7 @@
     <string name="settings_voicemail_visual_setup_supporting">Demander les paramètres de la boîte vocale à votre opérateur</string>
     <string name="settings_voicemail_visual_setup_sent">Demande envoyée à votre opérateur</string>
     <string name="settings_voicemail_visual_setup_failed">Votre opérateur n’a pas accepté la demande</string>
+    <string name="settings_voicemail_visual_setup_denied">La permission SMS est nécessaire pour interroger votre opérateur</string>
 
     <!-- Settings > About -->
     <string name="about_title">À propos</string>

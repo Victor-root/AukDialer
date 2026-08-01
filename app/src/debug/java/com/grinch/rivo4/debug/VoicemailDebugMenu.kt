@@ -1,9 +1,11 @@
 package com.grinch.rivo4.debug
 
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -13,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import com.grinch.rivo4.modal.`interface`.IContactsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +33,7 @@ import org.koin.compose.koinInject
 fun VoicemailDebugMenu(onChanged: () -> Unit) {
     val context = LocalContext.current
     val contactsRepo = koinInject<IContactsRepository>()
+    val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
 
@@ -84,6 +89,21 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
         DropdownMenuItem(
             text = { Text("Delete all injected") },
             onClick = { run { VoicemailInjector.deleteAllOwned(context) } }
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text("Copy diagnostics") },
+            onClick = {
+                expanded = false
+                scope.launch {
+                    val report = withContext(Dispatchers.IO) { VoicemailDiagnostics.build(context) }
+                    clipboard.setText(AnnotatedString(report))
+                    // Also emitted to logcat, so the report can be grabbed from
+                    // the IDE without going through the clipboard.
+                    VoicemailDiagnostics.log(report)
+                    Toast.makeText(context, "Diagnostics copied", Toast.LENGTH_SHORT).show()
+                }
+            }
         )
     }
 }

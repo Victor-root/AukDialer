@@ -1,5 +1,6 @@
 package com.grinch.rivo4.view.screen.settings
 
+import android.Manifest
 import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
@@ -24,6 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.grinch.rivo4.R
 import com.grinch.rivo4.controller.VoicemailViewModel
 import com.grinch.rivo4.controller.util.PreferenceManager
@@ -39,7 +43,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Destination<RootGraph>
 @Composable
 fun VoicemailScreen(
@@ -50,6 +54,26 @@ fun VoicemailScreen(
     val voicemailViewModel: VoicemailViewModel = koinActivityViewModel()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val setupSentLabel = stringResource(R.string.settings_voicemail_visual_setup_sent)
+    val setupFailedLabel = stringResource(R.string.settings_voicemail_visual_setup_failed)
+    val setupDeniedLabel = stringResource(R.string.settings_voicemail_visual_setup_denied)
+
+    fun runProvisioning() {
+        voicemailViewModel.requestProvisioning { anySent ->
+            scope.launch {
+                snackbarHostState.showSnackbar(if (anySent) setupSentLabel else setupFailedLabel)
+            }
+        }
+    }
+
+    val sendSmsPermission = rememberPermissionState(Manifest.permission.SEND_SMS) { granted ->
+        if (granted) {
+            runProvisioning()
+        } else {
+            scope.launch { snackbarHostState.showSnackbar(setupDeniedLabel) }
+        }
+    }
 
     var voicemailNumber by remember { mutableStateOf(prefs.getString(PreferenceManager.KEY_VOICEMAIL_NUMBER, "") ?: "") }
     var vibrationEnabled by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_VOICEMAIL_VIBRATION, true)) }
@@ -207,8 +231,6 @@ fun VoicemailScreen(
             }
 
             item {
-                val setupSentLabel = stringResource(R.string.settings_voicemail_visual_setup_sent)
-                val setupFailedLabel = stringResource(R.string.settings_voicemail_visual_setup_failed)
                 RivoExpressiveCard(
                     title = stringResource(R.string.settings_voicemail_visual_header),
                     icon = Icons.Outlined.Voicemail
@@ -226,12 +248,14 @@ fun VoicemailScreen(
                         supporting = stringResource(R.string.settings_voicemail_visual_setup_supporting),
                         leadingIcon = Icons.Outlined.CloudSync,
                         onClick = {
-                            voicemailViewModel.requestProvisioning { anySent ->
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        if (anySent) setupSentLabel else setupFailedLabel
-                                    )
-                                }
+                            // The provisioning request goes out as a hidden SMS,
+                            // so the system demands SEND_SMS before it will send
+                            // anything. Ask for it first, and provision straight
+                            // away once it is granted.
+                            if (sendSmsPermission.status.isGranted) {
+                                runProvisioning()
+                            } else {
+                                sendSmsPermission.launchPermissionRequest()
                             }
                         }
                     )
