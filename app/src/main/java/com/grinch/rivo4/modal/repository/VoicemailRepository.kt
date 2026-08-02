@@ -90,7 +90,26 @@ class VoicemailRepository(
             // the selection outright; an unfiltered read beats no read at all.
             ?: queryVoicemails(null)
             ?: return emptyList()
-        return resolveContacts(withSimLabels(items))
+        return resolveContacts(withSimLabels(preferOwnCopies(items)))
+    }
+
+    /**
+     * Collapses the copies several apps keep of the same message.
+     *
+     * The provider is shared, and each voicemail app stores its own row for
+     * every message it imports, scoped to its own source package. Two apps
+     * syncing one mailbox therefore produce two rows for one message, and this
+     * list shows every source. Ours is preferred where it exists, since it is
+     * the only one whose audio, read flag and deletion we can act on.
+     */
+    private fun preferOwnCopies(items: List<Voicemail>): List<Voicemail> {
+        val ours = context.packageName
+        if (items.none { it.sourcePackage != ours }) return items
+        return items
+            .groupBy { it.number to it.date }
+            .values
+            .map { copies -> copies.firstOrNull { it.sourcePackage == ours } ?: copies.first() }
+            .sortedByDescending { it.date }
     }
 
     /**
