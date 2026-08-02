@@ -71,6 +71,7 @@ fun VoicemailListScreen(
     val isSpeakerOn by viewModel.isSpeakerOn.collectAsState()
     val status by viewModel.status.collectAsState()
     val syncFailed by viewModel.syncFailed.collectAsState()
+    val syncFoundNothing by viewModel.syncFoundNothing.collectAsState()
 
     var isDefaultDialer by remember { mutableStateOf(viewModel.isDefaultDialer()) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -119,6 +120,14 @@ fun VoicemailListScreen(
         if (syncFailed) {
             snackbarHostState.showSnackbar(syncFailedText)
             viewModel.consumeSyncFailed()
+        }
+    }
+
+    val syncFoundNothingText = stringResource(R.string.voicemail_sync_no_new)
+    LaunchedEffect(syncFoundNothing) {
+        if (syncFoundNothing) {
+            snackbarHostState.showSnackbar(syncFoundNothingText)
+            viewModel.consumeSyncFoundNothing()
         }
     }
 

@@ -66,6 +66,14 @@ class VoicemailViewModel(
     private val _syncFailed = MutableStateFlow(false)
     val syncFailed: StateFlow<Boolean> = _syncFailed.asStateFlow()
 
+    /**
+     * A sync that worked and found nothing. New messages announce themselves by
+     * appearing in the list, an empty result otherwise looks the same as a sync
+     * that never ran.
+     */
+    private val _syncFoundNothing = MutableStateFlow(false)
+    val syncFoundNothing: StateFlow<Boolean> = _syncFoundNothing.asStateFlow()
+
     private val player = VoicemailPlayer(
         context = context.applicationContext,
         onUpdate = { playingId, isPlaying, positionMs, durationMs ->
@@ -171,7 +179,11 @@ class VoicemailViewModel(
             load()
             // A list that already has messages hides a broken sync, so the
             // failure is announced rather than left to the empty state.
-            if (result.isFailure) _syncFailed.value = true
+            if (result.isFailure) {
+                _syncFailed.value = true
+            } else if (result.getOrNull() == 0) {
+                _syncFoundNothing.value = true
+            }
         }
     }
 
@@ -224,5 +236,9 @@ class VoicemailViewModel(
 
     fun consumeSyncFailed() {
         _syncFailed.value = false
+    }
+
+    fun consumeSyncFoundNothing() {
+        _syncFoundNothing.value = false
     }
 }

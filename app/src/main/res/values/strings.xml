@@ -488,6 +488,7 @@
     <string name="voicemail_play">Play</string>
     <string name="voicemail_pause">Pause</string>
     <string name="voicemail_sync_now">Sync now</string>
+    <string name="voicemail_sync_no_new">No new voicemails</string>
     <string name="voicemail_route_speaker">Playing on speaker, switch to earpiece</string>
     <string name="voicemail_route_earpiece">Playing on earpiece, switch to speaker</string>
     <string name="voicemail_more_options">More options</string>
