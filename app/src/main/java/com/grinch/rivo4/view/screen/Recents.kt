@@ -375,6 +375,11 @@ fun CallLogFullContent(
         LaunchedEffect(Unit) {
             viewModel.fetchLogs()
             contactsVM.fetchContacts()
+            // Opening the call log counts as having seen the missed calls in
+            // it. Without this they stay marked new, and the system announces
+            // them again on every boot no matter how often the notification
+            // was dismissed.
+            viewModel.markMissedCallsAsRead()
         }
 
         val logs by viewModel.allCallLogs.collectAsState()

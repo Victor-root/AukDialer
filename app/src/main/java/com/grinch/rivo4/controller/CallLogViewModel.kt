@@ -69,6 +69,16 @@ class CallLogViewModel(
         }
     }
 
+    /**
+     * Called when the call log is on screen: having looked at it, the missed
+     * calls in it count as seen.
+     */
+    fun markMissedCallsAsRead() {
+        viewModelScope.launch(Dispatchers.IO) {
+            callLogRepo.markMissedCallsAsRead()
+        }
+    }
+
     fun deleteCallLog(number: String) {
         viewModelScope.launch(Dispatchers.IO) {
             callLogRepo.deleteCallLog(number)

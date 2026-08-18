@@ -8,4 +8,7 @@ interface ICallLogRepository {
     fun deleteCallLog(number: String)
     fun deleteCallLogsByIds(ids: List<Long>)
     fun clearCallLogs()
+
+    /** Marks missed calls as seen, so the system stops announcing them. */
+    fun markMissedCallsAsRead()
 }

@@ -91,6 +91,30 @@ class CallLogRepository(
         return callLogs
     }
 
+    /**
+     * Clears the "new" mark Telecom puts on a missed call, and with it the
+     * notification it drives.
+     *
+     * Dismissing the notification is not enough on its own: Telecom re-reads
+     * the call log on every boot looking for missed calls still unread
+     * (type=MISSED AND new=1 AND is_read=0) and announces them again, so an
+     * entry never marked read comes back after each restart, however many
+     * times its notification was swiped away.
+     *
+     * Goes through Telecom rather than writing the columns directly, since it
+     * owns the notification as well as the flags. It is granted to whichever
+     * app holds the dialer role, which is also the only app this matters for.
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    override fun markMissedCallsAsRead() {
+        try {
+            telecomManager?.cancelMissedCallsNotification()
+        } catch (e: SecurityException) {
+            // Not the default dialer, so not ours to clear.
+            e.printStackTrace()
+        }
+    }
+
     override fun saveCallLog(entry: CallLogEntry) {
         val values = ContentValues().apply {
             put(CallLog.Calls.NUMBER, entry.number)
