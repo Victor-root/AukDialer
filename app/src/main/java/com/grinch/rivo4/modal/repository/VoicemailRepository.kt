@@ -374,7 +374,7 @@ class VoicemailRepository(
     /** Write-backs reach the same servers as the sync, so they need the same route. */
     private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
         return if (VvmCarrierConfig.read(context, subscriptionId).cellularDataRequired) {
-            VvmNetwork.onCellular(context, subscriptionId, block)
+            VvmNetwork.onCellular(context, subscriptionId, block = block)
         } else {
             block()
         }

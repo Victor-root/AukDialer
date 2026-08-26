@@ -96,7 +96,7 @@ class VvmSyncEngine(private val context: Context) {
     private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
         val config = VvmCarrierConfig.read(context, subscriptionId)
         return if (config.cellularDataRequired) {
-            VvmNetwork.onCellular(context, subscriptionId, block)
+            VvmNetwork.onCellular(context, subscriptionId, block = block)
         } else {
             block()
         }

@@ -24,18 +24,40 @@ object VvmNetwork {
     private const val REQUEST_TIMEOUT_MS = 20_000
     private const val AWAIT_TIMEOUT_SECONDS = 25L
 
+    /** Which network [onCellular] ended up running on, as opposed to asking for. */
+    enum class Route {
+        /** Pinned to the requested subscription, as intended. */
+        PINNED,
+
+        /** No such network came up in time, so the default route was used instead. */
+        FELL_BACK,
+    }
+
     /**
      * Runs [block] with process traffic pinned to [subscriptionId]'s mobile
      * data, restoring the previous routing afterwards. Falls back to running on
      * the default network if no such connection can be obtained, since an
      * attempt that might work beats refusing outright.
      *
+     * [onRoute] reports which of the two actually happened. A carrier mailbox
+     * that is only reachable from its own network fails in exactly the same way
+     * whether it was unreachable or never reached for, and the two need telling
+     * apart when reading a failure after the fact.
+     *
      * Binding is process-wide, which is blunt: it is kept to the shortest
      * possible window and always undone in a finally.
      */
-    fun <T> onCellular(context: Context, subscriptionId: Int, block: () -> T): T {
+    fun <T> onCellular(
+        context: Context,
+        subscriptionId: Int,
+        onRoute: (Route) -> Unit = {},
+        block: () -> T,
+    ): T {
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
-            ?: return block()
+            ?: run {
+                onRoute(Route.FELL_BACK)
+                return block()
+            }
 
         val holder = NetworkHolder()
         val callback = holder.callback
@@ -48,17 +70,20 @@ object VvmNetwork {
             val network = holder.await()
             if (network == null) {
                 Log.w(LOG_TAG, "No cellular network for subId=$subscriptionId, using default route")
+                onRoute(Route.FELL_BACK)
                 return block()
             }
             val previous = connectivityManager.boundNetworkForProcess
             connectivityManager.bindProcessToNetwork(network)
             try {
+                onRoute(Route.PINNED)
                 block()
             } finally {
                 connectivityManager.bindProcessToNetwork(previous)
             }
         } catch (e: Exception) {
             Log.w(LOG_TAG, "Cellular binding failed for subId=$subscriptionId", e)
+            onRoute(Route.FELL_BACK)
             block()
         } finally {
             try {

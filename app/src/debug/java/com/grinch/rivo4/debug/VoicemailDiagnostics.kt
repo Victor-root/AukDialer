@@ -277,12 +277,26 @@ object VoicemailDiagnostics {
             // carrier demanding its own network must be reached over it here
             // too, or the report would describe a path the app never takes.
             val config = VvmCarrierConfig.read(context, subId)
-            appendLine("subId=$subId route=${if (config.cellularDataRequired) "carrier cellular" else "default"}")
+            // Reported after the fact rather than before. Asking for the
+            // carrier's own network does not mean getting it, and a mailbox
+            // that only answers on that network fails identically either way,
+            // so a report naming the requested route explains nothing.
+            var route = if (config.cellularDataRequired) "carrier cellular (pending)" else "default"
             val inspection = if (config.cellularDataRequired) {
-                VvmNetwork.onCellular(context, subId) { VvmImapClient(credentials).inspect() }
+                VvmNetwork.onCellular(
+                    context,
+                    subId,
+                    onRoute = { taken ->
+                        route = when (taken) {
+                            VvmNetwork.Route.PINNED -> "carrier cellular"
+                            VvmNetwork.Route.FELL_BACK -> "default (carrier cellular unavailable)"
+                        }
+                    },
+                ) { VvmImapClient(credentials).inspect() }
             } else {
                 VvmImapClient(credentials).inspect()
             }
+            appendLine("subId=$subId route=$route")
             if (!inspection.connected) {
                 appendLine("  FAILED over ${inspection.protocol}: ${inspection.error}")
                 continue
