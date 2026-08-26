@@ -2,6 +2,7 @@ package com.grinch.rivo4.controller.vvm
 
 import android.telecom.PhoneAccountHandle
 import android.telephony.CarrierConfigManager
+import android.telephony.SubscriptionManager
 import android.telephony.VisualVoicemailService
 import android.telephony.VisualVoicemailSms
 import android.util.Log
@@ -63,7 +64,7 @@ class RivoVisualVoicemailService : VisualVoicemailService() {
         accountId: String,
         status: OmtpStatusMessage,
     ) {
-        val subscriptionId = accountId.toIntOrNull()
+        val subscriptionId = subscriptionIdFor(accountId)
 
         // STATUS bodies don't say whether IMAP wants TLS from byte zero or
         // STARTTLS on a plaintext port; CarrierConfig is authoritative, so the
@@ -97,6 +98,28 @@ class RivoVisualVoicemailService : VisualVoicemailService() {
         // looking provisioned-but-empty.
         if (subscriptionId != null && status.provisioningState == ProvisioningState.NEW_USER) {
             requestActivation(subscriptionId)
+        }
+    }
+
+    /**
+     * Resolves the SIM a phone account belongs to.
+     *
+     * What [PhoneAccountHandle.getId] holds is up to the device: the
+     * subscription id on some, the SIM's iccId on others. Reading it as a
+     * number alone drops the credentials on every handset of the second kind,
+     * while still writing the status row, which leaves the mailbox looking
+     * configured and permanently empty.
+     */
+    private fun subscriptionIdFor(accountId: String): Int? {
+        accountId.toIntOrNull()?.let { return it }
+        return try {
+            getSystemService(SubscriptionManager::class.java)
+                ?.activeSubscriptionInfoList
+                ?.firstOrNull { it.iccId == accountId }
+                ?.subscriptionId
+        } catch (e: Exception) {
+            Log.w(LOG_TAG, "Subscription lookup failed for account=$accountId", e)
+            null
         }
     }
 
