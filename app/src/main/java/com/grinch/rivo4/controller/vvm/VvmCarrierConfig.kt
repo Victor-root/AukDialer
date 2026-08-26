@@ -107,7 +107,8 @@ data class VvmCarrierConfig(
                 clientPrefix = bundle.getString(CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING, "")
                     ?.takeIf { it.isNotEmpty() }
                     ?: DEFAULT_CLIENT_PREFIX,
-                sslEnabled = bundle.getBoolean(CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL, false),
+                sslEnabled = fallback?.sslEnabled
+                    ?: bundle.getBoolean(CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL, false),
                 cellularDataRequired = fallback?.cellularDataRequired ?: bundle.getBoolean(
                     CarrierConfigManager.KEY_VVM_CELLULAR_DATA_REQUIRED_BOOL,
                     false,
@@ -121,6 +122,7 @@ data class VvmCarrierConfig(
             val destinationNumber: String,
             val portNumber: Int,
             val cellularDataRequired: Boolean,
+            val sslEnabled: Boolean,
             val source: Source,
         )
 
@@ -130,13 +132,21 @@ data class VvmCarrierConfig(
                 // Nothing here describes this carrier, and carrier mailboxes are
                 // usually reachable from their own network only, so assume one is
                 // needed. Getting that wrong only costs a wait before falling back.
-                Fallback(it.destinationNumber, it.portNumber, true, Source.MANUAL)
+                // Encryption is left off, since a mailbox that wants it says so
+                // in the credentials it hands back.
+                Fallback(it.destinationNumber, it.portNumber, true, false, Source.MANUAL)
             }
         }
 
         private fun builtInFallback(context: Context, subscriptionId: Int): Fallback? {
             return VvmKnownCarriers.lookup(context, subscriptionId)?.let {
-                Fallback(it.destinationNumber, it.portNumber, it.cellularDataRequired, Source.BUILT_IN)
+                Fallback(
+                    it.destinationNumber,
+                    it.portNumber,
+                    it.cellularDataRequired,
+                    it.sslEnabled,
+                    Source.BUILT_IN,
+                )
             }
         }
     }

@@ -21,14 +21,21 @@ object VvmKnownCarriers {
         val destinationNumber: String,
         val portNumber: Int,
         val cellularDataRequired: Boolean,
+        val sslEnabled: Boolean,
     )
 
     private val BY_MCC_MNC: Map<String, Entry> = buildMap {
         // Orange France, from AOSP's own table in
         // packages/services/Telephony/res/xml/vvm_config.xml.
-        val orangeFrance = Entry("21101", 20481, cellularDataRequired = true)
+        val orangeFrance = Entry("21101", 20481, cellularDataRequired = true, sslEnabled = false)
         put("20801", orangeFrance)
         put("20802", orangeFrance)
+
+        // Free Mobile France, read off a device whose vendor database does
+        // carry the entry, since no published table lists it. The same SIM in a
+        // handset whose database omits it reports no voicemail service at all,
+        // which is what this covers.
+        put("20815", Entry("2051", 5499, cellularDataRequired = true, sslEnabled = true))
     }
 
     fun lookup(context: Context, subscriptionId: Int): Entry? =
