@@ -257,8 +257,6 @@
     <string name="settings_group_color">Colour</string>
     <string name="settings_group_avatars">Avatars</string>
     <string name="settings_group_app_icon">App icon</string>
-    <string name="settings_app_icon">Icon colour</string>
-    <string name="settings_app_icon_supporting">Pick the colour of the icon on your home screen</string>
     <string name="app_icon_change_title">Change the app icon?</string>
     <string name="app_icon_change_message">AukDialer will close so your home screen can pick up the new icon. Open it again straight after.</string>
     <string name="app_icon_change_confirm">Change and close</string>

@@ -239,8 +239,6 @@
     <string name="settings_interface_restart_action">Redémarrer</string>
     <string name="settings_interface_material_you">Thème Material You</string>
     <string name="settings_group_app_icon">Icône de l’application</string>
-    <string name="settings_app_icon">Couleur de l’icône</string>
-    <string name="settings_app_icon_supporting">Choisissez la couleur de l’icône sur votre écran d’accueil</string>
     <string name="app_icon_change_title">Changer l’icône ?</string>
     <string name="app_icon_change_message">AukDialer va se fermer pour que votre écran d’accueil affiche la nouvelle icône. Rouvrez l’application juste après.</string>
     <string name="app_icon_change_confirm">Changer et fermer</string>
