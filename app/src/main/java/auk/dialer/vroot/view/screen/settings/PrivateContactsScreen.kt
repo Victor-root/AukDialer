@@ -95,8 +95,8 @@ fun PrivateContactsScreen(
             privateContacts
         } else {
             privateContacts.filter {
-                (it.name ?: "").contains(searchQuery, ignoreCase = true) ||
-                (it.phoneNumbers ?: emptyList()).any { num -> num.contains(searchQuery) }
+                it.name.contains(searchQuery, ignoreCase = true) ||
+                it.phoneNumbers.any { num -> num.contains(searchQuery) }
             }
         }
     }

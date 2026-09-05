@@ -298,7 +298,7 @@ fun InterfaceScreen(
                                 prefs.setInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, it)
                             }
                         ) { value, selected ->
-                            val icon = defaultTabIcon(value) ?: Icons.Outlined.SpaceDashboard
+                            val icon = defaultTabIcon(value)
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,

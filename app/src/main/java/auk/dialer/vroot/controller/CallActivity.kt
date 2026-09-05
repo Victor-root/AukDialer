@@ -217,9 +217,9 @@ class CallActivity : ComponentActivity() {
                                 targetCall.details.state
                             }
                             val connectTime = if (isDisplayed) {
-                                displaySession?.connectTimeMillis ?: 0L
+                                displaySession.connectTimeMillis
                             } else {
-                                targetCall.details?.connectTimeMillis ?: 0L
+                                targetCall.details.connectTimeMillis
                             }
 
                             ExpressiveCallScreen(

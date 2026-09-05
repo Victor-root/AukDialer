@@ -23,7 +23,6 @@ fun rememberClipboardCopy(): (String) -> Unit {
             scope.launch {
                 clipboard.setClipEntry(ClipData.newPlainText("", text).toClipEntry())
             }
-            Unit
         }
     }
 }
