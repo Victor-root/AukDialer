@@ -34,6 +34,8 @@
     <string name="content_desc_scroll_to_top">Retour en haut</string>
     <string name="sim_picker_title">Choisir la carte SIM</string>
     <string name="sim_picker_unknown_sim">SIM inconnue</string>
+    <string name="sim_slot_unknown_label">SIM %1$d (%2$s)</string>
+    <string name="sim_slot_supporting">Emplacement %1$d</string>
     <string name="selection_count_selected">%1$d sélectionné(s)</string>
     <string name="label_unknown">Inconnu</string>
     <string name="label_unknown_number">Numéro inconnu</string>
@@ -86,7 +88,7 @@
     <string name="default_dialer_denied_message">AukDialer ne peut pas fonctionner sans cette autorisation. Veuillez réessayer.</string>
     <string name="default_dialer_set_as_default">Définir par défaut</string>
     <!-- Top bar / bottom navigation -->
-    <string name="top_bar_search_placeholder">Rechercher dans AukDialer</string>
+    <string name="top_bar_search_placeholder">Rechercher</string>
     <string name="content_desc_search">Rechercher</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">Historique des appels</string>
@@ -143,6 +145,7 @@
     <string name="contact_qr_code">QR code</string>
     <string name="contact_qr_code_description">Afficher le QR code du contact</string>
     <string name="contact_move_to_public_storage">Déplacer vers le stockage public</string>
+    <string name="contact_move_to_account">Déplacer vers un compte...</string>
     <string name="contact_move_to_private_storage">Déplacer vers le stockage privé</string>
     <string name="contact_visible_to_other_apps">Rendre visible aux autres applications</string>
     <string name="contact_hidden_from_other_apps">Masquer aux autres applications</string>
@@ -159,6 +162,8 @@
     <string name="contact_edit_private_storage_description">Non visible par les autres applications</string>
     <string name="contact_edit_identity_header">Identité</string>
     <string name="contact_edit_full_name">Nom complet</string>
+    <string name="contact_edit_first_name">Prénom</string>
+    <string name="contact_edit_last_name">Nom</string>
     <string name="contact_edit_nickname">Surnom</string>
     <string name="contact_edit_phone_numbers_header">Numéros de téléphone</string>
     <string name="contact_edit_phone_field_label">Téléphone</string>
@@ -184,6 +189,12 @@
     <string name="search_results_header">Résultats de recherche</string>
     <string name="search_contacts_permission_title">Autorisation d’accès aux contacts requise</string>
     <string name="search_contacts_permission_description">Pour rechercher dans vos contacts et identifier les appels entrants, AukDialer a besoin d’accéder à vos contacts.</string>
+    <string name="content_desc_create_new_contact">Créer un nouveau contact</string>
+    <string name="contact_selection_hero_supporting">%1$d contacts disponibles • Appuyez pour sélectionner ou saisissez un numéro personnalisé</string>
+    <string name="contact_selection_filter_all">Tous (%1$d)</string>
+    <string name="contact_selection_use_number">Utiliser le numéro : %1$s</string>
+    <string name="contact_selection_tap_to_select">Appuyez pour sélectionner ce numéro personnalisé</string>
+    <string name="contact_selection_more_numbers">%1$s (+%2$d autres)</string>
     <!-- Call screen -->
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Appel terminé</string>
@@ -191,6 +202,7 @@
     <string name="call_status_calling">Appel en cours...</string>
     <string name="call_status_incoming">Appel entrant</string>
     <string name="call_status_connecting">Connexion...</string>
+    <string name="call_status_disconnecting">Fin de l’appel...</string>
     <string name="audio_route_handset">Combiné</string>
     <string name="audio_route_speaker">Haut-parleur</string>
     <string name="audio_route_headset">Casque</string>
@@ -219,6 +231,7 @@
     <!-- Settings > root -->
     <string name="settings_title">Paramètres</string>
     <string name="settings_donate">Faire un don</string>
+    <string name="settings_header_subtitle">v%1$s • Préférences et personnalisation</string>
     <string name="settings_interface_headline">Interface</string>
     <string name="settings_interface_supporting">Thème, couleurs et accessibilité</string>
     <string name="settings_sound_vibration_headline">Son et vibration</string>
@@ -416,6 +429,12 @@
     <string name="settings_private_title">Contacts privés</string>
     <string name="content_desc_import">Importer</string>
     <string name="content_desc_export">Exporter</string>
+    <string name="action_import">Importer</string>
+    <string name="action_export">Exporter</string>
+    <string name="private_contacts_select_title">Sélectionner des contacts à rendre privés</string>
+    <string name="private_contacts_make_private_action">Rendre privé</string>
+    <string name="private_contacts_pick_button">Choisir des contacts à rendre privés</string>
+    <string name="private_contacts_pick_short_button">Choisir des contacts</string>
     <string name="settings_private_empty">Aucun contact privé trouvé</string>
     <string name="settings_private_manage_hint">Gérez vos contacts locaux chiffrés</string>
     <!-- Settings > Speed dial -->
@@ -460,6 +479,18 @@
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Développeur principal</string>
     <string name="contributor_role_developer">Développeur</string>
+    <string name="nav_favorites">Favoris</string>
+    <string name="favorites_permission_title">Autorisation d’accès aux contacts requise</string>
+    <string name="favorites_permission_description">Autorisez l’accès à vos contacts pour afficher vos favoris ici.</string>
+    <string name="favorites_empty_title">Aucun favori pour l’instant</string>
+    <string name="favorites_empty_description">Marquez un contact comme favori pour le voir apparaître dans cette grille.</string>
+    <string name="favorites_drag_to_reorder">Glisser pour réorganiser</string>
+    <string name="favorites_add_title">Ajouter un contact favori</string>
+    <string name="favorites_add_button">Ajouter un favori</string>
+    <string name="favorites_collapse">Réduire les favoris</string>
+    <string name="favorites_expand">Déployer les favoris</string>
+    <string name="blocked_select_contact">Sélectionner un contact</string>
+    <string name="blocked_search_contact_hint">Rechercher un nom ou un numéro...</string>
     <!-- Favorites -->
     <!-- Bottom navigation layout -->
     <!-- Blocking -->
@@ -470,6 +501,23 @@
     <string name="video_call_title">Appel vidéo</string>
     <string name="video_call_chooser_with">Appel vidéo avec</string>
     <string name="video_call_system">Appel vidéo du système</string>
+    <string name="callbg_image_unavailable">Impossible de charger l’image de fond d’appel</string>
+    <string name="callin_handle_horizontal_desc">Appel entrant. Glissez à droite pour répondre, à gauche pour refuser.</string>
+    <string name="callin_handle_vertical_desc">Appel entrant. Glissez vers le haut pour répondre, vers le bas pour refuser.</string>
+    <string name="callin_handle_slide_desc">Appel entrant. Glissez vers la droite pour répondre.</string>
+    <string name="callin_action_answer">Répondre à l’appel</string>
+    <string name="callin_action_decline">Refuser l’appel</string>
+    <string name="callin_action_message">Répondre par un message</string>
+    <string name="callin_waiting_actions">Options d’appel en attente</string>
+    <string name="callkp_digit_desc">Composer %1$s</string>
+    <string name="callkp_entered_desc">Chiffres saisis : %1$s</string>
+    <string name="callkp_entered_empty">Aucun chiffre saisi</string>
+    <string name="imei_dialog_title">Informations sur l’appareil (IMEI)</string>
+    <string name="imei_label">IMEI %1$d</string>
+    <string name="meid_label">MEID</string>
+    <string name="serial_label">Numéro de série</string>
+    <string name="imei_copied">Copié dans le presse-papiers</string>
+    <string name="imei_not_available">Non disponible sur cet appareil</string>
     <!-- Call screen background and active controls -->
     <!-- Incoming call controls and in-call keypad -->
     <!-- IMEI / Secret codes -->
@@ -481,6 +529,36 @@
     <string name="settings_interface_gradient_avatars_supporting">Utilise un fond en dégradé de plusieurs couleurs</string>
     <string name="settings_interface_merge_favorites">Favoris dans les Récents</string>
     <string name="settings_interface_merge_favorites_supporting">Garde la rangée de favoris en haut du journal d’appels</string>
+    <string name="action_block">Bloquer</string>
+    <string name="action_unblock">Débloquer</string>
+    <string name="action_block_number">Bloquer le numéro</string>
+    <string name="action_unblock_number">Débloquer le numéro</string>
+    <string name="blocked_list_title">Numéros bloqués</string>
+    <string name="blocked_list_empty">Vous n’avez encore bloqué aucun numéro.</string>
+    <string name="blocked_list_item_supporting">Les appels de ce numéro sont bloqués</string>
+    <string name="blocked_add_number">Bloquer un numéro</string>
+    <string name="blocked_add_number_hint">Numéro de téléphone</string>
+    <string name="contact_block">Bloquer le contact</string>
+    <string name="contact_block_supporting">Ne plus recevoir d’appels de ce contact</string>
+    <string name="contact_unblock">Débloquer le contact</string>
+    <string name="contact_unblock_supporting">Autoriser à nouveau les appels de ce contact</string>
+    <string name="call_log_block_title">Bloquer ces numéros ?</string>
+    <string name="call_log_block_message">Les appels des %1$d entrées sélectionnées seront bloqués.</string>
+    <string name="blocked_select_title">Bloquer des numéros ou des contacts</string>
+    <string name="blocked_select_or_enter_button">Sélectionner des contacts ou saisir un numéro</string>
+    <string name="blocked_search_list_placeholder">Rechercher dans la liste des numéros bloqués...</string>
+    <string name="blocked_numbers_count">%1$d numéros bloqués</string>
+    <string name="blocked_unblock_confirm_message">Débloquer %1$s ?</string>
+    <string name="contact_call_background">Fond d’écran d’appel</string>
+    <string name="contact_call_background_set">Image personnalisée sélectionnée</string>
+    <string name="contact_call_background_none">Utiliser le fond par défaut</string>
+    <string name="contact_call_background_choose">Choisir une image</string>
+    <string name="contact_call_background_change">Changer l’image</string>
+    <string name="contact_call_background_remove">Retirer le fond</string>
+    <string name="contact_call_background_saving">Enregistrement de l’image…</string>
+    <string name="contact_call_background_error">Impossible d’enregistrer cette image</string>
+    <string name="contact_call_background_no_target">Enregistrez d’abord le numéro comme contact</string>
+    <string name="contact_call_background_preview">Aperçu du fond d’écran d’appel</string>
     <string name="settings_interface_avatar_shape_arch">Arche</string>
     <string name="settings_interface_avatar_shape_burst">Éclat</string>
     <string name="settings_interface_avatar_shape_clover">Trèfle</string>
@@ -501,10 +579,23 @@
     <string name="settings_bottom_nav_reset">Réinitialiser</string>
     <string name="settings_call_default_background">Fond d’écran d’appel</string>
     <string name="settings_call_default_background_supporting">Affiché sur chaque appel entrant et sortant, sauf si le contact a son propre fond.</string>
+    <string name="action_remove">Retirer</string>
+    <string name="action_record">Enregistrer</string>
+    <string name="action_stop_recording">Arrêter</string>
+    <string name="call_recording_in_progress">Enregistrement</string>
+    <string name="call_recordings_title">Enregistrements</string>
+    <string name="call_recordings_supporting">Lire, partager ou supprimer les enregistrements sauvegardés</string>
+    <string name="call_recordings_empty">Aucun enregistrement</string>
+    <string name="call_recordings_empty_description">Les enregistrements réalisés pendant vos appels apparaîtront ici.</string>
+    <string name="call_recordings_play">Lire</string>
+    <string name="call_recordings_share">Partager l’enregistrement</string>
+    <string name="call_recordings_delete_title">Supprimer l’enregistrement ?</string>
+    <string name="call_recordings_delete_message">Cet enregistrement sera définitivement supprimé de votre appareil.</string>
     <string name="settings_call_default_background_none">Non défini, les appels utilisent le thème de l’application</string>
     <string name="settings_call_default_background_set">Une image personnalisée est affichée sur chaque appel</string>
     <string name="settings_call_default_background_choose">Choisir une image</string>
     <string name="settings_call_default_background_change">Modifier</string>
+    <string name="settings_group_work_in_progress">En cours de développement</string>
     <string name="settings_call_recording">Enregistrement des appels</string>
     <string name="settings_call_recording_supporting">Affiche un bouton d’enregistrement pendant les appels</string>
     <string name="settings_call_recording_auto">Enregistrer tous les appels</string>
@@ -516,4 +607,6 @@
     <string name="settings_call_waiting_enable">Activer l’appel en attente</string>
     <string name="settings_call_waiting_disable">Désactiver l’appel en attente</string>
     <string name="settings_call_waiting_check">Vérifier l’état actuel</string>
+    <string name="call_waiting_answer_hold">Répondre et mettre en attente</string>
+    <string name="call_waiting_end_and_answer">Raccrocher et répondre</string>
 </resources>

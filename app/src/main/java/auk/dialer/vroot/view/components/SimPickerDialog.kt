@@ -47,7 +47,12 @@ fun SimPickerDialog(
         return
     }
 
+    // Read here rather than inside the plain (T) -> String lambdas below: stringResource is a
+    // composable function, and those lambdas are called outside composition. The patterns still
+    // carry their %1$d / %2$s placeholders; each per-item index is substituted with String.format.
     val unknownSimLabel = stringResource(R.string.sim_picker_unknown_sim)
+    val unknownSimSlotPattern = stringResource(R.string.sim_slot_unknown_label)
+    val slotSupportingPattern = stringResource(R.string.sim_slot_supporting)
 
     AukSelectionDialog(
         onDismissRequest = onDismissRequest,
@@ -60,7 +65,7 @@ fun SimPickerDialog(
                 labelStr
             } else {
                 val index = phoneAccounts.indexOf(handle) + 1
-                "SIM $index ($unknownSimLabel)"
+                String.format(unknownSimSlotPattern, index, unknownSimLabel)
             }
         },
         onItemSelected = onSimSelected,
@@ -73,7 +78,7 @@ fun SimPickerDialog(
             } else if (!desc.isNullOrBlank()) {
                 desc
             } else {
-                "Slot ${phoneAccounts.indexOf(handle) + 1}"
+                String.format(slotSupportingPattern, phoneAccounts.indexOf(handle) + 1)
             }
         },
         icon = Icons.Outlined.SimCard,

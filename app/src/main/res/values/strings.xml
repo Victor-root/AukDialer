@@ -35,6 +35,8 @@
     <string name="content_desc_scroll_to_top">Scroll to top</string>
     <string name="sim_picker_title">Select SIM Card</string>
     <string name="sim_picker_unknown_sim">Unknown SIM</string>
+    <string name="sim_slot_unknown_label">SIM %1$d (%2$s)</string>
+    <string name="sim_slot_supporting">Slot %1$d</string>
     <string name="selection_count_selected">%1$d Selected</string>
     <string name="label_unknown">Unknown</string>
     <string name="label_unknown_number">Unknown Number</string>
@@ -91,7 +93,7 @@
     <string name="default_dialer_set_as_default">Set as default</string>
 
     <!-- Top bar / bottom navigation -->
-    <string name="top_bar_search_placeholder">Search in AukDialer</string>
+    <string name="top_bar_search_placeholder">Search</string>
     <string name="content_desc_search">Search</string>
 
     <!-- Recents / Call log -->
@@ -151,6 +153,7 @@
     <string name="contact_qr_code">QR Code</string>
     <string name="contact_qr_code_description">Show contact QR code</string>
     <string name="contact_move_to_public_storage">Move to Public Storage</string>
+    <string name="contact_move_to_account">Move to Account...</string>
     <string name="contact_move_to_private_storage">Move to Private Storage</string>
     <string name="contact_visible_to_other_apps">Make visible to other apps</string>
     <string name="contact_hidden_from_other_apps">Hide from other apps</string>
@@ -197,6 +200,12 @@
     <string name="search_results_header">Search Results</string>
     <string name="search_contacts_permission_title">Contacts permission required</string>
     <string name="search_contacts_permission_description">To search your contacts and identify incoming calls, AukDialer needs access to your contacts.</string>
+    <string name="content_desc_create_new_contact">Create New Contact</string>
+    <string name="contact_selection_hero_supporting">%1$d contacts available • Tap to select or enter custom number</string>
+    <string name="contact_selection_filter_all">All (%1$d)</string>
+    <string name="contact_selection_use_number">Use number: %1$s</string>
+    <string name="contact_selection_tap_to_select">Tap to select this custom number</string>
+    <string name="contact_selection_more_numbers">%1$s (+%2$d more)</string>
 
     <!-- Call screen -->
     <string name="call_screen_sim_label">SIM %1$s</string>
@@ -237,6 +246,7 @@
     <!-- Settings > root -->
     <string name="settings_title">Settings</string>
     <string name="settings_donate">Donate</string>
+    <string name="settings_header_subtitle">v%1$s • Preferences &amp; Customization</string>
     <string name="settings_interface_headline">Interface</string>
     <string name="settings_interface_supporting">Theme, colors, and accessibility</string>
     <string name="settings_sound_vibration_headline">Sound &amp; Vibration</string>
@@ -457,6 +467,12 @@
     <string name="settings_private_title">Private Contacts</string>
     <string name="content_desc_import">Import</string>
     <string name="content_desc_export">Export</string>
+    <string name="action_import">Import</string>
+    <string name="action_export">Export</string>
+    <string name="private_contacts_select_title">Select Contacts to Make Private</string>
+    <string name="private_contacts_make_private_action">Make Private</string>
+    <string name="private_contacts_pick_button">Pick Contacts to Make Private</string>
+    <string name="private_contacts_pick_short_button">Pick Contacts</string>
     <string name="settings_private_empty">No private contacts found</string>
     <string name="settings_private_manage_hint">Manage your encrypted local contacts</string>
 
@@ -550,6 +566,11 @@
     <string name="contact_unblock_supporting">Allow calls from this contact again</string>
     <string name="call_log_block_title">Block numbers?</string>
     <string name="call_log_block_message">Calls from the %1$d selected entries will be blocked.</string>
+    <string name="blocked_select_title">Block Numbers or Contacts</string>
+    <string name="blocked_select_or_enter_button">Select Contacts or Enter Number</string>
+    <string name="blocked_search_list_placeholder">Search blocked list...</string>
+    <string name="blocked_numbers_count">%1$d numbers blocked</string>
+    <string name="blocked_unblock_confirm_message">Unblock %1$s?</string>
 
     <!-- Contact call screen background -->
     <string name="contact_call_background">Call screen background</string>
@@ -574,6 +595,7 @@
     <string name="call_waiting_end_and_answer">End and answer</string>
 
     <!-- Call recording -->
+    <string name="settings_group_work_in_progress">Work in Progress</string>
     <string name="settings_call_recording">Call recording</string>
     <string name="settings_call_recording_supporting">Show a record button during calls</string>
     <string name="settings_call_recording_auto">Record every call</string>

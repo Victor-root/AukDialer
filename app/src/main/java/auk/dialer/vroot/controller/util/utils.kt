@@ -44,8 +44,13 @@ fun formatDateHeader(context: Context, timestamp: Long): String {
     val relative = getRelativeDay(context, timestamp)
     if (relative != null) return relative
 
-    val pattern = if (isSameYear(timestamp, System.currentTimeMillis())) "MMMM d" else "MMMM d, yyyy"
-    return SimpleDateFormat(pattern, Locale.getDefault()).format(Date(timestamp))
+    // A fixed "MMMM d" pattern always reads month-first, which is only how English orders it -
+    // French puts the day first ("3 septembre", not "septembre 3"). getBestDateTimePattern asks
+    // the locale for the right order instead of assuming one.
+    val locale = Locale.getDefault()
+    val skeleton = if (isSameYear(timestamp, System.currentTimeMillis())) "MMMMd" else "yMMMMd"
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
+    return SimpleDateFormat(pattern, locale).format(Date(timestamp))
 }
 
 fun formatDate(context: Context, timestamp: Long): String {
@@ -64,8 +69,24 @@ fun formatDuration(durationSeconds: Long): String {
     return DateUtils.formatElapsedTime(durationSeconds)
 }
 
+/**
+ * The call log stores each number exactly as it was dialled or reported by the network, so the
+ * same French line can turn up as "+33476289070" one call and "0476289070" the next, depending on
+ * nothing more than which way it happened to arrive that time. formatNumber only adds spacing, it
+ * never reconciles the two, so the raw +33 form is folded back to the familiar 0-prefixed one first.
+ * A genuinely foreign number has no +33 to fold and keeps its own country code, as it should.
+ */
 fun formatPhoneNumber(number: String): String {
-    return PhoneNumberUtils.formatNumber(number, Locale.getDefault().country) ?: number
+    return PhoneNumberUtils.formatNumber(toNationalFrenchNumber(number), Locale.getDefault().country) ?: number
+}
+
+private fun toNationalFrenchNumber(number: String): String {
+    val stripped = number.filterNot { it.isWhitespace() || it in "()-." }
+    return when {
+        stripped.startsWith("+33") -> "0" + stripped.removePrefix("+33")
+        stripped.startsWith("0033") -> "0" + stripped.removePrefix("0033")
+        else -> number
+    }
 }
 
 fun normalizePhoneNumber(number: String): String {
