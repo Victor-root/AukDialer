@@ -62,6 +62,7 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
+import auk.dialer.vroot.view.screen.transitions.SlideUpTransitions
 import auk.dialer.vroot.view.theme.callColors
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -76,7 +77,7 @@ import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
     ExperimentalComposeUiApi::class
 )
-@Destination<RootGraph>
+@Destination<RootGraph>(style = SlideUpTransitions::class)
 @Composable
 fun DialPadScreen(
     navController: NavController,
