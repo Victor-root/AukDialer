@@ -192,9 +192,6 @@ fun aukAccentCardBorder(width: Dp = 1.dp): BorderStroke {
 
 private const val AccentBorderHueShift = 70f
 
-/** How much of the card's own colour sits over the wash behind it. */
-private const val AukCardVeilAlpha = 0.55f
-
 @Composable
 fun AukExpressiveCard(
     modifier: Modifier = Modifier,
@@ -223,7 +220,7 @@ fun AukExpressiveCard(
         // reading as the same background as the page around it rather than as a second, separately
         // computed patch of colour that stops dead at the card's own edge.
         val resolvedContainerColor = containerColor
-            ?: MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = AukCardVeilAlpha)
+            ?: MaterialTheme.colorScheme.surfaceContainerLow.aukVeiled()
         Card(
             modifier = modifier.fillMaxWidth(),
             shape = resolvedShape,
