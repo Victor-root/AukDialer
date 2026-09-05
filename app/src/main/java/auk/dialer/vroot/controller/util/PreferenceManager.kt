@@ -277,7 +277,6 @@ class PreferenceManager(context: Context) {
         const val KEY_DTMF_TONE_VOLUME = "dtmf_tone_volume"
         const val KEY_HAPTIC_LIST_SCROLL = "haptic_list_scroll"
         const val KEY_MISSED_CALL_NOTIFICATIONS = "missed_call_notifications"
-        const val KEY_SHOW_SIM_ICON_HISTORY = "show_sim_icon_history"
         const val KEY_SEARCH_MATCH_MODE = "search_match_mode"
         const val KEY_QUICK_RESPONSE_ENABLED = "quick_response_enabled"
         const val KEY_INCOMING_CALL_UI_MODE = "incoming_call_ui_mode"

@@ -95,13 +95,13 @@ fun aukSurfaceStyle(): AukSurfaceStyle {
 
 object AukListItemDefaults {
     val MinHeight: Dp = 48.dp
-    val AvatarSize: Dp = 44.dp
+    val AvatarSize: Dp = 40.dp
     val CompactAvatarSize: Dp = 42.dp
     val HorizontalPadding: Dp = 12.dp
     val CompactHorizontalPadding: Dp = 10.dp
-    val VerticalPadding: Dp = 10.dp
+    val VerticalPadding: Dp = 6.dp
     val CompactVerticalPadding: Dp = 6.dp
-    val Spacing: Dp = 16.dp
+    val Spacing: Dp = 14.dp
     val CompactSpacing: Dp = 14.dp
     val TrailingSpacing: Dp = 8.dp
     val TrailingIconSize: Dp = 20.dp
@@ -231,7 +231,7 @@ fun AukSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
     trailingContent: @Composable (() -> Unit)? = null
 ) {
     Row(
