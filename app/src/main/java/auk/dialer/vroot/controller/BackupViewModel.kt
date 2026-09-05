@@ -65,23 +65,23 @@ class BackupViewModel(
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                        var line: String?
                         var currentName = ""
                         val currentNumbers = mutableListOf<String>()
                         val currentEmails = mutableListOf<String>()
-                        
-                        while (reader.readLine().also { line = it } != null) {
+
+                        while (true) {
+                            val line = reader.readLine() ?: break
                             when {
-                                line!!.startsWith("FN:") -> currentName = line!!.substring(3)
-                                line!!.startsWith("TEL") -> {
-                                    val parts = line!!.split(":")
+                                line.startsWith("FN:") -> currentName = line.substring(3)
+                                line.startsWith("TEL") -> {
+                                    val parts = line.split(":")
                                     if (parts.size > 1) currentNumbers.add(parts[1])
                                 }
-                                line!!.startsWith("EMAIL") -> {
-                                    val parts = line!!.split(":")
+                                line.startsWith("EMAIL") -> {
+                                    val parts = line.split(":")
                                     if (parts.size > 1) currentEmails.add(parts[1])
                                 }
-                                line!!.startsWith("END:VCARD") -> {
+                                line.startsWith("END:VCARD") -> {
                                     if (currentName.isNotEmpty()) {
                                         contactsRepo.saveContact(
                                             Contact(
