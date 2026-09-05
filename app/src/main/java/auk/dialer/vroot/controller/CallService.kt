@@ -1,0 +1,638 @@
+package auk.dialer.vroot.controller
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.net.Uri
+import android.provider.BlockedNumberContract
+import android.telecom.Call
+import android.telecom.CallAudioState
+import android.telecom.DisconnectCause
+import android.telecom.InCallService
+import android.telecom.TelecomManager
+import android.telecom.VideoProfile
+import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
+import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.modal.`interface`.IContactsRepository
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.koin.android.ext.android.inject
+
+data class CallSession(
+    val call: Call,
+    val state: Int,
+    val updateTime: Long = System.currentTimeMillis(),
+    val connectTimeMillis: Long = 0L
+)
+
+class CallService : InCallService() {
+
+    private val contactsRepository: IContactsRepository by inject()
+    private val preferenceManager: PreferenceManager by inject()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var redialCount = 0
+    private val callStartTimes = mutableMapOf<Call, Long>()
+
+    private fun getContactBitmap(photoUri: String?): Bitmap? {
+        if (photoUri == null) return null
+        return try {
+            val uri = Uri.parse(photoUri)
+            val inputStream = contentResolver.openInputStream(uri)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    companion object {
+        private const val CHANNEL_ID = "call_channel"
+        private const val MISSED_CHANNEL_ID = "missed_call_channel"
+        private const val NOTIFICATION_ID = 101
+
+        private val _currentCallSession = MutableStateFlow<CallSession?>(null)
+        val currentCallSession = _currentCallSession.asStateFlow()
+
+        private val _allCalls = MutableStateFlow<List<Call>>(emptyList())
+        val allCalls = _allCalls.asStateFlow()
+
+        private val _preferredCall = MutableStateFlow<Call?>(null)
+
+        private val _audioState = MutableStateFlow<CallAudioState?>(null)
+        val audioState = _audioState.asStateFlow()
+
+        val isActivityVisible = MutableStateFlow(false)
+
+        private var instance: CallService? = null
+
+        fun setPreferredCall(call: Call) {
+            _preferredCall.value = call
+            instance?.updateCallState()
+        }
+
+        fun mute(muted: Boolean) {
+            instance?.setMuted(muted)
+        }
+
+        fun toggleMute() {
+            val currentMute = _audioState.value?.isMuted ?: false
+            mute(!currentMute)
+        }
+
+        /**
+         * Still on the CallAudioState route API rather than the CallEndpoint
+         * one that replaced it in Android 14. The two describe the audio
+         * devices differently, a bitmask against a list of endpoints, so
+         * supporting both means carrying both models for the Android 12 and 13
+         * devices this app still targets. Worth doing, but as its own change:
+         * everything here is on the live-call path.
+         */
+        @Suppress("DEPRECATION")
+        fun setAudioRoute(route: Int) {
+            instance?.setAudioRoute(route)
+        }
+
+        @Suppress("DEPRECATION")
+        fun cycleAudioRoute() {
+            val state = _audioState.value ?: return
+            val supported = state.supportedRouteMask
+            val current = state.route
+
+            val nextRoute = when (current) {
+                CallAudioState.ROUTE_EARPIECE -> {
+                    if ((supported and CallAudioState.ROUTE_BLUETOOTH) != 0) CallAudioState.ROUTE_BLUETOOTH
+                    else if ((supported and CallAudioState.ROUTE_SPEAKER) != 0) CallAudioState.ROUTE_SPEAKER
+                    else current
+                }
+                CallAudioState.ROUTE_WIRED_HEADSET -> {
+                    if ((supported and CallAudioState.ROUTE_SPEAKER) != 0) CallAudioState.ROUTE_SPEAKER
+                    else if ((supported and CallAudioState.ROUTE_BLUETOOTH) != 0) CallAudioState.ROUTE_BLUETOOTH
+                    else current
+                }
+                CallAudioState.ROUTE_BLUETOOTH -> {
+                    if ((supported and CallAudioState.ROUTE_SPEAKER) != 0) CallAudioState.ROUTE_SPEAKER
+                    else if ((supported and CallAudioState.ROUTE_EARPIECE) != 0) CallAudioState.ROUTE_EARPIECE
+                    else current
+                }
+                CallAudioState.ROUTE_SPEAKER -> {
+                    if ((supported and CallAudioState.ROUTE_EARPIECE) != 0) CallAudioState.ROUTE_EARPIECE
+                    else if ((supported and CallAudioState.ROUTE_WIRED_HEADSET) != 0) CallAudioState.ROUTE_WIRED_HEADSET
+                    else if ((supported and CallAudioState.ROUTE_BLUETOOTH) != 0) CallAudioState.ROUTE_BLUETOOTH
+                    else current
+                }
+                else -> if ((supported and CallAudioState.ROUTE_SPEAKER) != 0) CallAudioState.ROUTE_SPEAKER else current
+            }
+
+            if (nextRoute != current) {
+                instance?.setAudioRoute(nextRoute)
+            }
+        }
+
+        fun mergeCalls() {
+            val calls = instance?.getCalls() ?: return
+            if (calls.size >= 2) {
+                val activeCall = calls.find { it.details.state == Call.STATE_ACTIVE }
+                val heldCall = calls.find { it.details.state == Call.STATE_HOLDING }
+                if (activeCall != null && heldCall != null) {
+                    activeCall.conference(heldCall)
+                } else if (calls.size >= 2) {
+                    calls[0].conference(calls[1])
+                }
+            }
+        }
+
+        fun answerCall() {
+            _currentCallSession.value?.call?.answer(VideoProfile.STATE_AUDIO_ONLY)
+        }
+
+        fun answerRingingCall(endActive: Boolean) {
+            val calls = instance?.getCalls() ?: return
+            val ringing = calls.find { it.details.state == Call.STATE_RINGING } ?: return
+            val others = calls.filter { it != ringing && it.details.state != Call.STATE_DISCONNECTED }
+
+            others.forEach { other ->
+                try {
+                    if (endActive) other.disconnect() else if (other.details.state == Call.STATE_ACTIVE) other.hold()
+                } catch (e: Exception) {
+                }
+            }
+
+            try {
+                ringing.answer(VideoProfile.STATE_AUDIO_ONLY)
+            } catch (e: Exception) {
+            }
+        }
+
+        fun declineCall() {
+            val call = _currentCallSession.value?.call ?: return
+            try {
+                if (call.details.state == Call.STATE_RINGING) {
+                    call.reject(Call.REJECT_REASON_DECLINED)
+                } else {
+                    call.disconnect()
+                }
+            } catch (e: Exception) {
+                try { call.disconnect() } catch (e: Exception) {}
+            }
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
+        serviceScope.launch {
+            isActivityVisible.collect {
+                _currentCallSession.value?.call?.let { currentCall ->
+                    updateNotification(currentCall)
+                }
+            }
+        }
+    }
+
+    private val callCallback = object : Call.Callback() {
+        override fun onStateChanged(call: Call, state: Int) {
+            super.onStateChanged(call, state)
+            updateCallState()
+            
+            if (state == Call.STATE_ACTIVE) {
+                redialCount = 0
+                startAutoRecordingIfEnabled(call)
+            }
+
+            if (state == Call.STATE_DISCONNECTED) {
+                val cause = call.details.disconnectCause
+                handleDisconnect(call, cause)
+
+                val remaining = getCalls()?.filter { it.details.state != Call.STATE_DISCONNECTED } ?: emptyList()
+                if (remaining.isEmpty()) {
+                    removeForeground()
+                    cancelNotification()
+                }
+            } else {
+                updateNotification(call)
+            }
+        }
+    }
+
+    private fun startAutoRecordingIfEnabled(call: Call) {
+        if (!preferenceManager.getBoolean(PreferenceManager.KEY_CALL_RECORDING, false)) return
+        if (!preferenceManager.getBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, false)) return
+        if (CallRecorder.isRecording.value) return
+
+        val number = call.details.handle?.schemeSpecificPart ?: ""
+        serviceScope.launch(Dispatchers.IO) {
+            val name = if (number.isNotEmpty()) {
+                try { contactsRepository.getContactByNumber(number)?.name } catch (e: Exception) { null } ?: number
+            } else {
+                getString(R.string.label_unknown_number)
+            }
+            CallRecorder.start(this@CallService, name)
+        }
+    }
+
+    private fun handleDisconnect(call: Call, cause: DisconnectCause?) {
+        val number = call.details.handle?.schemeSpecificPart ?: ""
+
+        if (CallRecorder.isRecording.value &&
+            (getCalls()?.none { it != call && it.details.state == Call.STATE_ACTIVE } != false)) {
+            CallRecorder.stop()
+        }
+
+        if (cause?.code == DisconnectCause.BUSY &&
+            preferenceManager.getBoolean(PreferenceManager.KEY_AUTO_REDIAL_BUSY, false)) {
+            
+            val maxAttempts = preferenceManager.getInt(PreferenceManager.KEY_REDIAL_ATTEMPTS, 3)
+            val delayMs = preferenceManager.getInt(PreferenceManager.KEY_REDIAL_DELAY, 3000).toLong()
+            
+            if (redialCount < maxAttempts) {
+                redialCount++
+                serviceScope.launch {
+                    delay(delayMs)
+                    val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                }
+            }
+        }
+
+        val wasNeverConnected = call.details.connectTimeMillis == 0L
+        val isIncoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING
+        val isOutgoing = call.details.callDirection == Call.Details.DIRECTION_OUTGOING
+
+        if (isOutgoing && wasNeverConnected) {
+            val failMessage = when {
+                auk.dialer.vroot.controller.util.isAirplaneModeOn(this) ->
+                    getString(R.string.call_failed_airplane_mode)
+                cause?.code == DisconnectCause.RESTRICTED ->
+                    getString(R.string.call_failed_restricted)
+                cause?.code == DisconnectCause.ERROR ->
+                    cause.description?.toString()?.takeIf { it.isNotBlank() } ?: getString(R.string.call_failed_generic)
+                else -> null
+            }
+            if (failMessage != null) {
+                serviceScope.launch(Dispatchers.Main) {
+                    android.widget.Toast.makeText(applicationContext, failMessage, android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        
+        if (isIncoming && wasNeverConnected && (cause?.code == DisconnectCause.MISSED || cause?.code == DisconnectCause.REMOTE || cause?.code == DisconnectCause.REJECTED)) {
+            if (!isNumberBlocked(number) || preferenceManager.getInt(PreferenceManager.KEY_BLOCK_LOG_VISIBILITY, 0) == 1) {
+                showMissedCallNotification(call)
+            }
+        }
+    }
+
+    private fun isNumberBlocked(number: String): Boolean {
+        if (number.isEmpty()) return false
+        return try {
+            BlockedNumberContract.isBlocked(this, number)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun handleBlockedCall(call: Call, number: String) {
+        val method = preferenceManager.getInt(PreferenceManager.KEY_BLOCK_METHOD, 0)
+
+        if (method == 0) {
+            call.reject(Call.REJECT_REASON_DECLINED)
+        }
+
+        if (preferenceManager.getBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, true)) {
+            showBlockedNotification(number)
+        }
+    }
+
+    private fun showBlockedNotification(number: String) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
+            .setContentTitle(getString(R.string.notif_blocked_call_title))
+            .setContentText(getString(R.string.notif_blocked_call_text, number))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setAutoCancel(true)
+
+        notificationManager.notify(number.hashCode(), builder.build())
+    }
+
+    private fun showMissedCallNotification(call: Call) {
+        if (!preferenceManager.getBoolean(PreferenceManager.KEY_MISSED_CALL_NOTIFICATIONS, true)) {
+            return
+        }
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val channel = NotificationChannel(
+            MISSED_CHANNEL_ID,
+            getString(R.string.notif_channel_missed_calls),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            enableVibration(true)
+            setShowBadge(true)
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        val handle = call.details.handle
+        val number = handle?.schemeSpecificPart ?: ""
+
+        val contact = if (number.isNotEmpty()) {
+            try {
+                contactsRepository.getContactByNumber(number)
+            } catch (e: Exception) { null }
+        } else null
+
+        val contactName = contact?.name ?: number.ifEmpty { getString(R.string.label_unknown_number) }
+        val contactPhoto = getContactBitmap(contact?.photoUri)
+
+        val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+        val simLabel = call.details.accountHandle?.let {
+            try { telecomManager.getPhoneAccount(it)?.label?.toString() } catch (e: SecurityException) { null }
+        }
+
+        val intent = Intent(this, auk.dialer.vroot.MainActivity::class.java).apply {
+            action = "auk.dialer.vroot.ACTION_VIEW_RECENTS"
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 10, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val timeString = android.text.format.DateFormat.getTimeFormat(this).format(java.util.Date())
+
+        val missedCallText = buildString {
+            append(getString(R.string.notif_missed_call_text, contactName, timeString))
+            if (simLabel != null) {
+                append(" ")
+                append(getString(R.string.notif_via_sim, simLabel))
+            }
+        }
+
+        val builder = NotificationCompat.Builder(this, MISSED_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.sym_call_missed)
+            .setContentTitle(getString(R.string.notif_missed_call_title))
+            .setContentText(missedCallText)
+            .setLargeIcon(contactPhoto)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setColor(Color.RED)
+
+        notificationManager.notify(number.hashCode(), builder.build())
+    }
+
+    private fun updateCallState() {
+        val calls = getCalls() ?: emptyList()
+        _allCalls.value = ArrayList(calls)
+
+        calls.forEach { c ->
+            if (c.details.state == Call.STATE_ACTIVE) {
+                val detailsTime = c.details.connectTimeMillis
+                if (detailsTime > 0) {
+                    callStartTimes[c] = detailsTime
+                } else if (!callStartTimes.containsKey(c)) {
+                    callStartTimes[c] = System.currentTimeMillis()
+                }
+            }
+        }
+        callStartTimes.keys.retainAll(calls.toSet())
+
+        val preferred = _preferredCall.value
+        if (preferred != null && (preferred !in calls || preferred.details.state == Call.STATE_DISCONNECTED)) {
+            _preferredCall.value = null
+        }
+
+        val activePreferred = if (preferred != null && preferred.details.state != Call.STATE_DISCONNECTED && preferred.details.state != Call.STATE_HOLDING) preferred else null
+
+        val priorityCall = calls.find { it.details.state == Call.STATE_RINGING }
+            ?: activePreferred
+            ?: calls.find { it.details.state == Call.STATE_DIALING || it.details.state == Call.STATE_CONNECTING }
+            ?: calls.find { it.details.state == Call.STATE_ACTIVE }
+            ?: calls.find { it == preferred }
+            ?: calls.find { it.details.state == Call.STATE_HOLDING }
+            ?: calls.firstOrNull { it.details.state != Call.STATE_DISCONNECTED }
+
+        if (priorityCall != null) {
+            val connectTime = callStartTimes[priorityCall] ?: 0L
+            _currentCallSession.value = CallSession(priorityCall, priorityCall.details.state, connectTimeMillis = connectTime)
+        } else {
+            _currentCallSession.value = null
+        }
+    }
+
+    private fun removeForeground() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+    }
+
+    override fun onCallAdded(call: Call) {
+        super.onCallAdded(call)
+        instance = this
+        redialCount = 0
+        call.registerCallback(callCallback)
+
+        val number = call.details.handle?.schemeSpecificPart ?: ""
+        if (isNumberBlocked(number)) {
+            handleBlockedCall(call, number)
+            return
+        }
+
+        updateCallState()
+        updateNotification(call)
+
+        val intent = Intent(this, CallActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+        }
+    }
+
+    override fun onCallRemoved(call: Call) {
+        super.onCallRemoved(call)
+        call.unregisterCallback(callCallback)
+        updateCallState()
+        val calls = getCalls() ?: emptyList()
+        if (calls.isEmpty()) {
+            if (CallRecorder.isRecording.value) CallRecorder.stop()
+            removeForeground()
+            cancelNotification()
+        } else {
+            _currentCallSession.value?.call?.let { updateNotification(it) }
+        }
+    }
+
+    // OVERRIDE_DEPRECATION as well: the framework method this overrides is
+    // itself deprecated, and the compiler asks about the override separately.
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onCallAudioStateChanged(audioState: CallAudioState?) {
+        super.onCallAudioStateChanged(audioState)
+        _audioState.value = audioState
+        _currentCallSession.value?.call?.let { updateNotification(it) }
+    }
+
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            "ANSWER_CALL" -> {
+                answerCall()
+                val activityIntent = Intent(this, CallActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                }
+                startActivity(activityIntent)
+            }
+            "DECLINE_CALL" -> declineCall()
+            "TOGGLE_MUTE" -> toggleMute()
+            "TOGGLE_SPEAKER" -> cycleAudioRoute()
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun updateNotification(call: Call) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            getString(R.string.notif_channel_calls),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            enableVibration(true)
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        val handle = call.details.handle
+        val number = handle?.schemeSpecificPart ?: ""
+
+        val contact = if (number.isNotEmpty()) {
+            try {
+                contactsRepository.getContactByNumber(number)
+            } catch (e: Exception) { null }
+        } else null
+
+        val contactName = when {
+            contact != null -> contact.name
+            number.isNotEmpty() -> number
+            else -> getString(R.string.label_unknown_number)
+        }
+        
+        val contactPhoto = getContactBitmap(contact?.photoUri)
+
+        val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+        val accountHandle = call.details.accountHandle
+        val simLabel = accountHandle?.let {
+            try {
+                telecomManager.getPhoneAccount(it)?.label?.toString()
+            } catch (e: SecurityException) { null }
+        }
+        
+        val fullScreenIntent = Intent(this, CallActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        val fullScreenPendingIntent = PendingIntent.getActivity(
+            this,
+            if (call.details.state == Call.STATE_RINGING) call.hashCode() else 0,
+            fullScreenIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val answerIntent = Intent(this, CallService::class.java).apply { action = "ANSWER_CALL" }
+        val answerPendingIntent = PendingIntent.getService(this, 1, answerIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val declineIntent = Intent(this, CallService::class.java).apply { action = "DECLINE_CALL" }
+        val declinePendingIntent = PendingIntent.getService(this, 2, declineIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val speakerIntent = Intent(this, CallService::class.java).apply { action = "TOGGLE_SPEAKER" }
+        val speakerPendingIntent = PendingIntent.getService(this, 4, speakerIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val personBuilder = androidx.core.app.Person.Builder()
+            .setName(contactName)
+            .setImportant(true)
+        
+        if (contactPhoto != null) {
+            personBuilder.setIcon(IconCompat.createWithBitmap(contactPhoto))
+        }
+        val person = personBuilder.build()
+
+        val audioState = _audioState.value
+        val audioRoute = audioState?.route ?: CallAudioState.ROUTE_EARPIECE
+        val audioLabel = when (audioRoute) {
+            CallAudioState.ROUTE_SPEAKER -> getString(R.string.audio_route_speaker)
+            CallAudioState.ROUTE_BLUETOOTH -> {
+                try {
+                    audioState?.activeBluetoothDevice?.name ?: getString(R.string.audio_route_bluetooth)
+                } catch (e: SecurityException) {
+                    getString(R.string.audio_route_bluetooth)
+                }
+            }
+            CallAudioState.ROUTE_WIRED_HEADSET -> getString(R.string.audio_route_headset)
+            else -> getString(R.string.audio_route_handset)
+        }
+
+        val contentText = buildString {
+            if (call.details.state == Call.STATE_RINGING) append(getString(R.string.call_status_incoming)) else append(getString(R.string.notif_active_call))
+            if (!simLabel.isNullOrEmpty()) {
+                append(" ")
+                append(getString(R.string.notif_via_sim, simLabel))
+            }
+        }
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(if (call.details.state == Call.STATE_RINGING) android.R.drawable.sym_call_incoming else R.drawable.ic_call_ongoing)
+            .setContentTitle(contactName)
+            .setContentText(contentText)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setContentIntent(fullScreenPendingIntent)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(false)
+            .setSilent(call.details.state != Call.STATE_RINGING)
+            .setOnlyAlertOnce(call.details.state != Call.STATE_RINGING)
+            .setDefaults(if (call.details.state == Call.STATE_RINGING) NotificationCompat.DEFAULT_ALL else 0)
+            .setStyle(
+                if (call.details.state == Call.STATE_RINGING) {
+                    NotificationCompat.CallStyle.forIncomingCall(person, declinePendingIntent, answerPendingIntent)
+                } else {
+                    NotificationCompat.CallStyle.forOngoingCall(person, declinePendingIntent)
+                }
+            )
+
+        if (call.details.state == Call.STATE_RINGING) {
+            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        } else {
+            builder.addAction(
+                NotificationCompat.Action.Builder(
+                    android.R.drawable.stat_sys_speakerphone,
+                    audioLabel,
+                    speakerPendingIntent
+                ).build()
+            )
+        }
+
+        val notification = builder.build()
+        startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+    }
+
+    private fun cancelNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (CallRecorder.isRecording.value) CallRecorder.stop()
+        if (instance == this) instance = null
+        serviceScope.cancel()
+    }
+}

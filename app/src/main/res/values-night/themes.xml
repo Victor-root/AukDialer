@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="rivo_window_background">#FF111418</color>
-    <color name="rivo_splash_background">#FF111418</color>
+    <color name="auk_window_background">#FF111418</color>
+    <color name="auk_splash_background">#FF111418</color>
 
-    <style name="Theme.RivoPhone" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/rivo_window_background</item>
-        <item name="android:colorBackground">@color/rivo_window_background</item>
+    <style name="Theme.AukDialer" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/auk_window_background</item>
+        <item name="android:colorBackground">@color/auk_window_background</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -16,8 +16,8 @@
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/rivo_splash_background</item>
+        <item name="windowSplashScreenBackground">@color/auk_splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
-        <item name="postSplashScreenTheme">@style/Theme.RivoPhone</item>
+        <item name="postSplashScreenTheme">@style/Theme.AukDialer</item>
     </style>
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RivoPhone</string>
+    <string name="app_name">Телефон</string>
     <!-- Shared actions / generic labels reused across multiple screens -->
     <string name="action_cancel">Закрыть</string>
     <string name="action_confirm">Подтвердить</string>
@@ -80,23 +80,13 @@
     <string name="permission_popup_body">Чтобы убедиться, что все функции работают на вашем устройстве, пожалуйста, предоставьте необходимые разрешения. Некоторые производители, такие как Xiaomi или Oppo могут потребовать дополнительной настройки в настройках системы.</string>
     <string name="permission_popup_grant">Предоставить разрешения</string>
     <string name="permission_popup_settings">Открыть настройки</string>
-    <!-- Patreon support prompt (MainActivity) -->
-    <string name="patreon_prompt_title">Поддержка Rivo</string>
-    <string name="patreon_prompt_confirm">Поддержите нас</string>
-    <string name="patreon_prompt_dismiss">Может быть, позже</string>
-    <string name="patreon_prompt_body">Rivo — это бесплатный проект с открытым исходным кодом. Если вам нравится приложение, пожалуйста, поддержите его разработку на Patreon!</string>
-    <!-- Disable ads warning dialog -->
-    <string name="ads_disable_dialog_title">Поддержка Open-Source разработки</string>
-    <string name="ads_disable_dialog_body">Отображение рекламы помогает поддерживать Rivo бесплатным проектом с открытым исходным кодом. Без доходов от рекламы или пожертвований сообщества дальнейшая поддержка, исправление ошибок и разработка могут прекратиться. Вы действительно хотите отключить рекламу?</string>
-    <string name="ads_disable_dialog_confirm">Отключить рекламу</string>
-    <string name="ads_disable_dialog_keep">Реклама включена</string>
     <!-- Default dialer prompt -->
-    <string name="default_dialer_headline">Сделать Rivo приложением для звонков по умолчанию</string>
-    <string name="default_dialer_description">Для совершения и приема вызовов, управления историей звонков и защиты от спама Rivo нужно назначить приложением для звонков по умолчанию</string>
-    <string name="default_dialer_denied_message">Rivo не может работать без этого разрешения. Пожалуйста, попробуйте еще раз.</string>
+    <string name="default_dialer_headline">Сделать AukDialer приложением для звонков по умолчанию</string>
+    <string name="default_dialer_description">Для совершения и приема вызовов, управления историей звонков и защиты от спама AukDialer нужно назначить приложением для звонков по умолчанию</string>
+    <string name="default_dialer_denied_message">AukDialer не может работать без этого разрешения. Пожалуйста, попробуйте еще раз.</string>
     <string name="default_dialer_set_as_default">Назначить по умолчанию</string>
     <!-- Top bar / bottom navigation -->
-    <string name="top_bar_search_placeholder">Поиск в Rivo</string>
+    <string name="top_bar_search_placeholder">Поиск в AukDialer</string>
     <string name="content_desc_search">Поиск</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">История вызовов</string>
@@ -111,7 +101,7 @@
     <string name="content_desc_clear_all_logs">Удалить все записи?</string>
     <string name="content_desc_delete_selected">Удалить выбранное</string>
     <string name="recents_permission_title">История вызовов</string>
-    <string name="recents_permission_description">Для отображения недавней активности и пропущенных вызовов Rivo необходим доступ к журналу вызовов</string>
+    <string name="recents_permission_description">Для отображения недавней активности и пропущенных вызовов AukDialer необходим доступ к журналу вызовов</string>
     <string name="recents_favorites">Избранные</string>
     <string name="recents_empty_call_log">Журнал вызовов пуст</string>
     <string name="content_desc_dialpad">Клавиатура</string>
@@ -123,7 +113,7 @@
     <string name="contact_move_local_memory_supporting">Только устройство</string>
     <string name="content_desc_move">Переместить</string>
     <string name="contacts_empty_title">Контакты не найдены</string>
-    <string name="contacts_permission_rationale">Для отображения списка контактов и определения входящих вызовов Rivo необходим доступ к контактам.</string>
+    <string name="contacts_permission_rationale">Для отображения списка контактов и определения входящих вызовов AukDialer необходим доступ к контактам.</string>
     <!-- Contact details -->
     <string name="contact_details_qr_title">QR-код контакта</string>
     <string name="contact_details_qr_content_desc">QR-код</string>
@@ -195,7 +185,7 @@
     <string name="search_no_results_hint">Попробуйте другое имя или номер</string>
     <string name="search_results_header">Результаты поиска</string>
     <string name="search_contacts_permission_title">Требуется разрешение на доступ к контактам</string>
-    <string name="search_contacts_permission_description">Для отображения списка контактов и определения входящих вызовов Rivo необходим доступ к контактам.</string>
+    <string name="search_contacts_permission_description">Для отображения списка контактов и определения входящих вызовов AukDialer необходим доступ к контактам.</string>
     <!-- Call screen -->
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Вызов завершен</string>
@@ -231,8 +221,6 @@
     <string name="backup_import_failed">Ошибка импорта: %1$s</string>
     <!-- Settings > root -->
     <string name="settings_title">Настройки</string>
-    <string name="settings_support_rivo_title">Поддержите Rivo</string>
-    <string name="settings_support_rivo_description">Поддержите проект Rivo</string>
     <string name="settings_donate">Пожертвовать</string>
     <string name="settings_interface_headline">Интерфейс</string>
     <string name="settings_interface_supporting">Тема, цвета и доступность</string>
@@ -468,23 +456,19 @@
     <string name="settings_voicemail_visual_description">Визуальная голосовая почта в настоящее время управляется вашим оператором. Установите приложение оператора для наилучшего качества работы.</string>
     <!-- Settings > About -->
     <string name="about_title">О проекте</string>
-    <string name="about_logo_content_desc">Значок Rivo</string>
-    <string name="about_app_display_name">Rivo</string>
+    <string name="about_logo_content_desc">Значок AukDialer</string>
+    <string name="about_app_display_name">AukDialer</string>
     <string name="about_app_card_title">О приложении</string>
-    <string name="about_app_card_body">Rivo — современное приложение для звонков, сочетающее простоту и элегантность. Благодаря поддержке Material You оно плавно подстраивается под вашу тему оформления.</string>
+    <string name="about_app_card_body">AukDialer — современное приложение для звонков, сочетающее простоту и элегантность. Благодаря поддержке Material You оно плавно подстраивается под вашу тему оформления.</string>
     <string name="about_version">Версия приложения</string>
     <string name="about_build_number">Номер сборки</string>
     <string name="contributors_title">Поддержавшие проект</string>
     <string name="about_contributors_supporting">Команда разработчиков</string>
-    <string name="about_patreon">Поддержите нас</string>
-    <string name="about_patreon_supporting">Внести вклад в развитие проекта</string>
-    <string name="about_discord">Discord</string>
-    <string name="about_discord_supporting">Присоединяйтесь к сообществу</string>
     <string name="about_source_code">Исходный код</string>
     <string name="about_source_code_supporting">Ознакомьтесь с исходным кодом на GitHub.</string>
     <string name="about_check_updates">Проверить наличие обновлений</string>
     <string name="about_current_version">Текущая версия: %1$s</string>
-    <string name="about_copyright">©️ 2025-2026 RivoPhone Project</string>
+    <string name="about_copyright">©️ 2025-2026 AukDialer Project</string>
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Ведущий разработчик</string>
     <string name="contributor_role_developer">Разработчик</string>

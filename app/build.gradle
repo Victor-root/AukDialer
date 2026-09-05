@@ -6,17 +6,31 @@ plugins {
     id 'com.google.devtools.ksp' version '2.1.0-1.0.29'
 }
 
-def baseVersionCode = 2026081400
+// versionCode is what Android compares to decide whether an APK is an upgrade,
+// so it only ever goes up. It restarts at 1 here because the application id
+// changed: to a device this is a new app, not an update of the old one.
+def baseVersionCode = 1
 def buildNumber = (System.getenv("BUILD_NUMBER") ?: System.getenv("GITHUB_RUN_NUMBER") ?: "0") as int
 def isPreviewBuild = System.getenv("PREVIEW_BUILD") == "true"
-def baseVersionName = "2.1"
+def baseVersionName = "1.0"
+
+// Signing details come from keystore.properties when building locally and from
+// the environment on CI. The file is untracked because it holds passwords, so
+// see keystore.properties.example for the keys it expects.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def releaseStorePath = keystoreProperties['storeFile'] ?: System.getenv("KEYSTORE_PATH")
+def hasReleaseKey = releaseStorePath != null && file(releaseStorePath).exists()
 
 android {
-    namespace = 'com.grinch.rivo4'
+    namespace = 'auk.dialer.vroot'
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.grinch.rivo4"
+        applicationId = "auk.dialer.vroot"
         minSdk = 31
         targetSdk = 37
         versionCode = baseVersionCode + buildNumber
@@ -26,10 +40,12 @@ android {
 
     signingConfigs {
         release {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/.android/debug.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "androiddebugkey"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+            if (hasReleaseKey) {
+                storeFile = file(releaseStorePath)
+                storePassword = keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = keystoreProperties['keyAlias'] ?: System.getenv("KEY_ALIAS")
+                keyPassword = keystoreProperties['keyPassword'] ?: System.getenv("KEY_PASSWORD")
+            }
         }
     }
 
@@ -37,10 +53,16 @@ android {
         release {
             minifyEnabled = true
             shrinkResources = true
-            signingConfig = signingConfigs.release
+            // Unsigned rather than signed with a throwaway key: an APK that
+            // cannot be installed is obvious, one signed by the wrong key is
+            // not, and it can no longer be upgraded by a properly signed build.
+            signingConfig = hasReleaseKey ? signingConfigs.release : null
             debuggable = false
         }
         debug {
+            // Same key as release, so Run in Android Studio installs over an
+            // existing release build instead of demanding an uninstall.
+            signingConfig = hasReleaseKey ? signingConfigs.release : signingConfigs.debug
         }
     }
 
@@ -74,53 +96,18 @@ android {
         }
     }
 
-    bundle {
-        language {
-            enableSplit = true
-        }
-        density {
-            enableSplit = true
-        }
-        abi {
-            enableSplit = true
-        }
-    }
-
-    flavorDimensions "distribution"
-    productFlavors {
-        play {
-            dimension "distribution"
-            isDefault = true
-        }
-        foss {
-            dimension "distribution"
-        }
-    }
-
+    // Release keeps the bare name, every other build type is tagged, so a debug
+    // APK is never mistaken for a release one once it leaves the build folder.
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = "RivoPhone-${variant.versionName}-${variant.flavorName}.apk"
-        }
-    }
-}
-
-afterEvaluate {
-    tasks.matching { it.name.startsWith("bundle") && it.name.endsWith("Release") }.configureEach { task ->
-        task.doLast {
-            def outDir = layout.buildDirectory.dir("outputs/bundle/${task.name.replace('bundle', '').uncapitalize()}").get().asFile
-            if (outDir.exists()) {
-                outDir.listFiles()?.each { file ->
-                    if (file.name.endsWith(".aab") && !file.name.contains("RivoPhone")) {
-                        file.renameTo(new File(outDir, "RivoPhone-${android.defaultConfig.versionName}-${task.name.replace('bundle', '').replace('Release', '').uncapitalize()}.aab"))
-                    }
-                }
-            }
+            def buildType = variant.buildType.name
+            def suffix = buildType == "release" ? "" : "-${buildType}"
+            outputFileName = "AukDialer-${variant.versionName}${suffix}.apk"
         }
     }
 }
 
 dependencies {
-    playImplementation 'com.google.android.gms:play-services-ads:23.6.0'
     implementation platform('androidx.compose:compose-bom:2025.12.01')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3:1.5.0-alpha18'

@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Rivo4"
+rootProject.name = "AukDialer"
 include ':app'

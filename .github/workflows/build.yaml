@@ -39,13 +39,19 @@ jobs:
           cache: gradle
 
       - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore.jks
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::The KEYSTORE_BASE64 repository secret is missing, so the build would produce an unsigned APK. Add the signing secrets in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > app/keystore.jks
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build Release APK & AAB
+      - name: Build Release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -54,12 +60,12 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           PREVIEW_BUILD: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          ./gradlew assembleFossRelease assemblePlayRelease bundlePlayRelease bundleFossRelease
+          ./gradlew assembleRelease
 
       - name: Collect outputs
         run: |
           mkdir outputs
-          find . -type f \( -name "RivoPhone-*.apk" -o -name "RivoPhone-*.aab" \) -exec cp {} outputs/ \;
+          find . -type f -name "AukDialer-*.apk" -exec cp {} outputs/ \;
 
       - name: Extract Signing Certificate Fingerprint
         run: |
