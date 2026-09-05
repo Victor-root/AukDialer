@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -150,22 +151,38 @@ fun CallLogTile(
                         append(displayName)
                         if (log.count > 1) append(" (${log.count})")
                     },
-                    supporting = buildString {
-                        if (log.name != null && log.name != log.number) {
-                            append(formatPhoneNumber(log.number))
+                    // One line of detail, not two. The number is dropped when the
+                    // contact is known, since the name already identifies them and
+                    // spelling it out is what pushed the time off the row.
+                    supportingContent = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = badgeColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = buildString {
+                                    append(formatTime(context, log.date))
+                                    if (showSim && log.simLabel != null) {
+                                        append(" • ")
+                                        append(log.simLabel)
+                                    }
+                                },
+                                style = AukListItemDefaults.supportingStyle(),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
-                    },
-                    supporting2 = buildString {
-                        if (showSim && log.simLabel != null) {
-                            append(log.simLabel)
-                            append(" • ")
-                        }
-                        append(formatTime(context, log.date))
                     },
                     avatarName = log.name ?: formatPhoneNumber(log.number),
                     photoUri = log.photoUri,
-                    badgeIcon = icon,
-                    badgeColor = badgeColor,
                     headlineColor = headlineColor,
                     trailingIcon = if (isFavorite) Icons.Default.Star else null,
                     onClick = { onTileClick(log) },

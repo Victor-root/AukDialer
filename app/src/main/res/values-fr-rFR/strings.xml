@@ -471,4 +471,47 @@
     <!-- Call screen background and active controls -->
     <!-- Incoming call controls and in-call keypad -->
     <!-- IMEI / Secret codes -->
+    <string name="settings_group_color">Couleur</string>
+    <string name="settings_group_avatars">Avatars</string>
+    <string name="settings_group_navigation">Navigation</string>
+    <string name="settings_group_shape_motion">Formes et animations</string>
+    <string name="settings_interface_gradient_avatars">Avatars en dégradé</string>
+    <string name="settings_interface_gradient_avatars_supporting">Utilise un fond en dégradé de plusieurs couleurs</string>
+    <string name="settings_interface_merge_favorites">Favoris dans les Récents</string>
+    <string name="settings_interface_merge_favorites_supporting">Garde la rangée de favoris en haut du journal d’appels</string>
+    <string name="settings_interface_avatar_shape_arch">Arche</string>
+    <string name="settings_interface_avatar_shape_burst">Éclat</string>
+    <string name="settings_interface_avatar_shape_clover">Trèfle</string>
+    <string name="settings_interface_avatar_shape_cookie">Fleur</string>
+    <string name="settings_interface_avatar_shape_gem">Gemme</string>
+    <string name="settings_interface_avatar_shape_heart">Cœur</string>
+    <string name="settings_interface_avatar_shape_pill">Pastille</string>
+    <string name="settings_interface_avatar_shape_sunny">Soleil</string>
+    <string name="settings_bottom_nav_title">Barre de navigation</string>
+    <string name="settings_bottom_nav_supporting">Réorganisez, affichez ou masquez les boutons de navigation</string>
+    <string name="settings_bottom_nav_description">Ordre et visibilité des boutons en bas de l’application. Au moins un bouton doit rester visible.</string>
+    <string name="settings_bottom_nav_buttons">Boutons</string>
+    <string name="settings_bottom_nav_hidden">Masqués</string>
+    <string name="settings_bottom_nav_preview">Aperçu</string>
+    <string name="settings_bottom_nav_position">Position %1$d</string>
+    <string name="settings_bottom_nav_move_up">Monter</string>
+    <string name="settings_bottom_nav_move_down">Descendre</string>
+    <string name="settings_bottom_nav_reset">Réinitialiser</string>
+    <string name="settings_call_default_background">Fond d’écran d’appel</string>
+    <string name="settings_call_default_background_supporting">Affiché sur chaque appel entrant et sortant, sauf si le contact a son propre fond.</string>
+    <string name="settings_call_default_background_none">Non défini, les appels utilisent le thème de l’application</string>
+    <string name="settings_call_default_background_set">Une image personnalisée est affichée sur chaque appel</string>
+    <string name="settings_call_default_background_choose">Choisir une image</string>
+    <string name="settings_call_default_background_change">Modifier</string>
+    <string name="settings_call_recording">Enregistrement des appels</string>
+    <string name="settings_call_recording_supporting">Affiche un bouton d’enregistrement pendant les appels</string>
+    <string name="settings_call_recording_auto">Enregistrer tous les appels</string>
+    <string name="settings_call_recording_auto_supporting">Démarre l’enregistrement dès qu’un appel est connecté</string>
+    <string name="settings_call_recording_notice">L’enregistrement des appels peut être restreint par votre appareil ou par la loi de votre pays. Assurez-vous d’en avoir le droit avant d’utiliser cette fonction.</string>
+    <string name="settings_call_waiting">Appel en attente</string>
+    <string name="settings_call_waiting_supporting">Recevoir un second appel pendant que vous êtes déjà en ligne</string>
+    <string name="settings_call_waiting_description">L’appel en attente est un service de votre opérateur. Choisir une option ci-dessous compose le code standard sur votre carte SIM.</string>
+    <string name="settings_call_waiting_enable">Activer l’appel en attente</string>
+    <string name="settings_call_waiting_disable">Désactiver l’appel en attente</string>
+    <string name="settings_call_waiting_check">Vérifier l’état actuel</string>
 </resources>
