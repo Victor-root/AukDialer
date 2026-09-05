@@ -35,7 +35,11 @@ import androidx.compose.ui.graphics.toArgb
 @Composable
 fun AukAuroraBackground(modifier: Modifier = Modifier) {
     val strength = if (isSystemInDarkTheme()) DarkStrength else LightStrength
-    val colors = auroraColors(MaterialTheme.colorScheme.background, strength)
+    val accent = MaterialTheme.colorScheme.primary
+    val base = MaterialTheme.colorScheme.background
+    val colors = remember(accent, base, strength) {
+        auroraPaletteFrom(accent).map { lerp(base, it, strength) }
+    }
 
     // The sweep drifts slowly between two diagonals, so the wash is never quite static without ever
     // being something the eye can catch moving.
@@ -59,27 +63,6 @@ fun AukAuroraBackground(modifier: Modifier = Modifier) {
                 end = Offset(size.width * (0.5f + DriftAmount * drift), size.height + bleed)
             )
         )
-    }
-}
-
-/**
- * The card fill: the same sweep over [base], run corner to corner rather than top to bottom and
- * mixed in far more lightly, so a card carries the colour without dissolving into the page behind
- * it. A card given its own highlight colour keeps it and only picks up the sweep.
- */
-@Composable
-fun aukAuroraCardBrush(base: Color): Brush {
-    val strength = (if (isSystemInDarkTheme()) DarkStrength else LightStrength) * CardStrength
-    val colors = auroraColors(base, strength)
-    return remember(colors) { Brush.linearGradient(colors) }
-}
-
-/** The wash colours, each mixed into [base] so they can be painted opaque. */
-@Composable
-private fun auroraColors(base: Color, strength: Float): List<Color> {
-    val accent = MaterialTheme.colorScheme.primary
-    return remember(accent, base, strength) {
-        auroraPaletteFrom(accent).map { lerp(base, it, strength) }
     }
 }
 
@@ -113,9 +96,6 @@ private val AuroraHueShifts = listOf(
 /** How far each colour is mixed into the page. Dark pages swallow colour, so they take more of it. */
 private const val LightStrength = 0.18f
 private const val DarkStrength = 0.30f
-
-/** What a card takes of that, so it stays clearly lighter than the page it sits on. */
-private const val CardStrength = 0.45f
 
 private const val DriftDurationMs = 25000
 private const val DriftAmount = 0.25f

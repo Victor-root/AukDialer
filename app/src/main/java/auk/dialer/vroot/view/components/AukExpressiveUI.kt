@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -193,13 +192,16 @@ fun aukAccentCardBorder(width: Dp = 1.dp): BorderStroke {
 
 private const val AccentBorderHueShift = 70f
 
+/** How much of the card's own colour sits over the wash behind it. */
+private const val AukCardVeilAlpha = 0.55f
+
 @Composable
 fun AukExpressiveCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     icon: ImageVector? = null,
     shape: Shape? = null,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    containerColor: Color? = null,
     isCompact: Boolean = false,
     showCards: Boolean? = null,
     content: @Composable ColumnScope.() -> Unit
@@ -216,15 +218,17 @@ fun AukExpressiveCard(
     val horizontalPadding = if (isCompact) 4.dp else 8.dp
 
     if (cardsEnabled) {
+        // No colour of its own: a thin neutral veil over whatever is already drawn behind it, the
+        // one continuous wash the theme paints once behind every screen. That is what keeps a card
+        // reading as the same background as the page around it rather than as a second, separately
+        // computed patch of colour that stops dead at the card's own edge.
+        val resolvedContainerColor = containerColor
+            ?: MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = AukCardVeilAlpha)
         Card(
-            // The fill is a brush, which cardColors cannot take, so the card itself stays clear and
-            // the gradient is painted under it.
-            modifier = modifier
-                .fillMaxWidth()
-                .background(brush = aukAuroraCardBrush(containerColor), shape = resolvedShape),
+            modifier = modifier.fillMaxWidth(),
             shape = resolvedShape,
             colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent,
+                containerColor = resolvedContainerColor,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat),
