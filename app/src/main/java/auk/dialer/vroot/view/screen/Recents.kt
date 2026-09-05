@@ -645,7 +645,7 @@ fun CallLogFullContent(
                         groupedLogs.entries.forEach { (header, logsInGroup) ->
                             item {
                                 AukSectionHeader(title = header)
-                                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
                                     AukExpressiveCard(isCompact = true) {
                                         logsInGroup.forEachIndexed { index, lg ->
                                             CallLogTile(
