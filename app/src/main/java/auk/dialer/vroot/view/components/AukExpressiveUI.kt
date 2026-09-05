@@ -97,7 +97,7 @@ object AukListItemDefaults {
     val MinHeight: Dp = 48.dp
     val AvatarSize: Dp = 40.dp
     val CompactAvatarSize: Dp = 42.dp
-    val HorizontalPadding: Dp = 12.dp
+    val HorizontalPadding: Dp = 8.dp
     val CompactHorizontalPadding: Dp = 10.dp
     val VerticalPadding: Dp = 6.dp
     val CompactVerticalPadding: Dp = 6.dp
@@ -181,6 +181,11 @@ fun AukExpressiveCard(
 
     val padding = if (isCompact) 12.dp else 16.dp
     val spacing = if (isCompact) 8.dp else 12.dp
+    // Sides are much tighter than top and bottom on purpose. The screen already
+    // insets the card and the rows inset their own content, so a symmetric card
+    // padding was a third margin stacked on the other two, and rows were losing
+    // a fifth of the screen width to whitespace.
+    val horizontalPadding = if (isCompact) 4.dp else 8.dp
 
     if (cardsEnabled) {
         Card(
@@ -190,7 +195,7 @@ fun AukExpressiveCard(
             elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat)
         ) {
             Column(
-                modifier = Modifier.padding(padding),
+                modifier = Modifier.padding(horizontal = horizontalPadding, vertical = padding),
                 verticalArrangement = Arrangement.spacedBy(spacing)
             ) {
                 if (title != null || icon != null) {
