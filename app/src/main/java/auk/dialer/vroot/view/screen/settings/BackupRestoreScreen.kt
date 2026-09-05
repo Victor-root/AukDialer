@@ -26,6 +26,7 @@ import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.view.components.AukConfirmationDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -75,6 +76,7 @@ fun BackupRestoreScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.settings_backup_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

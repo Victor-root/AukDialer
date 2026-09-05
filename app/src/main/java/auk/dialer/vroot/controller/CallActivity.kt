@@ -88,7 +88,9 @@ class CallActivity : ComponentActivity() {
         applySystemBarStyle(isNightMode())
 
         setContent {
-            AukTheme {
+            // The call screen paints its own full bleed background and drives the system bars from
+            // applySystemBarStyle, so it opts out of the app wide accent bars.
+            AukTheme(systemBars = false) {
                 val session by CallService.currentCallSession.collectAsState()
                 val audioState by CallService.audioState.collectAsState()
                 val settingsState by preferenceManager.settingsChanged.collectAsState()

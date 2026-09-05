@@ -273,6 +273,8 @@
     <string name="settings_interface_app_icon_color_supporting">Colour of the icon on your home screen</string>
     <string name="settings_interface_amoled">Amoled dark mode</string>
     <string name="settings_interface_amoled_supporting">Uses pitch black for UI elements.</string>
+    <string name="settings_interface_edge_to_edge">Edge to edge</string>
+    <string name="settings_interface_edge_to_edge_supporting">Draw the app behind the status and navigation bars. When off, they stay filled with the accent colour.</string>
     <string name="settings_interface_show_first_letter">Show first letter in avatar</string>
     <string name="settings_interface_show_first_letter_supporting">Displays letter when picture is missing</string>
     <string name="settings_interface_colorful_avatars">Use colorful avatars</string>

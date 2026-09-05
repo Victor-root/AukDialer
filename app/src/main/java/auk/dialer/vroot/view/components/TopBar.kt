@@ -2,16 +2,9 @@ package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
@@ -27,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import auk.dialer.vroot.R
 import com.ramcosta.composedestinations.generated.destinations.SearchScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
@@ -36,17 +28,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 private val TopBarSearchMinHeight = 56.dp
 
 @Composable
-fun TopBar(navController: NavController, navigator: DestinationsNavigator) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(
-                WindowInsets.statusBars
-                    .union(WindowInsets.displayCutout)
-                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-            ),
-        color = MaterialTheme.colorScheme.surface
-    ) {
+fun TopBar(navigator: DestinationsNavigator) {
+    AukAccentHeader {
         Surface(
             onClick = { navigator.navigate(SearchScreenDestination) },
             modifier = Modifier

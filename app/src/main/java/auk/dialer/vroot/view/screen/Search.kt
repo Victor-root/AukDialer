@@ -33,6 +33,7 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
+import auk.dialer.vroot.view.theme.AukPlainStatusBar
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
@@ -59,7 +60,11 @@ fun SearchScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.surface,
+        // The search field carries the status bar inset itself, so its accent band reaches behind
+        // the bar rather than starting under it.
+        contentWindowInsets = WindowInsets.safeDrawing
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             ContactSearchContent(
@@ -90,12 +95,16 @@ fun ContactSearchContent(
     listState: androidx.compose.foundation.lazy.LazyListState
 ) {
     if (!isGranted) {
-        PermissionDeniedView(
-            icon = Icons.Default.Person,
-            title = stringResource(R.string.search_contacts_permission_title),
-            description = stringResource(R.string.search_contacts_permission_description),
-            onGrantClick = onRequestPermission
-        )
+        // No search field here, so nothing paints the accent behind the status bar.
+        AukPlainStatusBar()
+        Box(modifier = Modifier.statusBarsPadding()) {
+            PermissionDeniedView(
+                icon = Icons.Default.Person,
+                title = stringResource(R.string.search_contacts_permission_title),
+                description = stringResource(R.string.search_contacts_permission_description),
+                onGrantClick = onRequestPermission
+            )
+        }
         return
     }
 
@@ -132,42 +141,44 @@ fun ContactSearchContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(roundness.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shadowElevation = 0.dp
-        ) {
-            TextField(
-                value = query,
-                onValueChange = { query = it },
+        AukAccentHeader {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(focusRequester),
-                placeholder = { Text(stringResource(R.string.search_contacts_placeholder)) },
-                leadingIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                    }
-                },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_clear))
+                    .padding(16.dp),
+                shape = RoundedCornerShape(roundness.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shadowElevation = 0.dp
+            ) {
+                TextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    placeholder = { Text(stringResource(R.string.search_contacts_placeholder)) },
+                    leadingIcon = {
+                        IconButton(onClick = { navigator.navigateUp() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                         }
-                    }
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                ),
-                singleLine = true
-            )
+                    },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_clear))
+                            }
+                        }
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                    singleLine = true
+                )
+            }
         }
 
         Box(modifier = Modifier.weight(1f)) {

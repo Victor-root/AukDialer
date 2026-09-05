@@ -22,6 +22,7 @@ import auk.dialer.vroot.view.components.AukListItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 data class Contributor(
     val name: String,
@@ -45,6 +46,7 @@ fun ContributorsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.contributors_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

@@ -79,7 +79,7 @@ fun FavoritesScreenContent(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (showTopBar) {
-                TopBar(navController, navigator)
+                TopBar(navigator)
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,

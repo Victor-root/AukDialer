@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,11 +23,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
+import auk.dialer.vroot.view.theme.AukStatusBarScrimEffect
+import auk.dialer.vroot.view.theme.LocalEdgeToEdge
+import auk.dialer.vroot.view.theme.aukCollapsingHeader
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -75,24 +80,44 @@ fun MainScreen(
         }
     }
 
+    // Edge to edge lets the header leave on scroll so the content reaches behind the status bar.
+    // With it off the header stays put, which is what keeps the status bar accent coloured.
+    val edgeToEdge = LocalEdgeToEdge.current
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    // Switching tab brings the header back: a short list has nothing left to scroll up, and would
+    // otherwise leave it stuck off screen.
+    LaunchedEffect(pagerState.currentPage) {
+        scrollBehavior.state.heightOffset = 0f
+    }
+
+    AukStatusBarScrimEffect(scrollBehavior, enabled = edgeToEdge)
+
     Scaffold(
+        modifier = if (edgeToEdge) {
+            Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        } else {
+            Modifier
+        },
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            AnimatedContent(
-                targetState = isSelecting,
-                transitionSpec = {
-                    (fadeIn() + expandVertically()) togetherWith (fadeOut() + shrinkVertically())
-                },
-                label = "MainTopBarTransition"
-            ) { selecting ->
-                if (selecting) {
-                    when (currentTab) {
-                        PreferenceManager.TAB_RECENTS -> recentsActionBar?.invoke()
-                        PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
-                        else -> TopBar(navController, navigator)
+            Box(modifier = if (edgeToEdge) Modifier.aukCollapsingHeader(scrollBehavior) else Modifier) {
+                AnimatedContent(
+                    targetState = isSelecting,
+                    transitionSpec = {
+                        (fadeIn() + expandVertically()) togetherWith (fadeOut() + shrinkVertically())
+                    },
+                    label = "MainTopBarTransition"
+                ) { selecting ->
+                    if (selecting) {
+                        when (currentTab) {
+                            PreferenceManager.TAB_RECENTS -> recentsActionBar?.invoke()
+                            PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
+                            else -> TopBar(navigator)
+                        }
+                    } else {
+                        TopBar(navigator)
                     }
-                } else {
-                    TopBar(navController, navigator)
                 }
             }
         },

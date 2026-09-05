@@ -250,6 +250,8 @@
     <string name="settings_interface_app_icon_color_supporting">Couleur de l’icône sur votre écran d’accueil</string>
     <string name="settings_interface_amoled">Mode sombre Amoled</string>
     <string name="settings_interface_amoled_supporting">Utilise un noir profond pour les éléments de l’interface.</string>
+    <string name="settings_interface_edge_to_edge">Bord à bord</string>
+    <string name="settings_interface_edge_to_edge_supporting">Afficher l’app derrière la barre d’état et la barre de navigation. Désactivé, les barres restent pleines avec la couleur d’accentuation.</string>
     <string name="settings_interface_show_first_letter">Afficher la première lettre dans l’avatar</string>
     <string name="settings_interface_show_first_letter_supporting">Affiche une lettre lorsqu’il n’y a pas de photo</string>
     <string name="settings_interface_colorful_avatars">Utiliser des avatars colorés</string>

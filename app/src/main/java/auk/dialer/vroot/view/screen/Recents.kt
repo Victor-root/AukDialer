@@ -179,7 +179,7 @@ fun RecentScreenContent(
                 ) { selecting ->
                     if (!selecting) {
                         Column {
-                            TopBar(navController, navigator)
+                            TopBar(navigator)
                             filterChipsRow()
                         }
                     } else {

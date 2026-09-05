@@ -44,6 +44,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 private val RoundnessRange = 1f..32f
 private const val RoundnessSteps = 7
@@ -66,6 +67,7 @@ fun InterfaceScreen(
 
     var dynamicColors by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)) }
     var amoledMode by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_AMOLED_MODE, false)) }
+    var edgeToEdge by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, false)) }
     var defaultBottomBar by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)) }
     var mergeFavorites by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MERGE_FAVORITES_RECENTS, true)) }
     var colorfulAvatars by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_COLORFUL_AVATARS, true)) }
@@ -132,6 +134,7 @@ fun InterfaceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.settings_interface_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
@@ -190,6 +193,18 @@ fun InterfaceScreen(
                                 amoledMode = it
                                 prefs.setBoolean(PreferenceManager.KEY_AMOLED_MODE, it)
                                 showRestartPrompt()
+                            }
+                        )
+
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_edge_to_edge),
+                            supporting = stringResource(R.string.settings_interface_edge_to_edge_supporting),
+                            leadingIcon = Icons.Outlined.Fullscreen,
+                            checked = edgeToEdge,
+                            onCheckedChange = {
+                                edgeToEdge = it
+                                prefs.setBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, it)
                             }
                         )
                     }
