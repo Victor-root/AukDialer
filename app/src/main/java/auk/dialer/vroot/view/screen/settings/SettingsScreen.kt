@@ -1,30 +1,21 @@
 package auk.dialer.vroot.view.screen.settings
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
-import auk.dialer.vroot.controller.util.getAppVersion
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
-import auk.dialer.vroot.view.theme.AukMaterialShapes
-import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.*
@@ -38,10 +29,7 @@ import androidx.compose.ui.graphics.Color
 fun SettingsScreen(
     navigator: DestinationsNavigator
 ) {
-    val context = LocalContext.current
     val listState = rememberLazyListState()
-    val appInfo = getAppVersion(context)
-    val logoMorph = rememberAukMorphShape(AukMaterialShapes.Cookie12Sided, AukMaterialShapes.Circle) { 0.2f }
 
     Scaffold(
         topBar = {
@@ -65,58 +53,6 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            
-            item {
-                AukExpressiveCard(
-                    modifier = Modifier.clickable { navigator.navigate(AboutScreenDestination) },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            modifier = Modifier.size(60.dp),
-                            shape = logoMorph,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            shadowElevation = 3.dp
-                        ) {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(12.dp)) {
-                                Image(
-                                    painter = painterResource(R.drawable.logo),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.about_app_display_name),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.settings_header_subtitle, appInfo.first),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
             item {
                 AukExpressiveCard {
                     AukListItem(
@@ -170,6 +106,17 @@ fun SettingsScreen(
                         supporting = stringResource(R.string.settings_manage_visibility_supporting),
                         leadingIcon = Icons.Outlined.Visibility,
                         onClick = { navigator.navigate(ContactVisibilityScreenDestination) }
+                    )
+                }
+            }
+
+            item {
+                AukExpressiveCard {
+                    AukListItem(
+                        headline = stringResource(R.string.settings_about_headline),
+                        supporting = stringResource(R.string.settings_about_supporting),
+                        leadingIcon = Icons.Outlined.Info,
+                        onClick = { navigator.navigate(AboutScreenDestination) }
                     )
                 }
             }

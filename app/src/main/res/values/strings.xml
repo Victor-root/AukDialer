@@ -246,7 +246,6 @@
     <!-- Settings > root -->
     <string name="settings_title">Settings</string>
     <string name="settings_donate">Donate</string>
-    <string name="settings_header_subtitle">v%1$s • Preferences &amp; Customization</string>
     <string name="settings_interface_headline">Interface</string>
     <string name="settings_interface_supporting">Theme, colors, and accessibility</string>
     <string name="settings_sound_vibration_headline">Sound &amp; Vibration</string>

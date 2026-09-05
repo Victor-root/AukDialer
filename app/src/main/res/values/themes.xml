@@ -14,7 +14,75 @@
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/auk_splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.AukDialer</item>
+    </style>
+
+    <!-- One splash background per launcher icon colour, so a cold start shows the same colour as
+         the icon that was actually tapped. Each activity-alias in the manifest points at its own
+         variant here; MainActivity's own theme (used when nothing more specific applies, such as a
+         direct launch from Android Studio) stays on the plain Theme.App.Starting above, which
+         matches the manifest's own default colour, Violet. Only the background changes: the icon and
+         the theme to switch to once the splash is gone are the same for every colour, and come from
+         the parent style above. -->
+    <style name="Theme.App.Starting.Violet" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#7B2DDC</item>
+    </style>
+    <style name="Theme.App.Starting.Red" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#D32F2F</item>
+    </style>
+    <style name="Theme.App.Starting.Pink" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#E91E63</item>
+    </style>
+    <style name="Theme.App.Starting.Purple" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#9C27B0</item>
+    </style>
+    <style name="Theme.App.Starting.DeepPurple" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#673AB7</item>
+    </style>
+    <style name="Theme.App.Starting.Indigo" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#3F51B5</item>
+    </style>
+    <style name="Theme.App.Starting.Blue" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#2196F3</item>
+    </style>
+    <style name="Theme.App.Starting.LightBlue" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#03A9F4</item>
+    </style>
+    <style name="Theme.App.Starting.Cyan" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#00BCD4</item>
+    </style>
+    <style name="Theme.App.Starting.Teal" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#009688</item>
+    </style>
+    <style name="Theme.App.Starting.Green" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#4CAF50</item>
+    </style>
+    <style name="Theme.App.Starting.LightGreen" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#8BC34A</item>
+    </style>
+    <style name="Theme.App.Starting.Lime" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#CDDC39</item>
+    </style>
+    <style name="Theme.App.Starting.Yellow" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#E6C400</item>
+    </style>
+    <style name="Theme.App.Starting.Amber" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#FFC107</item>
+    </style>
+    <style name="Theme.App.Starting.Orange" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#FF9800</item>
+    </style>
+    <style name="Theme.App.Starting.DeepOrange" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#FF5722</item>
+    </style>
+    <style name="Theme.App.Starting.Brown" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#795548</item>
+    </style>
+    <style name="Theme.App.Starting.Gray" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#9E9E9E</item>
+    </style>
+    <style name="Theme.App.Starting.BlueGray" parent="Theme.App.Starting">
+        <item name="windowSplashScreenBackground">#607D8B</item>
     </style>
 </resources>

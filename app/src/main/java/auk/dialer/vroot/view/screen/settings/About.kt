@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.GITHUB_URL
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.getAppVersion
 import auk.dialer.vroot.controller.util.openLink
 import auk.dialer.vroot.view.components.AukExpressiveCard
@@ -36,6 +38,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContributorsScree
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import androidx.compose.ui.graphics.Color
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -44,6 +47,10 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val appInfo = getAppVersion(context)
     val logoMorph = rememberAukMorphShape(AukMaterialShapes.Cookie12Sided, AukMaterialShapes.Circle) { 0.25f }
+    val launcherIconManager = koinInject<LauncherIconManager>()
+    // The badge below is a small copy of the launcher icon, so it takes that icon's own colour
+    // rather than the in-app theme accent, which is a separate setting.
+    val logoColor = remember { Color(launcherIconManager.currentColor()) }
 
     Scaffold(
         topBar = {
@@ -81,13 +88,13 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     Surface(
                         modifier = Modifier.size(88.dp),
                         shape = logoMorph,
-                        color = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        color = logoColor,
+                        contentColor = Color.White,
                         shadowElevation = 4.dp
                     ) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(16.dp)) {
                             Image(
-                                painter = painterResource(R.drawable.logo),
+                                painter = painterResource(R.drawable.ic_launcher_foreground),
                                 contentDescription = stringResource(R.string.about_logo_content_desc),
                                 modifier = Modifier.fillMaxSize()
                             )
