@@ -24,6 +24,14 @@ if (keystorePropertiesFile.exists()) {
 def releaseStorePath = keystoreProperties['storeFile'] ?: System.getenv("KEYSTORE_PATH")
 def hasReleaseKey = releaseStorePath != null && file(releaseStorePath).exists()
 
+// Say so out loud when a key is configured but missing. Otherwise the release
+// build just comes out unsigned and the reason is nowhere to be seen. On
+// Windows, a backslash path is the usual culprit: .properties files read them
+// as escapes, so D:\Nextcloud arrives mangled. Use forward slashes.
+if (releaseStorePath != null && !hasReleaseKey) {
+    logger.warn("Signing key not found at '${releaseStorePath}'. The release build will be unsigned.")
+}
+
 android {
     namespace = 'auk.dialer.vroot'
     compileSdk = 36
@@ -37,9 +45,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Declared only when the key is really there. Declaring it empty still
+    // creates the config, and AGP then fails the build on a signing config that
+    // names no keystore rather than leaving the APK unsigned.
     signingConfigs {
-        release {
-            if (hasReleaseKey) {
+        if (hasReleaseKey) {
+            release {
                 storeFile = file(releaseStorePath)
                 storePassword = keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = keystoreProperties['keyAlias'] ?: System.getenv("KEY_ALIAS")
@@ -55,13 +66,13 @@ android {
             // Unsigned rather than signed with a throwaway key: an APK that
             // cannot be installed is obvious, one signed by the wrong key is
             // not, and it can no longer be upgraded by a properly signed build.
-            signingConfig = hasReleaseKey ? signingConfigs.release : null
+            signingConfig = hasReleaseKey ? signingConfigs.getByName('release') : null
             debuggable = false
         }
         debug {
             // Same key as release, so Run in Android Studio installs over an
             // existing release build instead of demanding an uninstall.
-            signingConfig = hasReleaseKey ? signingConfigs.release : signingConfigs.debug
+            signingConfig = hasReleaseKey ? signingConfigs.getByName('release') : signingConfigs.getByName('debug')
         }
     }
 
