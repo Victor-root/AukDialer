@@ -1,11 +1,14 @@
 package auk.dialer.vroot.view.screen.settings
 
 import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -22,19 +25,18 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.view.components.AukAvatarShapeSelectorRow
+import auk.dialer.vroot.view.components.AukColorSelectListItem
 import auk.dialer.vroot.view.components.AukDialog
 import auk.dialer.vroot.view.components.AukDialogAction
-import auk.dialer.vroot.view.components.AukInteractiveRoundnessSlider
-import auk.dialer.vroot.view.components.AukVisualOptionSelectorRow
-import auk.dialer.vroot.view.components.AukColorSwatchRow
 import auk.dialer.vroot.view.components.AukDivider
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
-import auk.dialer.vroot.view.components.AukOptionRow
-import auk.dialer.vroot.view.components.AukSliderListItem
+import auk.dialer.vroot.view.components.AukListItemDefaults
+import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
+import auk.dialer.vroot.view.theme.CUSTOM_PRIMARY_COLOR_UNSET
+import auk.dialer.vroot.view.theme.KEY_CUSTOM_PRIMARY_COLOR
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.BottomNavScreenDestination
@@ -42,6 +44,9 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
+
+private val RoundnessRange = 1f..32f
+private const val RoundnessSteps = 7
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -68,18 +73,16 @@ fun InterfaceScreen(
     var showPicture by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SHOW_PICTURE, true)) }
     var iconOnlyNav by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_ICON_ONLY_NAV, false)) }
     var transitionStyle by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_TRANSITION_STYLE, 0)) }
-    var customPrimaryColor by remember { mutableStateOf(prefs.getInt("custom_primary_color", Color(0xFF6750A4).toArgb())) }
+    var customPrimaryColor by remember { mutableStateOf(prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, CUSTOM_PRIMARY_COLOR_UNSET)) }
     var avatarShape by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_AVATAR_SHAPE, 0)) }
-    var showCallScreenAvatar by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SHOW_CALL_SCREEN_AVATAR, true)) }
     var cardRoundness by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, 28)) }
+    var showRoundnessDialog by remember { mutableStateOf(false) }
 
-    val presetColors = listOf(
-        Color(0xFF6750A4), Color(0xFF0061A4), Color(0xFF006A60),
-        Color(0xFF436916), Color(0xFF984061), Color(0xFF808080)
-    )
+    // One palette for both pickers: the launcher aliases already pin these
+    // twenty Material colours, and the theme has no reason to offer others.
+    val paletteColors = remember { LauncherIconManager.ICONS.map { Color(it.first) } }
 
     val launcherIconManager = koinInject<LauncherIconManager>()
-    val iconColors = remember { LauncherIconManager.ICONS.map { Color(it.first) } }
     // Read from the package manager, not from the preference: only the enabled
     // alias says which icon is really on screen.
     var appIconColor by remember { mutableStateOf(launcherIconManager.currentColor()) }
@@ -100,6 +103,31 @@ fun InterfaceScreen(
             }
         }
     }
+
+    val avatarShapeOptions = listOf(
+        stringResource(R.string.settings_interface_avatar_shape_squircle) to 0,
+        stringResource(R.string.settings_interface_avatar_shape_circle) to 1,
+        stringResource(R.string.settings_interface_avatar_shape_square) to 2,
+        stringResource(R.string.settings_interface_avatar_shape_cookie) to 3,
+        stringResource(R.string.settings_interface_avatar_shape_clover) to 4,
+        stringResource(R.string.settings_interface_avatar_shape_arch) to 5,
+        stringResource(R.string.settings_interface_avatar_shape_pill) to 6,
+        stringResource(R.string.settings_interface_avatar_shape_gem) to 7,
+        stringResource(R.string.settings_interface_avatar_shape_sunny) to 8,
+        stringResource(R.string.settings_interface_avatar_shape_heart) to 9,
+        stringResource(R.string.settings_interface_avatar_shape_burst) to 10
+    )
+    val transitionOptions = listOf(
+        stringResource(R.string.option_standard) to 0,
+        stringResource(R.string.settings_interface_transition_slide) to 1,
+        stringResource(R.string.settings_interface_transition_fade) to 2,
+        stringResource(R.string.settings_interface_transition_none) to 3
+    )
+    val bottomBarOptions = listOf(
+        stringResource(R.string.nav_recents) to PreferenceManager.TAB_RECENTS,
+        stringResource(R.string.nav_favorites) to PreferenceManager.TAB_FAVORITES,
+        stringResource(R.string.nav_contacts) to PreferenceManager.TAB_CONTACTS
+    )
 
     Scaffold(
         topBar = {
@@ -138,12 +166,15 @@ fun InterfaceScreen(
 
                         if (!dynamicColors) {
                             AukDivider(Modifier.padding(horizontal = 16.dp))
-                            AukColorSwatchRow(
-                                colors = presetColors,
-                                selectedColor = presetColors.firstOrNull { it.toArgb() == customPrimaryColor },
+                            AukColorSelectListItem(
+                                headline = stringResource(R.string.settings_interface_primary_color),
+                                supporting = stringResource(R.string.settings_interface_primary_color_supporting),
+                                leadingIcon = Icons.Outlined.ColorLens,
+                                colors = paletteColors,
+                                selectedColor = paletteColors.firstOrNull { it.toArgb() == customPrimaryColor },
                                 onColorSelected = { color ->
                                     customPrimaryColor = color.toArgb()
-                                    prefs.setInt("custom_primary_color", color.toArgb())
+                                    prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
                                     showRestartPrompt()
                                 }
                             )
@@ -166,37 +197,37 @@ fun InterfaceScreen(
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_app_icon)) {
-                        AukColorSwatchRow(
-                            colors = iconColors,
-                            selectedColor = iconColors.firstOrNull { it.toArgb() == appIconColor },
-                            onColorSelected = { color -> pendingIconColor = color.toArgb() }
+                        AukColorSelectListItem(
+                            headline = stringResource(R.string.settings_interface_app_icon_color),
+                            supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
+                            leadingIcon = Icons.Outlined.AppShortcut,
+                            colors = paletteColors,
+                            selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
+                            onColorSelected = { color ->
+                                // Picking the icon already in place would close the
+                                // app for nothing.
+                                val target = color.toArgb()
+                                if (launcherIconManager.isChangeNeeded(target)) {
+                                    pendingIconColor = target
+                                }
+                            }
                         )
                     }
                 }
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_avatars)) {
-                        AukAvatarShapeSelectorRow(
+                        AukSelectListItem(
                             headline = stringResource(R.string.settings_interface_avatar_shape),
                             supporting = stringResource(R.string.settings_interface_avatar_shape_supporting),
-                            options = listOf(
-                                stringResource(R.string.settings_interface_avatar_shape_squircle) to 0,
-                                stringResource(R.string.settings_interface_avatar_shape_circle) to 1,
-                                stringResource(R.string.settings_interface_avatar_shape_square) to 2,
-                                stringResource(R.string.settings_interface_avatar_shape_cookie) to 3,
-                                stringResource(R.string.settings_interface_avatar_shape_clover) to 4,
-                                stringResource(R.string.settings_interface_avatar_shape_arch) to 5,
-                                stringResource(R.string.settings_interface_avatar_shape_pill) to 6,
-                                stringResource(R.string.settings_interface_avatar_shape_gem) to 7,
-                                stringResource(R.string.settings_interface_avatar_shape_sunny) to 8,
-                                stringResource(R.string.settings_interface_avatar_shape_heart) to 9,
-                                stringResource(R.string.settings_interface_avatar_shape_burst) to 10
-                            ),
+                            leadingIcon = Icons.Outlined.AccountBox,
+                            options = avatarShapeOptions,
                             selectedValue = avatarShape,
                             onValueChange = { selected ->
                                 avatarShape = selected
                                 prefs.setInt(PreferenceManager.KEY_AVATAR_SHAPE, selected)
-                            }
+                            },
+                            preview = { shape -> AvatarShapePreview(shape) }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSwitchListItem(
@@ -236,76 +267,53 @@ fun InterfaceScreen(
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_shape_motion)) {
-                        AukInteractiveRoundnessSlider(
+                        AukListItem(
                             headline = stringResource(R.string.settings_interface_card_roundness),
                             supporting = stringResource(R.string.settings_interface_card_roundness_supporting),
-                            value = cardRoundness.toFloat().coerceAtLeast(1f),
-                            valueRange = 1f..32f,
-                            steps = 7,
-                            onValueChange = { cardRoundness = it.roundToInt() },
-                            onValueChangeFinished = {
-                                prefs.setInt(PreferenceManager.KEY_CARD_ROUNDNESS, cardRoundness)
+                            leadingIcon = Icons.Outlined.RoundedCorner,
+                            onClick = { showRoundnessDialog = true },
+                            trailingContent = {
+                                CardRoundnessPreview(cardRoundness)
+                                Spacer(modifier = Modifier.width(AukListItemDefaults.TrailingSpacing))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = stringResource(R.string.content_desc_select_option),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(AukListItemDefaults.TrailingIconSize)
+                                )
                             }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))
-                        AukVisualOptionSelectorRow(
+                        AukSelectListItem(
                             headline = stringResource(R.string.settings_interface_transition_animation),
                             supporting = stringResource(R.string.settings_interface_transition_animation_supporting),
                             leadingIcon = Icons.Outlined.Animation,
-                            options = listOf(
-                                stringResource(R.string.option_standard) to 0,
-                                stringResource(R.string.settings_interface_transition_slide) to 1,
-                                stringResource(R.string.settings_interface_transition_fade) to 2,
-                                stringResource(R.string.settings_interface_transition_none) to 3
-                            ),
+                            options = transitionOptions,
                             selectedValue = transitionStyle,
                             onValueChange = {
                                 transitionStyle = it
                                 prefs.setInt(PreferenceManager.KEY_TRANSITION_STYLE, it)
                                 showRestartPrompt()
-                            }
-                        ) { value, selected ->
-                            val icon = when (value) {
-                                0 -> Icons.Outlined.Animation
-                                1 -> Icons.AutoMirrored.Outlined.CompareArrows
-                                2 -> Icons.Outlined.AutoAwesome
-                                else -> Icons.Outlined.Block
-                            }
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(28.dp),
-                                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                            },
+                            preview = { value -> OptionIconPreview(transitionStyleIcon(value)) }
+                        )
                     }
                 }
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_navigation)) {
-                        AukVisualOptionSelectorRow(
+                        AukSelectListItem(
                             headline = stringResource(R.string.settings_interface_default_bottom_bar),
                             supporting = stringResource(R.string.settings_interface_default_bottom_bar_supporting),
                             leadingIcon = Icons.Outlined.SpaceDashboard,
-                            options = listOf(
-                                stringResource(R.string.nav_recents) to 0,
-                                stringResource(R.string.nav_favorites) to 1,
-                                stringResource(R.string.nav_contacts) to 2
-                            ),
+                            options = bottomBarOptions,
                             selectedValue = defaultBottomBar,
                             onValueChange = {
                                 defaultBottomBar = it
                                 prefs.setInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, it)
-                            }
-                        ) { value, selected ->
-                            val icon = defaultTabIcon(value)
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(28.dp),
-                                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                            },
+                            preview = { value -> OptionIconPreview(defaultTabIcon(value)) }
+                        )
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukListItem(
                             headline = stringResource(R.string.settings_bottom_nav_title),
@@ -339,6 +347,17 @@ fun InterfaceScreen(
                 }
 
                 item { Spacer(modifier = Modifier.height(100.dp)) }
+            }
+
+            if (showRoundnessDialog) {
+                CardRoundnessDialog(
+                    value = cardRoundness,
+                    onValueChange = { cardRoundness = it },
+                    onValueChangeFinished = {
+                        prefs.setInt(PreferenceManager.KEY_CARD_ROUNDNESS, cardRoundness)
+                    },
+                    onDismissRequest = { showRoundnessDialog = false }
+                )
             }
 
             // Confirm before acting: applying the icon closes the app, and doing
@@ -377,6 +396,67 @@ fun InterfaceScreen(
             )
         }
     }
+}
+
+@Composable
+private fun CardRoundnessDialog(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    onValueChangeFinished: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    AukDialog(
+        onDismissRequest = onDismissRequest,
+        title = stringResource(R.string.settings_interface_card_roundness),
+        icon = Icons.Outlined.RoundedCorner,
+        supportingText = stringResource(R.string.settings_interface_card_roundness_supporting),
+        confirmAction = AukDialogAction(
+            label = stringResource(R.string.action_done),
+            onClick = onDismissRequest
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
+            shape = RoundedCornerShape(value.dp),
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = stringResource(R.string.settings_interface_card_roundness_value, value),
+                    style = MaterialTheme.typography.titleMediumEmphasized
+                )
+            }
+        }
+        Slider(
+            value = value.toFloat().coerceIn(RoundnessRange),
+            onValueChange = { onValueChange(it.roundToInt()) },
+            valueRange = RoundnessRange,
+            steps = RoundnessSteps,
+            onValueChangeFinished = onValueChangeFinished,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun OptionIconPreview(icon: ImageVector) {
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        modifier = Modifier.size(28.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+private fun transitionStyleIcon(style: Int): ImageVector = when (style) {
+    1 -> Icons.AutoMirrored.Outlined.CompareArrows
+    2 -> Icons.Outlined.AutoAwesome
+    3 -> Icons.Outlined.Block
+    else -> Icons.Outlined.Animation
 }
 
 private fun defaultTabIcon(tab: Int): ImageVector = when (tab) {

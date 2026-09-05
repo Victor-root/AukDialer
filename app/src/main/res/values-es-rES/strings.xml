@@ -277,10 +277,6 @@
     <string name="settings_interface_search_mode_starts_with">Comienza por</string>
     <string name="settings_interface_search_mode_exact_match">Coincidencia exacta</string>
     <string name="settings_interface_card_roundness_supporting">Ajustar el radio de la esquina de las tarjetas de la IU</string>
-    <string name="settings_interface_roundness_extra_round">Extra redondeado</string>
-    <string name="settings_interface_roundness_rounded">Redondeado</string>
-    <string name="settings_interface_roundness_semi_square">Semi-cuadrado</string>
-    <string name="settings_interface_roundness_square">Cuadrado</string>
     <string name="settings_interface_default_bottom_bar">Barra inferior predeterminada</string>
     <string name="settings_interface_default_bottom_bar_supporting">Selecciona qué pestaña se abre al inicio</string>
     <string name="settings_interface_flip_bottom_bar">Invertir la barra inferior</string>

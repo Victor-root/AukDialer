@@ -268,6 +268,9 @@
     <string name="settings_interface_material_you">Material You theming</string>
     <string name="settings_interface_material_you_supporting">Wallpaper based app color theming.</string>
     <string name="settings_interface_primary_color">Primary Color</string>
+    <string name="settings_interface_primary_color_supporting">Accent colour used across the app</string>
+    <string name="settings_interface_app_icon_color">Icon colour</string>
+    <string name="settings_interface_app_icon_color_supporting">Colour of the icon on your home screen</string>
     <string name="settings_interface_amoled">Amoled dark mode</string>
     <string name="settings_interface_amoled_supporting">Uses pitch black for UI elements.</string>
     <string name="settings_interface_show_first_letter">Show first letter in avatar</string>
@@ -309,10 +312,7 @@
     <string name="settings_interface_search_mode_exact_match">Exact Match</string>
     <string name="settings_interface_card_roundness">Card roundness</string>
     <string name="settings_interface_card_roundness_supporting">Adjust the corner radius of UI cards</string>
-    <string name="settings_interface_roundness_extra_round">Extra Round</string>
-    <string name="settings_interface_roundness_rounded">Rounded</string>
-    <string name="settings_interface_roundness_semi_square">Semi Square</string>
-    <string name="settings_interface_roundness_square">Square</string>
+    <string name="settings_interface_card_roundness_value">%1$d dp</string>
     <string name="settings_interface_default_bottom_bar">Default bottom bar</string>
     <string name="settings_interface_default_bottom_bar_supporting">Select which tab opens initially</string>
     <string name="settings_interface_flip_bottom_bar">Flip bottom bar</string>

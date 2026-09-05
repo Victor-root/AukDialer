@@ -14,13 +14,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.view.components.AukDialog
 import auk.dialer.vroot.view.components.AukSelectionDialog
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.AukSelectListItem
-import auk.dialer.vroot.view.components.AukVisualOptionSelectorRow
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
 import com.ramcosta.composedestinations.annotation.Destination
@@ -32,7 +30,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -210,7 +207,8 @@ fun CallAccountsScreen(
                             prefs.setBoolean(PreferenceManager.KEY_PROXIMITY_SENSOR, it)
                         }
                     )
-                    AukVisualOptionSelectorRow(
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    AukSelectListItem(
                         headline = stringResource(R.string.settings_call_incoming_ui),
                         supporting = stringResource(R.string.settings_call_incoming_ui_supporting),
                         leadingIcon = Icons.Outlined.PhoneInTalk,
@@ -225,11 +223,8 @@ fun CallAccountsScreen(
                             incomingCallUI = it
                             prefs.setInt(PreferenceManager.KEY_INCOMING_CALL_UI_MODE, it)
                         },
-                        tileWidth = 110.dp,
-                        tileHeight = 76.dp
-                    ) { value, _ ->
-                        IncomingCallUiPreview(value)
-                    }
+                        preview = { value -> IncomingCallUiPreview(value) }
+                    )
                 }
             }
 
