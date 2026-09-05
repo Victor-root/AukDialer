@@ -149,6 +149,7 @@ fun ContactEditScreen(
     )
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = {

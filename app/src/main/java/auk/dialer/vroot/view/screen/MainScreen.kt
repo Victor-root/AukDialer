@@ -37,6 +37,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import androidx.compose.ui.graphics.Color
 
 @Destination<RootGraph>(start = true, style = NoTransitions::class)
 @Composable
@@ -94,6 +95,7 @@ fun MainScreen(
     AukStatusBarScrimEffect(scrollBehavior, enabled = edgeToEdge)
 
     Scaffold(
+        containerColor = Color.Transparent,
         modifier = if (edgeToEdge) {
             Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         } else {

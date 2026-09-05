@@ -3,6 +3,7 @@ package auk.dialer.vroot.view.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -17,8 +18,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
@@ -158,6 +161,37 @@ fun AukLeadingIconTile(
     }
 }
 
+/**
+ * The thin gradient edge every card carries: a sweep between the chosen accent and a hue shifted
+ * sibling of it.
+ *
+ * The card itself stays plain and legible, and its edge is what ties it to the accent, rather than
+ * tinting the card or dropping a shadow under it. The hue swing is wide, 70 degrees, or the two ends
+ * read as one flat tone; the sibling loses a little saturation and value too so it does not just
+ * look like the same colour turned up.
+ */
+@Composable
+fun aukAccentCardBorder(width: Dp = 1.dp): BorderStroke {
+    val accent = MaterialTheme.colorScheme.primary
+    val brush = remember(accent) {
+        val hsv = FloatArray(3)
+        android.graphics.Color.colorToHSV(accent.toArgb(), hsv)
+        val sibling = Color(
+            android.graphics.Color.HSVToColor(
+                floatArrayOf(
+                    (hsv[0] + AccentBorderHueShift).mod(360f),
+                    (hsv[1] * 0.85f).coerceIn(0f, 1f),
+                    (hsv[2] * 0.9f).coerceIn(0f, 1f)
+                )
+            )
+        )
+        Brush.linearGradient(listOf(accent, sibling, accent))
+    }
+    return BorderStroke(width, brush)
+}
+
+private const val AccentBorderHueShift = 70f
+
 @Composable
 fun AukExpressiveCard(
     modifier: Modifier = Modifier,
@@ -185,7 +219,8 @@ fun AukExpressiveCard(
             modifier = modifier.fillMaxWidth(),
             shape = resolvedShape,
             colors = CardDefaults.cardColors(containerColor = containerColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat)
+            elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat),
+            border = aukAccentCardBorder()
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = horizontalPadding, vertical = padding),
@@ -253,7 +288,7 @@ fun AukSectionHeader(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.labelLargeEmphasized,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

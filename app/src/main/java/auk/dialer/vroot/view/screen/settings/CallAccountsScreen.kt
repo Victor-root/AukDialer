@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.generated.destinations.CallRecordingsScr
 import com.ramcosta.composedestinations.generated.destinations.SpeedDialScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.VoicemailScreenDestination
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Destination<RootGraph>
@@ -104,6 +105,7 @@ fun CallAccountsScreen(
     var showCallWaitingDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

@@ -64,6 +64,7 @@ import auk.dialer.vroot.modal.data.displayLabel
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination<RootGraph>(style = NoTransitions::class)
@@ -196,7 +197,7 @@ fun RecentScreenContent(
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = Color.Transparent
     ) { innerPadding ->
         Box(
             modifier = Modifier.padding(innerPadding).fillMaxSize()
@@ -524,7 +525,7 @@ fun CallLogFullContent(
                                         Text(
                                             text = stringResource(R.string.recents_favorites),
                                             style = MaterialTheme.typography.labelLargeEmphasized,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Icon(

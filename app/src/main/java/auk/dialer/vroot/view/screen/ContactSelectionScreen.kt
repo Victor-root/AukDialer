@@ -134,6 +134,7 @@ fun ContactSelectionScreen(
                 }
             )
         },
+        containerColor = Color.Transparent,
         floatingActionButton = {
             if (isMultiSelect && totalSelectedCount > 0) {
                 ExtendedFloatingActionButton(

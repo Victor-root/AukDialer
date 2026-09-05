@@ -23,6 +23,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import androidx.compose.ui.graphics.Color
 
 data class Contributor(
     val name: String,
@@ -44,6 +45,7 @@ fun ContributorsScreen(
 ) {
     val context = LocalContext.current
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

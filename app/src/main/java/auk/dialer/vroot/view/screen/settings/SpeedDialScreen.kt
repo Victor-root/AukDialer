@@ -62,7 +62,7 @@ fun SpeedDialScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = Color.Transparent,
     ) { padding ->
         LazyColumn(
             modifier = Modifier
