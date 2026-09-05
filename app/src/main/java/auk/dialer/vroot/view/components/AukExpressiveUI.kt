@@ -97,11 +97,11 @@ object AukListItemDefaults {
     val MinHeight: Dp = 48.dp
     val AvatarSize: Dp = 40.dp
     val CompactAvatarSize: Dp = 42.dp
-    val HorizontalPadding: Dp = 8.dp
+    val HorizontalPadding: Dp = 6.dp
     val CompactHorizontalPadding: Dp = 10.dp
     val VerticalPadding: Dp = 6.dp
     val CompactVerticalPadding: Dp = 6.dp
-    val Spacing: Dp = 14.dp
+    val Spacing: Dp = 12.dp
     val CompactSpacing: Dp = 14.dp
     val TrailingSpacing: Dp = 8.dp
     val TrailingIconSize: Dp = 20.dp

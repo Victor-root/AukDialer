@@ -183,9 +183,12 @@ fun CallLogTile(
             }
             
             if (!selected) {
+                // 40dp rather than the default 48dp touch target, and no trailing
+                // padding: the card and the screen already inset this edge, and
+                // every point reserved here is a point the name does not get.
                 IconButton(
                     onClick = { onButtonClick(log) },
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Call,
