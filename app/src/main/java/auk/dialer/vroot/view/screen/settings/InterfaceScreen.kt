@@ -166,11 +166,6 @@ fun InterfaceScreen(
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_app_icon)) {
-                        AukListItem(
-                            headline = stringResource(R.string.settings_app_icon),
-                            supporting = stringResource(R.string.settings_app_icon_supporting),
-                            leadingIcon = Icons.Outlined.AppShortcut
-                        )
                         AukColorSwatchRow(
                             colors = iconColors,
                             selectedColor = iconColors.firstOrNull { it.toArgb() == appIconColor },
