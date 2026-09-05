@@ -78,7 +78,8 @@ fun RecentScreen(navController: NavController, navigator: DestinationsNavigator)
 fun RecentScreenContent(
     navController: NavController,
     navigator: DestinationsNavigator,
-    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null
+    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null,
+    onFilterBarChange: ((@Composable () -> Unit) -> Unit)? = null
 ) {
     val permState = rememberPermissionState(Manifest.permission.READ_CALL_LOG)
     val listState = rememberLazyListState()
@@ -157,15 +158,17 @@ fun RecentScreenContent(
         }
     }
 
+    LaunchedEffect(Unit) {
+        onFilterBarChange?.invoke(filterChipsRow)
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            if (onSelectionStateChange != null) {
-                if (!isSelecting) {
-                    filterChipsRow()
-                }
-            } else {
+            // When hosted by MainScreen the filter bar and selection action bar are shown by its own
+            // collapsing header instead, so the whole header collapses together on scroll.
+            if (onSelectionStateChange == null) {
                 AnimatedContent(
                     targetState = isSelecting,
                     transitionSpec = {
