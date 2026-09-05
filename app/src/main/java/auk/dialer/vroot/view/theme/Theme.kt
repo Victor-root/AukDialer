@@ -114,13 +114,9 @@ fun AukTheme(
             if (!systemBars) {
                 content()
             } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(colorScheme.background)
-                ) {
-                    // Under the screens, which are transparent so it shows through: the pages carry
-                    // no accent of their own any more, the colour lives here instead.
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // The page itself, under the screens, which are transparent so it shows
+                    // through: they carry no accent of their own any more, the colour lives here.
                     AukAuroraBackground()
                     content()
                     // Edge to edge off: an opaque accent band over the navigation bar area, so it
