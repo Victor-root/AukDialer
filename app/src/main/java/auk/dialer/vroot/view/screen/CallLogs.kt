@@ -7,7 +7,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -156,18 +155,12 @@ fun CallLogFullScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                AukAccentFilterBar {
                     items(CallLogFilter.entries) { filter ->
                         AukFilterChip(filter.displayLabel(), selectedFilter == filter, {
                             _ ->
                             viewModel.setFilter(filter)
-                        }, isAllFilter = filter == CallLogFilter.All)
+                        }, isAllFilter = filter == CallLogFilter.All, onAccentBar = true)
                     }
                 }
 

@@ -143,19 +143,14 @@ fun RecentScreenContent(
     }
 
     val filterChipsRow: @Composable () -> Unit = {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 2.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        AukAccentFilterBar {
             items(CallLogFilter.entries) { filter ->
                 AukFilterChip(
                     label = filter.displayLabel(),
                     selected = selectedFilter == filter,
                     onClick = { _ -> viewModel.setFilter(filter) },
-                    isAllFilter = filter == CallLogFilter.All
+                    isAllFilter = filter == CallLogFilter.All,
+                    onAccentBar = true
                 )
             }
         }

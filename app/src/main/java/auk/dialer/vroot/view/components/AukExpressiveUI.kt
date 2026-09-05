@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.theme.LocalAccentBarColor
+import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
 import auk.dialer.vroot.view.theme.LocalCardRoundness
 import auk.dialer.vroot.view.theme.AukMaterialShapes
 import auk.dialer.vroot.view.theme.AukMotion
@@ -46,6 +48,9 @@ import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import auk.dialer.vroot.view.theme.aukCornerDp
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
+
+/** Opacity of an unselected filter chip sitting on the accent band. */
+private const val AccentChipContainerAlpha = 0.16f
 
 object AukElevation {
     val Flat: Dp = 0.dp
@@ -631,9 +636,33 @@ fun AukFilterChip(
     modifier: Modifier = Modifier,
     isAllFilter: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    onAccentBar: Boolean = false
 ) {
     val roundness = LocalCardRoundness.current
+    val accent = LocalAccentBarColor.current
+    val onAccent = LocalOnAccentBarColor.current
+    // On the accent band the usual colours vanish: the selected chip is filled with primary, which
+    // is the band itself. Swapped for the band's own pair instead.
+    val chipColors = if (onAccentBar) {
+        FilterChipDefaults.filterChipColors(
+            containerColor = onAccent.copy(alpha = AccentChipContainerAlpha),
+            labelColor = onAccent,
+            iconColor = onAccent,
+            selectedContainerColor = onAccent,
+            selectedLabelColor = accent,
+            selectedLeadingIconColor = accent
+        )
+    } else {
+        FilterChipDefaults.filterChipColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+        )
+    }
     FilterChip(
         selected = selected,
         onClick = { onClick(label) },
@@ -654,14 +683,7 @@ fun AukFilterChip(
         ),
         modifier = modifier,
         enabled = enabled,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            selectedContainerColor = MaterialTheme.colorScheme.primary,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
-        ),
+        colors = chipColors,
         leadingIcon = leadingIcon ?: if (isAllFilter) {
             {
                 Icon(

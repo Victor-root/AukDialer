@@ -64,6 +64,11 @@ class MainActivity : ComponentActivity() {
         intentState = intent
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // enableEdgeToEdge turns navigation bar contrast enforcement back on, whatever the theme
+        // says, and the system then lays a translucent scrim over three button navigation. That
+        // darkened the accent band the theme paints there, so the navigation bar came out a
+        // different red from the header. The bars are coloured in Compose, so opt out of it.
+        window.isNavigationBarContrastEnforced = false
 
         if (GlobalContext.getOrNull() == null) {
             startKoin {
