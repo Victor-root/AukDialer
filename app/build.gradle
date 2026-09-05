@@ -27,12 +27,12 @@ def hasReleaseKey = releaseStorePath != null && file(releaseStorePath).exists()
 
 android {
     namespace = 'auk.dialer.vroot'
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "auk.dialer.vroot"
         minSdk = 31
-        targetSdk = 37
+        targetSdk = 36
         versionCode = baseVersionCode + buildNumber
         versionName = isPreviewBuild ? "${baseVersionName}.${buildNumber}-preview" : baseVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
