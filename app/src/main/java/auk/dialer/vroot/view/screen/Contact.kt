@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -38,6 +37,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.ContactUtils
+import auk.dialer.vroot.view.components.AukAccentFilterBar
 import auk.dialer.vroot.view.components.AZListScroll
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.AukAccentHeader
@@ -197,34 +197,28 @@ fun AccountFilterBar(viewModel: ContactsViewModel) {
     val showPrivateOnly by viewModel.showPrivateOnly.collectAsState()
     val showLocalOnly by viewModel.showLocalOnly.collectAsState()
 
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    AukAccentFilterBar {
         item {
             AukFilterChip(stringResource(R.string.filter_all), selectedAccount == null && !showPrivateOnly && !showLocalOnly, {
                 viewModel.selectAccount(null)
                 viewModel.setShowPrivateOnly(false)
                 viewModel.setShowLocalOnly(false)
-            }, isAllFilter = true)
+            }, isAllFilter = true, onAccentBar = true)
         }
         item {
             AukFilterChip(stringResource(R.string.label_local_memory), showLocalOnly, {
                 viewModel.setShowLocalOnly(true)
-            })
+            }, onAccentBar = true)
         }
         item {
             AukFilterChip(stringResource(R.string.contact_filter_private), showPrivateOnly, {
                 viewModel.setShowPrivateOnly(true)
-            })
+            }, onAccentBar = true)
         }
         items(accounts) { account ->
             AukFilterChip(ContactUtils.getFriendlyAccountName(LocalContext.current, account), selectedAccount == account, {
                 viewModel.selectAccount(account)
-            })
+            }, onAccentBar = true)
         }
     }
 }
