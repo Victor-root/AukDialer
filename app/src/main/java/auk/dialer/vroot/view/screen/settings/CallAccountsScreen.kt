@@ -287,7 +287,7 @@ fun CallAccountsScreen(
 
             item {
                 AukSectionHeader(
-                    title = "Work in Progress",
+                    title = stringResource(R.string.settings_group_work_in_progress),
                     icon = Icons.Outlined.Construction
                 )
                 Spacer(Modifier.height(8.dp))

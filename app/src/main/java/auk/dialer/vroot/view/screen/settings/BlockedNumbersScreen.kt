@@ -65,6 +65,11 @@ fun BlockedNumbersScreen(
     var searchQuery by remember { mutableStateOf("") }
     var numberToUnblock by remember { mutableStateOf<BlockedNumber?>(null) }
 
+    // Read here rather than inside the onClick lambda below: stringResource is a composable
+    // function, and onClick runs outside composition.
+    val blockSelectTitle = stringResource(R.string.blocked_select_title)
+    val blockAction = stringResource(R.string.action_block)
+
     resultRecipient.onNavResult { result ->
         when (result) {
             is NavResult.Value -> {
@@ -145,7 +150,7 @@ fun BlockedNumbersScreen(
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
-                                    text = "${blockedNumbers.size} numbers blocked • " + stringResource(R.string.settings_blocked_numbers_supporting),
+                                    text = stringResource(R.string.blocked_numbers_count, blockedNumbers.size) + " • " + stringResource(R.string.settings_blocked_numbers_supporting),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -156,9 +161,9 @@ fun BlockedNumbersScreen(
                             onClick = {
                                 navigator.navigate(
                                     ContactSelectionScreenDestination(
-                                        title = "Block Numbers or Contacts",
+                                        title = blockSelectTitle,
                                         isMultiSelect = true,
-                                        actionButtonText = "Block"
+                                        actionButtonText = blockAction
                                     )
                                 )
                             },
@@ -167,7 +172,7 @@ fun BlockedNumbersScreen(
                         ) {
                             Icon(Icons.Outlined.PersonSearch, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Select Contacts or Enter Number")
+                            Text(stringResource(R.string.blocked_select_or_enter_button))
                         }
                     }
                 }
@@ -179,7 +184,7 @@ fun BlockedNumbersScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Search blocked list...") },
+                        placeholder = { Text(stringResource(R.string.blocked_search_list_placeholder)) },
                         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
@@ -372,7 +377,7 @@ fun BlockedNumbersScreen(
             }
         ) {
             Text(
-                text = "Unblock ${formatPhoneNumber(target.originalNumber)}?",
+                text = stringResource(R.string.blocked_unblock_confirm_message, formatPhoneNumber(target.originalNumber)),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

@@ -107,7 +107,7 @@ fun ContactSelectionScreen(
                 title = {
                     Text(
                         text = if (isMultiSelect && totalSelectedCount > 0) {
-                            "$totalSelectedCount selected"
+                            stringResource(R.string.selection_count_selected, totalSelectedCount)
                         } else {
                             title
                         },
@@ -121,7 +121,7 @@ fun ContactSelectionScreen(
                 },
                 actions = {
                     IconButton(onClick = { navigator.navigate(ContactEditScreenDestination()) }) {
-                        Icon(Icons.Outlined.PersonAdd, contentDescription = "Create New Contact")
+                        Icon(Icons.Outlined.PersonAdd, contentDescription = stringResource(R.string.content_desc_create_new_contact))
                     }
                     if (isMultiSelect && totalSelectedCount > 0) {
                         IconButton(onClick = {
@@ -196,7 +196,7 @@ fun ContactSelectionScreen(
                                     )
                                     Spacer(Modifier.height(2.dp))
                                     Text(
-                                        text = "${allContacts.size} contacts available • Tap to select or enter custom number",
+                                        text = stringResource(R.string.contact_selection_hero_supporting, allContacts.size),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -214,7 +214,7 @@ fun ContactSelectionScreen(
                                 ) {
                                     Icon(Icons.Outlined.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Create Contact", fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.contact_create_title), fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -250,19 +250,19 @@ fun ContactSelectionScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         AukFilterChip(
-                            label = "All (${allContacts.size})",
+                            label = stringResource(R.string.contact_selection_filter_all, allContacts.size),
                             selected = selectedFilterTab == 0,
                             onClick = { selectedFilterTab = 0 },
                             leadingIcon = { Icon(Icons.Outlined.People, contentDescription = null) }
                         )
                         AukFilterChip(
-                            label = "Favorites",
+                            label = stringResource(R.string.nav_favorites),
                             selected = selectedFilterTab == 1,
                             onClick = { selectedFilterTab = 1 },
                             leadingIcon = { Icon(Icons.Outlined.Star, contentDescription = null) }
                         )
                         AukFilterChip(
-                            label = "Private",
+                            label = stringResource(R.string.contact_filter_private),
                             selected = selectedFilterTab == 2,
                             onClick = { selectedFilterTab = 2 },
                             leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) }
@@ -329,13 +329,13 @@ fun ContactSelectionScreen(
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "Use number: $cleanQuery",
+                                        text = stringResource(R.string.contact_selection_use_number, cleanQuery),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(Modifier.height(2.dp))
                                     Text(
-                                        text = "Tap to select this custom number",
+                                        text = stringResource(R.string.contact_selection_tap_to_select),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -491,7 +491,7 @@ fun ContactSelectionScreen(
                                         if (contact.phoneNumbers.isNotEmpty()) {
                                             Text(
                                                 text = if (contact.phoneNumbers.size > 1) {
-                                                    "${formatPhoneNumber(primaryNumber)} (+${contact.phoneNumbers.size - 1} more)"
+                                                    stringResource(R.string.contact_selection_more_numbers, formatPhoneNumber(primaryNumber), contact.phoneNumbers.size - 1)
                                                 } else {
                                                     formatPhoneNumber(primaryNumber)
                                                 },

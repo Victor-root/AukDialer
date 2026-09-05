@@ -102,7 +102,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "v${appInfo.first} • Preferences & Customization",
+                                text = stringResource(R.string.settings_header_subtitle, appInfo.first),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )

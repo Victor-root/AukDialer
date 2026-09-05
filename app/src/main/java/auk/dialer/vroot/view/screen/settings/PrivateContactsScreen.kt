@@ -1,6 +1,5 @@
 package auk.dialer.vroot.view.screen.settings
 
-import android.accounts.Account
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -71,6 +70,11 @@ fun PrivateContactsScreen(
 
     val isSelecting = selectedContactIds.isNotEmpty()
 
+    // Read here rather than inside the onClick lambdas below: stringResource is a composable
+    // function, and onClick runs outside composition.
+    val selectContactsTitle = stringResource(R.string.private_contacts_select_title)
+    val makePrivateAction = stringResource(R.string.private_contacts_make_private_action)
+
     resultRecipient.onNavResult { result ->
         when (result) {
             is NavResult.Value -> {
@@ -123,7 +127,7 @@ fun PrivateContactsScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "${selectedContactIds.size} selected",
+                            text = stringResource(R.string.selection_count_selected, selectedContactIds.size),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -227,9 +231,9 @@ fun PrivateContactsScreen(
                                     onClick = {
                                         navigator.navigate(
                                             ContactSelectionScreenDestination(
-                                                title = "Select Contacts to Make Private",
+                                                title = selectContactsTitle,
                                                 isMultiSelect = true,
-                                                actionButtonText = "Make Private",
+                                                actionButtonText = makePrivateAction,
                                                 returnContactId = true
                                             )
                                         )
@@ -240,7 +244,7 @@ fun PrivateContactsScreen(
                                 ) {
                                     Icon(Icons.Outlined.PersonSearch, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Pick Contacts", style = MaterialTheme.typography.labelMedium)
+                                    Text(stringResource(R.string.private_contacts_pick_short_button), style = MaterialTheme.typography.labelMedium)
                                 }
                                 FilledTonalButton(
                                     onClick = { importLauncher.launch("text/vcard") },
@@ -250,7 +254,7 @@ fun PrivateContactsScreen(
                                 ) {
                                     Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Import", style = MaterialTheme.typography.labelMedium)
+                                    Text(stringResource(R.string.action_import), style = MaterialTheme.typography.labelMedium)
                                 }
                                 FilledTonalButton(
                                     onClick = { exportLauncher.launch("private_contacts.vcf") },
@@ -260,7 +264,7 @@ fun PrivateContactsScreen(
                                 ) {
                                     Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Export", style = MaterialTheme.typography.labelMedium)
+                                    Text(stringResource(R.string.action_export), style = MaterialTheme.typography.labelMedium)
                                 }
                             }
                         }
@@ -328,9 +332,9 @@ fun PrivateContactsScreen(
                                     onClick = {
                                         navigator.navigate(
                                             ContactSelectionScreenDestination(
-                                                title = "Select Contacts to Make Private",
+                                                title = selectContactsTitle,
                                                 isMultiSelect = true,
-                                                actionButtonText = "Make Private",
+                                                actionButtonText = makePrivateAction,
                                                 returnContactId = true
                                             )
                                         )
@@ -339,7 +343,7 @@ fun PrivateContactsScreen(
                                 ) {
                                     Icon(Icons.Outlined.PersonSearch, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Pick Contacts to Make Private")
+                                    Text(stringResource(R.string.private_contacts_pick_button))
                                 }
                             }
                         }
@@ -494,7 +498,7 @@ fun PrivateContactCard(
                             Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(10.dp))
                             Spacer(Modifier.width(2.dp))
                             Text(
-                                text = "Private",
+                                text = stringResource(R.string.contact_filter_private),
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -543,7 +547,7 @@ fun PrivateContactCard(
                         leadingIcon = { Icon(Icons.Outlined.LockOpen, contentDescription = null) }
                     )
                     AukDropdownMenuItem(
-                        text = { Text("Move to Account...") },
+                        text = { Text(stringResource(R.string.contact_move_to_account)) },
                         onClick = {
                             showMenu = false
                             onMoveToAccount()
