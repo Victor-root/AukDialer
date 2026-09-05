@@ -38,7 +38,6 @@ fun CallLogTileSimple(
 ) {
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val settingsState by prefs.settingsChanged.collectAsState()
-    val showSim = prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_SHOW_SIM_ICON_HISTORY, true)
 
     val icon = when (log.type) {
         CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
@@ -74,7 +73,6 @@ fun CallLogTileSimple(
                         append(formatDate(context, log.date))
                         if (log.duration > 0) append(" • ${android.text.format.DateUtils.formatElapsedTime(log.duration)}")
                     },
-                    supporting2 = if (showSim) log.simLabel else null,
                     avatarName = "", 
                     badgeIcon = icon,
                     badgeColor = badgeColor,
@@ -113,7 +111,6 @@ fun CallLogTile(
 ) {
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val settingsState by prefs.settingsChanged.collectAsState()
-    val showSim = prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_SHOW_SIM_ICON_HISTORY, true)
 
     val icon = when (log.type) {
         CallLog.Calls.MISSED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
@@ -167,13 +164,7 @@ fun CallLogTile(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = buildString {
-                                    append(formatTime(context, log.date))
-                                    if (showSim && log.simLabel != null) {
-                                        append(" • ")
-                                        append(log.simLabel)
-                                    }
-                                },
+                                text = formatTime(context, log.date),
                                 style = AukListItemDefaults.supportingStyle(),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,

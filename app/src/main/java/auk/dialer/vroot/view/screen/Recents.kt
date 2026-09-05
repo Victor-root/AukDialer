@@ -646,7 +646,7 @@ fun CallLogFullContent(
                             item {
                                 AukSectionHeader(title = header)
                                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                    AukExpressiveCard {
+                                    AukExpressiveCard(isCompact = true) {
                                         logsInGroup.forEachIndexed { index, lg ->
                                             CallLogTile(
                                                 log = lg,
@@ -678,7 +678,7 @@ fun CallLogFullContent(
                                         }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }
