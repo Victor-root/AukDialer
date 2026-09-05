@@ -117,6 +117,22 @@ base {
     archivesName = "AukDialer-${android.defaultConfig.versionName}"
 }
 
+// The release build otherwise ships an ART baseline profile, and Android Studio
+// installs it alongside the APK as a separate .dm file. That extra install step
+// is refused on some devices, and the whole deployment fails with
+// INSTALL_BASELINE_PROFILE_FAILED even though the APK itself is fine, which
+// makes Run unusable on the release variant.
+//
+// AGP offers no way to keep the profile inside the APK while skipping the .dm,
+// so the profile goes. What it buys is a faster first launch after an install;
+// ART rebuilds an equivalent profile from real usage within a few launches
+// anyway, and this app is not distributed through a store that would use it.
+tasks.configureEach { task ->
+    if (task.name in ['compileReleaseArtProfile', 'expandReleaseArtProfileWildcards']) {
+        task.enabled = false
+    }
+}
+
 dependencies {
     implementation platform('androidx.compose:compose-bom:2025.12.01')
     implementation 'androidx.compose.ui:ui'
