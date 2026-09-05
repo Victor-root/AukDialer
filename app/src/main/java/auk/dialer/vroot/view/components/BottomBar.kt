@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -105,9 +106,10 @@ fun BottomBar(
     )
 
     ShortNavigationBar(
-        // Veiled rather than solid, like a card: the wash the theme paints behind every screen
-        // would otherwise stop dead at this bar's own edge instead of running underneath it too.
-        containerColor = MaterialTheme.colorScheme.surfaceContainer.aukVeiled(),
+        // No fill of its own at all: surfaceContainer is close enough to white that even veiled it
+        // still read as a flat pale slab next to the more saturated wash right above it. Fully clear,
+        // the bar shows the exact same wash the rest of the screen does, with nothing added.
+        containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         tabs.forEach { tab ->
