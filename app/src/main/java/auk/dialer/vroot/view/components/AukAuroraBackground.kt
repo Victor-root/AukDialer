@@ -99,3 +99,14 @@ private const val DarkStrength = 0.30f
 
 private const val DriftDurationMs = 25000
 private const val DriftAmount = 0.25f
+
+/**
+ * How much of a surface's own colour sits over the wash drawn behind it: still enough to read as
+ * that surface's own chrome, but low enough that the wash keeps showing through it instead of being
+ * blocked by a flat, unrelated block of colour. Shared by anything that would otherwise break the
+ * one background the theme paints into its own separate patch, cards and the bottom bar alike.
+ */
+internal const val AukVeilAlpha = 0.55f
+
+/** [this] with [AukVeilAlpha] applied. */
+internal fun Color.aukVeiled(alpha: Float = AukVeilAlpha): Color = copy(alpha = alpha)

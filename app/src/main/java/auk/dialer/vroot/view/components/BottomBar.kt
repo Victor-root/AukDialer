@@ -105,7 +105,9 @@ fun BottomBar(
     )
 
     ShortNavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        // Veiled rather than solid, like a card: the wash the theme paints behind every screen
+        // would otherwise stop dead at this bar's own edge instead of running underneath it too.
+        containerColor = MaterialTheme.colorScheme.surfaceContainer.aukVeiled(),
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         tabs.forEach { tab ->
