@@ -69,7 +69,8 @@ fun ContactScreen(navController: NavController, navigator: DestinationsNavigator
 fun ContactScreenContent(
     navController: NavController,
     navigator: DestinationsNavigator,
-    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null
+    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null,
+    onFilterBarChange: ((@Composable () -> Unit) -> Unit)? = null
 ) {
     val permState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
     val listState = rememberLazyListState()
@@ -110,18 +111,22 @@ fun ContactScreenContent(
         )
     }
 
+    val filterBar: @Composable () -> Unit = { AccountFilterBar(contactsVM) }
+
     LaunchedEffect(isSelecting, selectedIds.size, availableAccounts) {
         onSelectionStateChange?.invoke(isSelecting, if (isSelecting) batchActionBar else null)
+    }
+
+    LaunchedEffect(Unit) {
+        onFilterBarChange?.invoke(filterBar)
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            if (onSelectionStateChange != null) {
-                if (!isSelecting) {
-                    AccountFilterBar(contactsVM)
-                }
-            } else {
+            // When hosted by MainScreen the filter bar and selection action bar are shown by its own
+            // collapsing header instead, so the whole header collapses together on scroll.
+            if (onSelectionStateChange == null) {
                 Column {
                     AnimatedContent(
                         targetState = isSelecting,
@@ -133,7 +138,7 @@ fun ContactScreenContent(
                         if (!selecting) {
                             Column {
                                 TopBar(navigator)
-                                AccountFilterBar(contactsVM)
+                                filterBar()
                             }
                         } else {
                             batchActionBar()

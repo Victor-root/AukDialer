@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -62,8 +63,10 @@ fun MainScreen(
 
     var isSelectingRecents by remember { mutableStateOf(false) }
     var recentsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+    var recentsFilterBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
     var isSelectingContacts by remember { mutableStateOf(false) }
     var contactsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+    var contactsFilterBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
 
     val currentTab = visibleTabs.getOrNull(pagerState.currentPage)
     val isSelecting = when (currentTab) {
@@ -118,7 +121,14 @@ fun MainScreen(
                             else -> TopBar(navigator)
                         }
                     } else {
-                        TopBar(navigator)
+                        Column {
+                            TopBar(navigator)
+                            when (currentTab) {
+                                PreferenceManager.TAB_RECENTS -> recentsFilterBar?.invoke()
+                                PreferenceManager.TAB_CONTACTS -> contactsFilterBar?.invoke()
+                                else -> {}
+                            }
+                        }
                     }
                 }
             }
@@ -150,7 +160,8 @@ fun MainScreen(
                         onSelectionStateChange = { selecting, actionBar ->
                             isSelectingRecents = selecting
                             recentsActionBar = actionBar
-                        }
+                        },
+                        onFilterBarChange = { filterBar -> recentsFilterBar = filterBar }
                     )
                     PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
                         navController = navController,
@@ -163,7 +174,8 @@ fun MainScreen(
                         onSelectionStateChange = { selecting, actionBar ->
                             isSelectingContacts = selecting
                             contactsActionBar = actionBar
-                        }
+                        },
+                        onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
                     )
                 }
             }
