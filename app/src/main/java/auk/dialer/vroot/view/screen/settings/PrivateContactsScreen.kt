@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -158,12 +159,11 @@ fun PrivateContactsScreen(
                             Icon(Icons.Outlined.LockOpen, contentDescription = stringResource(R.string.contact_move_to_public_storage))
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                    )
+                    colors = aukAccentTopAppBarColors()
                 )
             } else {
                 TopAppBar(
+                    colors = aukAccentTopAppBarColors(),
                     title = { Text(stringResource(R.string.settings_private_title), fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.navigateUp() }) {

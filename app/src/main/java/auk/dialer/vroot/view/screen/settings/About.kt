@@ -34,6 +34,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContributorsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -46,6 +47,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.about_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

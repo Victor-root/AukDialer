@@ -60,6 +60,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContactEditScreen
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @Composable
 private fun CallBackgroundRow(
@@ -440,6 +441,7 @@ fun ContactDetailsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

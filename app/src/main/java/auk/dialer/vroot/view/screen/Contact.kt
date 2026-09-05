@@ -40,6 +40,7 @@ import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.ContactUtils
 import auk.dialer.vroot.view.components.AZListScroll
 import auk.dialer.vroot.view.components.BottomBar
+import auk.dialer.vroot.view.components.AukAccentHeader
 import auk.dialer.vroot.view.components.AukDialog
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukFilterChip
@@ -131,7 +132,7 @@ fun ContactScreenContent(
                     ) { selecting ->
                         if (!selecting) {
                             Column {
-                                TopBar(navController, navigator)
+                                TopBar(navigator)
                                 AccountFilterBar(contactsVM)
                             }
                         } else {
@@ -240,35 +241,36 @@ fun BatchActionBar(
 ) {
     var showMoveDialog by remember { mutableStateOf(false) }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-    ) {
-        Row(
+    AukAccentHeader {
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         ) {
-            IconButton(onClick = onClear) {
-                Icon(Icons.Default.Close, stringResource(R.string.action_clear_selection))
-            }
-            Text(
-                text = stringResource(R.string.selection_count_selected, selectedCount),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f).padding(start = 8.dp)
-            )
-            IconButton(onClick = { showMoveDialog = true }) {
-                Icon(Icons.AutoMirrored.Filled.DriveFileMove, stringResource(R.string.content_desc_move))
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, stringResource(R.string.action_delete))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onClear) {
+                    Icon(Icons.Default.Close, stringResource(R.string.action_clear_selection))
+                }
+                Text(
+                    text = stringResource(R.string.selection_count_selected, selectedCount),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f).padding(start = 8.dp)
+                )
+                IconButton(onClick = { showMoveDialog = true }) {
+                    Icon(Icons.AutoMirrored.Filled.DriveFileMove, stringResource(R.string.content_desc_move))
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, stringResource(R.string.action_delete))
+                }
             }
         }
     }

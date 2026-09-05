@@ -54,6 +54,7 @@ import auk.dialer.vroot.view.theme.AukMotion
 import auk.dialer.vroot.view.theme.rememberAukMorph
 import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import auk.dialer.vroot.view.theme.aukCornerDp
+import auk.dialer.vroot.view.theme.AukPlainStatusBar
 
 data class MorphingPage(
     val icon: ImageVector,
@@ -94,6 +95,8 @@ private val pages = listOf(
 @Composable
 fun MorphingOnboardingScreen(onFinished: () -> Unit) {
     var currentPage by remember { mutableIntStateOf(0) }
+
+    AukPlainStatusBar()
     val roundness = LocalCardRoundness.current
 
     val morphProgress by animateFloatAsState(

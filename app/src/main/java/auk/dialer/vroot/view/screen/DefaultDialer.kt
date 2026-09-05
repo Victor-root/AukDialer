@@ -35,12 +35,15 @@ import com.ramcosta.composedestinations.generated.destinations.DefaultDialerScre
 import com.ramcosta.composedestinations.generated.destinations.MainScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
+import auk.dialer.vroot.view.theme.AukPlainStatusBar
 
 @Destination<RootGraph>()
 @Composable
 fun DefaultDialerScreen(navController: NavController, navigator: DestinationsNavigator) {
     val context = LocalContext.current
     var isDenied by remember { mutableStateOf(false) }
+
+    AukPlainStatusBar()
 
     val prefs = koinInject<PreferenceManager>()
     val defBar = prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, 0)

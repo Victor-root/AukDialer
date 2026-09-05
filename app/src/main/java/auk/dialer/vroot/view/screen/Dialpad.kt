@@ -71,6 +71,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.awaitCancellation
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
     ExperimentalComposeUiApi::class
@@ -193,6 +194,7 @@ fun DialPadScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.dialpad_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

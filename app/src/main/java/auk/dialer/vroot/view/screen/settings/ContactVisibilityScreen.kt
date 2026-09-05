@@ -23,6 +23,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -46,6 +47,7 @@ fun ContactVisibilityScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.settings_visibility_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {

@@ -31,6 +31,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -52,6 +53,7 @@ fun SpeedDialScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.settings_speed_dial_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
