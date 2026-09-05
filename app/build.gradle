@@ -95,16 +95,16 @@ android {
             enable = false
         }
     }
+}
 
-    // Release keeps the bare name, every other build type is tagged, so a debug
-    // APK is never mistaken for a release one once it leaves the build folder.
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            def buildType = variant.buildType.name
-            def suffix = buildType == "release" ? "" : "-${buildType}"
-            outputFileName = "AukDialer-${variant.versionName}${suffix}.apk"
-        }
-    }
+// The build type ends up in the name rather than being absent from the release
+// one, because the only way to control the file name exactly is the old variant
+// API: deprecated on AGP 8, removed in AGP 9, and with nothing public to replace
+// it (the new VariantOutput carries no file name, and the class that does is
+// internal). Taking the suffix is what buys a build with no deprecated API left
+// in it and nothing to repair on the day of that upgrade.
+base {
+    archivesName = "AukDialer-${android.defaultConfig.versionName}"
 }
 
 dependencies {
