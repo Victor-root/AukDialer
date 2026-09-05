@@ -245,6 +245,9 @@
     <string name="app_icon_change_cancel">Annuler</string>
     <string name="settings_interface_material_you_supporting">Coloration de l’application basée sur le fond d’écran.</string>
     <string name="settings_interface_primary_color">Couleur principale</string>
+    <string name="settings_interface_primary_color_supporting">Couleur d’accentuation utilisée dans toute l’application</string>
+    <string name="settings_interface_app_icon_color">Couleur de l’icône</string>
+    <string name="settings_interface_app_icon_color_supporting">Couleur de l’icône sur votre écran d’accueil</string>
     <string name="settings_interface_amoled">Mode sombre Amoled</string>
     <string name="settings_interface_amoled_supporting">Utilise un noir profond pour les éléments de l’interface.</string>
     <string name="settings_interface_show_first_letter">Afficher la première lettre dans l’avatar</string>
@@ -276,10 +279,7 @@
     <string name="settings_interface_search_mode_exact_match">Correspondance exacte</string>
     <string name="settings_interface_card_roundness">Arrondi des cartes</string>
     <string name="settings_interface_card_roundness_supporting">Ajuster le rayon des coins des cartes de l’interface</string>
-    <string name="settings_interface_roundness_extra_round">Très arrondi</string>
-    <string name="settings_interface_roundness_rounded">Arrondi</string>
-    <string name="settings_interface_roundness_semi_square">Semi-carré</string>
-    <string name="settings_interface_roundness_square">Carré</string>
+    <string name="settings_interface_card_roundness_value">%1$d dp</string>
     <string name="settings_interface_default_bottom_bar">Barre inférieure par défaut</string>
     <string name="settings_interface_default_bottom_bar_supporting">Choisissez l’onglet ouvert au démarrage</string>
     <string name="settings_interface_flip_bottom_bar">Inverser la barre inférieure</string>

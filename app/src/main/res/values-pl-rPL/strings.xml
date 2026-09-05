@@ -288,10 +288,6 @@
     <string name="settings_interface_search_mode_exact_match">Dokładne dopasowanie</string>
     <string name="settings_interface_card_roundness">Zaokrąglenie kart</string>
     <string name="settings_interface_card_roundness_supporting">Dostosuj promień zaokrąglenia rogów kart interfejsu</string>
-    <string name="settings_interface_roundness_extra_round">Mocno zaokrąglone</string>
-    <string name="settings_interface_roundness_rounded">Zaokrąglone</string>
-    <string name="settings_interface_roundness_semi_square">Lekko zaokrąglone</string>
-    <string name="settings_interface_roundness_square">Kwadratowe</string>
     <string name="settings_interface_default_bottom_bar">Domyślny pasek dolny</string>
     <string name="settings_interface_default_bottom_bar_supporting">Wybierz, która karta ma się otwierać jako pierwsza</string>
     <string name="settings_interface_flip_bottom_bar">Odwróć kolejność paska dolnego</string>

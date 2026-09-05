@@ -288,10 +288,6 @@
     <string name="settings_interface_search_mode_exact_match">Exakte Übereinstimmung</string>
     <string name="settings_interface_card_roundness">Kartenrundung</string>
     <string name="settings_interface_card_roundness_supporting">Eckradius der UI-Karten anpassen</string>
-    <string name="settings_interface_roundness_extra_round">Extra rund</string>
-    <string name="settings_interface_roundness_rounded">Abgerundet</string>
-    <string name="settings_interface_roundness_semi_square">Halb quadratisch</string>
-    <string name="settings_interface_roundness_square">Quadratisch</string>
     <string name="settings_interface_default_bottom_bar">Untere Leiste: Standard setzen</string>
     <string name="settings_interface_default_bottom_bar_supporting">Auswahl des Start-Tabs</string>
     <string name="settings_interface_flip_bottom_bar">Untere Leiste: Tabs tauschen</string>

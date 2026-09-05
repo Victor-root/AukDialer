@@ -3,22 +3,15 @@ package auk.dialer.vroot.view.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.outlined.AccountBox
-import androidx.compose.material.icons.outlined.RoundedCorner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,12 +44,7 @@ import auk.dialer.vroot.view.theme.AukMotion
 import auk.dialer.vroot.view.theme.AukShapeDefaults
 import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import auk.dialer.vroot.view.theme.aukCornerDp
-import auk.dialer.vroot.view.theme.aukAvatarShape
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.text.font.FontWeight
 import org.koin.compose.koinInject
-import java.util.Locale
 import kotlin.math.roundToInt
 
 object AukElevation {
@@ -726,637 +714,126 @@ fun AukToggleButton(
     }
 }
 
+/**
+ * A single colour chip. Circle when idle, cookie shape with a check when it is
+ * the current choice.
+ */
 @Composable
-fun AukSegmentedOptionRow(
-    options: List<Pair<String, Int>>,
-    selectedValue: Int,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    optionIcon: ((Int) -> ImageVector?)? = null,
-    enabled: Boolean = true
-) {
-    SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, option ->
-            val optionValue = option.second
-            val isSelected = optionValue == selectedValue
-            val glyph = optionIcon?.invoke(optionValue)
-            SegmentedButton(
-                selected = isSelected,
-                onClick = { onValueChange(optionValue) },
-                enabled = enabled,
-                shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                icon = {
-                    if (glyph != null) {
-                        Icon(
-                            imageVector = glyph,
-                            contentDescription = null,
-                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
-                        )
-                    } else {
-                        SegmentedButtonDefaults.Icon(active = isSelected)
-                    }
-                },
-                label = {
-                    Text(
-                        text = option.first,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun AukOptionRow(
-    headline: String,
-    options: List<Pair<String, Int>>,
-    selectedValue: Int,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    supporting: String? = null,
-    leadingIcon: ImageVector? = null,
-    optionIcon: ((Int) -> ImageVector?)? = null,
-    enabled: Boolean = true
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = AukListItemDefaults.HorizontalPadding,
-                vertical = AukListItemDefaults.VerticalPadding
-            ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (leadingIcon != null) {
-                AukLeadingIconTile(icon = leadingIcon)
-                Spacer(modifier = Modifier.width(AukListItemDefaults.Spacing))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = AukListItemDefaults.headlineStyle(),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (supporting != null) {
-                    Text(
-                        text = supporting,
-                        style = AukListItemDefaults.supportingStyle(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-        AukSegmentedOptionRow(
-            options = options,
-            selectedValue = selectedValue,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            optionIcon = optionIcon,
-            enabled = enabled
-        )
-    }
-}
-
-object AukPreviewTileDefaults {
-    val Width: Dp = 108.dp
-    val PreviewHeight: Dp = 84.dp
-    val BadgeSize: Dp = 22.dp
-    val BadgeIconSize: Dp = 14.dp
-    val Spacing: Dp = 12.dp
-}
-
-@Composable
-fun AukPreviewTile(
-    label: String,
+fun AukColorSwatch(
+    color: Color,
     selected: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    supporting: String? = null,
-    width: Dp = AukPreviewTileDefaults.Width,
-    previewHeight: Dp = AukPreviewTileDefaults.PreviewHeight,
-    enabled: Boolean = true,
-    previewContainerColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
-    content: @Composable BoxScope.() -> Unit
+    onClick: (() -> Unit)? = null,
+    size: Dp = AukColorSwatchDefaults.Size
 ) {
-    val roundness = LocalCardRoundness.current
-    val cornerTarget = if (selected) {
-        aukCornerDp(AukShapeDefaults.BaseExtraLargeIncreased, roundness)
-    } else {
-        aukCornerDp(AukShapeDefaults.BaseLarge, roundness)
-    }
-    val corner by animateDpAsState(
-        targetValue = cornerTarget,
-        animationSpec = AukMotion.shapeMorph(),
-        label = "AukPreviewTileCorner"
-    )
-    val borderWidth by animateDpAsState(
-        targetValue = if (selected) 2.dp else 1.dp,
-        animationSpec = AukMotion.pressFeedback(),
-        label = "AukPreviewTileBorder"
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.outlineVariant
-        },
-        animationSpec = AukMotion.colorChange(),
-        label = "AukPreviewTileBorderColor"
-    )
-    val badgeScale by animateFloatAsState(
+    val progress by animateFloatAsState(
         targetValue = if (selected) 1f else 0f,
-        animationSpec = AukMotion.spatialFast(),
-        label = "AukPreviewTileBadge"
+        animationSpec = AukMotion.shapeMorph(),
+        label = "AukColorSwatchMorph"
     )
-    val shape = RoundedCornerShape(corner)
+    val shape = rememberAukMorphShape(
+        AukMaterialShapes.Circle,
+        AukMaterialShapes.Cookie9Sided
+    ) { progress }
+    val onColor = if (color.luminance() > 0.5f) {
+        MaterialTheme.colorScheme.scrim
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
     val selectedDescription = stringResource(R.string.content_desc_selected_item)
 
-    Column(
-        modifier = modifier.width(width),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box {
-            Surface(
-                selected = selected,
-                onClick = onClick,
-                enabled = enabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(previewHeight),
-                shape = shape,
-                color = previewContainerColor,
-                border = BorderStroke(borderWidth, borderColor),
-                shadowElevation = AukElevation.Flat
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                    content = content
+    val check: @Composable () -> Unit = {
+        Box(contentAlignment = Alignment.Center) {
+            if (progress > 0f) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = selectedDescription,
+                    modifier = Modifier.size(size * 0.45f * progress)
                 )
-            }
-            if (badgeScale > 0f) {
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .size(AukPreviewTileDefaults.BadgeSize * badgeScale),
-                    shape = AukShapeDefaults.Full,
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shadowElevation = AukElevation.Flat
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = selectedDescription,
-                            modifier = Modifier.size(AukPreviewTileDefaults.BadgeIconSize * badgeScale)
-                        )
-                    }
-                }
-            }
-        }
-        Text(
-            text = label,
-            style = if (selected) {
-                MaterialTheme.typography.labelMediumEmphasized
-            } else {
-                MaterialTheme.typography.labelMedium
-            },
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
-        if (supporting != null) {
-            Text(
-                text = supporting,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Composable
-fun AukAvatarShapeSelectorRow(
-    headline: String,
-    supporting: String?,
-    options: List<Pair<String, Int>>,
-    selectedValue: Int,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = AukListItemDefaults.VerticalPadding),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = AukListItemDefaults.HorizontalPadding),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AukLeadingIconTile(icon = Icons.Outlined.AccountBox)
-            Spacer(modifier = Modifier.width(AukListItemDefaults.Spacing))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = AukListItemDefaults.headlineStyle(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (supporting != null) {
-                    Text(
-                        text = supporting,
-                        style = AukListItemDefaults.supportingStyle(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            val currentShape = aukAvatarShape(selectedValue)
-            Surface(
-                modifier = Modifier.size(44.dp),
-                shape = currentShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                shadowElevation = 2.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "R",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = AukListItemDefaults.HorizontalPadding),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(options) { (label, shapeIndex) ->
-                val selected = shapeIndex == selectedValue
-                val shape = aukAvatarShape(shapeIndex)
-
-                AukPreviewTile(
-                    label = label,
-                    selected = selected,
-                    onClick = { onValueChange(shapeIndex) },
-                    width = 88.dp,
-                    previewHeight = 72.dp
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(
-                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-                                shape = shape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "R",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                }
             }
         }
     }
-}
 
-@Composable
-fun AukVisualOptionSelectorRow(
-    headline: String,
-    options: List<Pair<String, Int>>,
-    selectedValue: Int,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    supporting: String? = null,
-    leadingIcon: ImageVector? = null,
-    tileWidth: Dp = 100.dp,
-    tileHeight: Dp = 72.dp,
-    optionContent: @Composable BoxScope.(Int, Boolean) -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = AukListItemDefaults.VerticalPadding),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = AukListItemDefaults.HorizontalPadding),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (leadingIcon != null) {
-                AukLeadingIconTile(icon = leadingIcon)
-                Spacer(modifier = Modifier.width(AukListItemDefaults.Spacing))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = AukListItemDefaults.headlineStyle(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (supporting != null) {
-                    Text(
-                        text = supporting,
-                        style = AukListItemDefaults.supportingStyle(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = AukListItemDefaults.HorizontalPadding),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(options) { (label, value) ->
-                val selected = value == selectedValue
-
-                AukPreviewTile(
-                    label = label,
-                    selected = selected,
-                    onClick = { onValueChange(value) },
-                    width = tileWidth,
-                    previewHeight = tileHeight
-                ) {
-                    optionContent(value, selected)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun AukInteractiveRoundnessSlider(
-    headline: String,
-    supporting: String?,
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float>,
-    steps: Int,
-    onValueChange: (Float) -> Unit,
-    onValueChangeFinished: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = AukListItemDefaults.HorizontalPadding,
-                vertical = AukListItemDefaults.VerticalPadding
-            ),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AukLeadingIconTile(icon = Icons.Outlined.RoundedCorner)
-            Spacer(modifier = Modifier.width(AukListItemDefaults.Spacing))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = AukListItemDefaults.headlineStyle()
-                )
-                if (supporting != null) {
-                    Text(
-                        text = supporting,
-                        style = AukListItemDefaults.supportingStyle(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
+    if (onClick != null) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
-            shape = RoundedCornerShape(value.coerceAtLeast(1f).dp),
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Live Corner Roundness: ${value.roundToInt()}dp",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished,
-            modifier = Modifier.fillMaxWidth()
+            selected = selected,
+            onClick = onClick,
+            modifier = modifier.size(size),
+            shape = shape,
+            color = color,
+            contentColor = onColor,
+            shadowElevation = AukElevation.Flat,
+            content = check
+        )
+    } else {
+        Surface(
+            modifier = modifier.size(size),
+            shape = shape,
+            color = color,
+            contentColor = onColor,
+            shadowElevation = AukElevation.Flat,
+            content = check
         )
     }
 }
 
-@Composable
-fun AukPreviewTileRow(
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp),
-    content: @Composable RowScope.() -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(contentPadding),
-        horizontalArrangement = Arrangement.spacedBy(AukPreviewTileDefaults.Spacing),
-        verticalAlignment = Alignment.Top,
-        content = content
-    )
+object AukColorSwatchDefaults {
+    val Size: Dp = 44.dp
+    val TrailingSize: Dp = 28.dp
 }
 
+/**
+ * Settings row for a colour choice: the current colour sits at the end of the
+ * row, and the palette itself opens in a dialog rather than taking up the
+ * screen.
+ */
 @Composable
-fun AukSliderListItem(
+fun AukColorSelectListItem(
     headline: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    modifier: Modifier = Modifier,
-    supporting: String? = null,
-    leadingIcon: ImageVector? = null,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    steps: Int = 0,
-    valueLabel: String? = null,
-    onValueChangeFinished: (() -> Unit)? = null,
-    enabled: Boolean = true
-) {
-    val readout = valueLabel ?: String.format(Locale.getDefault(), "%d", value.roundToInt())
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = AukListItemDefaults.HorizontalPadding,
-                vertical = AukListItemDefaults.VerticalPadding
-            ),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (leadingIcon != null) {
-                AukLeadingIconTile(icon = leadingIcon)
-                Spacer(modifier = Modifier.width(AukListItemDefaults.Spacing))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = AukListItemDefaults.headlineStyle(),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (supporting != null) {
-                    Text(
-                        text = supporting,
-                        style = AukListItemDefaults.supportingStyle(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(AukListItemDefaults.TrailingSpacing))
-            Text(
-                text = readout,
-                style = MaterialTheme.typography.titleMediumEmphasized,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1
-            )
-        }
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished
-        )
-    }
-}
-
-@Composable
-fun aukSwatchPalette(count: Int = 12): List<Color> {
-    val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    return remember(count, dark) {
-        List(count) { index ->
-            val hue = index * (360f / count)
-            Color(
-                androidx.core.graphics.ColorUtils.HSLToColor(
-                    floatArrayOf(
-                        hue,
-                        if (dark) 0.55f else 0.68f,
-                        if (dark) 0.62f else 0.46f
-                    )
-                )
-            )
-        }
-    }
-}
-
-@Composable
-fun AukColorSwatchRow(
     colors: List<Color>,
     selectedColor: Color?,
     onColorSelected: (Color) -> Unit,
     modifier: Modifier = Modifier,
-    swatchSize: Dp = 44.dp,
-    enabled: Boolean = true,
-    swatchContentDescription: ((Color) -> String)? = null,
-    leadingContent: (@Composable RowScope.() -> Unit)? = null,
-    trailingContent: (@Composable RowScope.() -> Unit)? = null
+    supporting: String? = null,
+    leadingIcon: ImageVector? = null,
+    enabled: Boolean = true
 ) {
-    val selectedDescription = stringResource(R.string.content_desc_selected_item)
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (leadingContent != null) {
-            leadingContent()
+    var showPicker by remember { mutableStateOf(false) }
+
+    AukListItem(
+        headline = headline,
+        supporting = supporting,
+        leadingIcon = leadingIcon,
+        onClick = { showPicker = true },
+        modifier = modifier,
+        enabled = enabled,
+        trailingContent = {
+            AukColorSwatch(
+                color = selectedColor ?: MaterialTheme.colorScheme.primary,
+                selected = false,
+                size = AukColorSwatchDefaults.TrailingSize
+            )
+            Spacer(modifier = Modifier.width(AukListItemDefaults.TrailingSpacing))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.content_desc_select_option),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(AukListItemDefaults.TrailingIconSize)
+            )
         }
-        colors.forEach { swatch ->
-            key(swatch.value) {
-                val isSelected = selectedColor != null && selectedColor == swatch
-                val progress by animateFloatAsState(
-                    targetValue = if (isSelected) 1f else 0f,
-                    animationSpec = AukMotion.shapeMorph(),
-                    label = "AukSwatchMorph"
-                )
-                val swatchShape = rememberAukMorphShape(
-                    AukMaterialShapes.Circle,
-                    AukMaterialShapes.Cookie9Sided
-                ) { progress }
-                val onSwatch = if (swatch.luminance() > 0.5f) {
-                    MaterialTheme.colorScheme.scrim
-                } else {
-                    MaterialTheme.colorScheme.surface
-                }
-                Surface(
-                    selected = isSelected,
-                    onClick = { onColorSelected(swatch) },
-                    enabled = enabled,
-                    modifier = Modifier
-                        .size(swatchSize)
-                        .semantics {
-                            val description = swatchContentDescription?.invoke(swatch)
-                            if (description != null) {
-                                this.contentDescription = description
-                            }
-                        },
-                    shape = swatchShape,
-                    color = swatch,
-                    contentColor = onSwatch,
-                    shadowElevation = AukElevation.Flat
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (progress > 0f) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = selectedDescription,
-                                modifier = Modifier.size(20.dp * progress)
-                            )
-                        }
-                    }
-                }
+    )
+
+    if (showPicker) {
+        AukColorPickerDialog(
+            onDismissRequest = { showPicker = false },
+            title = headline,
+            icon = leadingIcon,
+            colors = colors,
+            selectedColor = selectedColor,
+            onColorSelected = {
+                showPicker = false
+                onColorSelected(it)
             }
-        }
-        if (trailingContent != null) {
-            trailingContent()
-        }
+        )
     }
 }

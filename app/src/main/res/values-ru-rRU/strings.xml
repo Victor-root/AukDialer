@@ -289,10 +289,6 @@
     <string name="settings_interface_search_mode_exact_match">Точное совпадение</string>
     <string name="settings_interface_card_roundness">Скругление карточек</string>
     <string name="settings_interface_card_roundness_supporting">Регулировка радиуса скругления карточек</string>
-    <string name="settings_interface_roundness_extra_round">Максимальное скругление</string>
-    <string name="settings_interface_roundness_rounded">Скругление</string>
-    <string name="settings_interface_roundness_semi_square">Слабое скругление</string>
-    <string name="settings_interface_roundness_square">Квадратные</string>
     <string name="settings_interface_default_bottom_bar">Нижняя панель по умолчанию</string>
     <string name="settings_interface_default_bottom_bar_supporting">Вкладка при запуске</string>
     <string name="settings_interface_flip_bottom_bar">Зеркальное отображение нижней панели</string>

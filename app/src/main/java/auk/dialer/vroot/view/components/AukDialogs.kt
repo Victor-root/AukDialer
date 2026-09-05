@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +51,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -98,6 +101,8 @@ private val DialogHeaderIconSize = 32.dp
 private val SelectionTileSize = 44.dp
 private val SelectionIconSize = 20.dp
 private val SelectionPreviewSize = 60.dp
+private val ColorPickerSpacing = 12.dp
+private const val ColorPickerColumns = 5
 private const val ScrimAlpha = 0.32f
 private const val DialogEnterScale = 0.9f
 
@@ -435,6 +440,48 @@ fun <T> AukSelectionDialog(
                 preview = itemPreview?.let { p -> { p(item) } },
                 selected = isSelected(item)
             )
+        }
+    }
+}
+
+/**
+ * The palette as a grid, five to a row, so the whole range is visible at once
+ * instead of being dragged through sideways.
+ */
+@Composable
+fun AukColorPickerDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    colors: List<Color>,
+    selectedColor: Color?,
+    onColorSelected: (Color) -> Unit,
+    icon: ImageVector? = null,
+    dismissLabel: String = stringResource(R.string.action_cancel)
+) {
+    AukDialog(
+        onDismissRequest = onDismissRequest,
+        title = title,
+        icon = icon,
+        dismissAction = AukDialogAction(
+            label = dismissLabel,
+            onClick = onDismissRequest
+        )
+    ) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(ColorPickerSpacing, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(ColorPickerSpacing),
+            maxItemsInEachRow = ColorPickerColumns
+        ) {
+            colors.forEach { swatch ->
+                key(swatch.value) {
+                    AukColorSwatch(
+                        color = swatch,
+                        selected = swatch == selectedColor,
+                        onClick = { onColorSelected(swatch) }
+                    )
+                }
+            }
         }
     }
 }
