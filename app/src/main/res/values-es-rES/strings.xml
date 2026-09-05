@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RivoPhone</string>
+    <string name="app_name">Teléfono</string>
     <!-- Shared actions / generic labels reused across multiple screens -->
     <string name="action_cancel">Cancelar</string>
     <string name="action_confirm">Confirmar</string>
@@ -79,23 +79,13 @@
     <string name="permission_popup_body">Para asegurar que todas las características funcionen correctamente en tu dispositivo, por favor concede los permisos necesarios. Algunos fabricantes como Xiaomi u Oppo pueden necesitar una configuración manual adicional en los ajustes del sistema.</string>
     <string name="permission_popup_grant">Otorgar Permisos</string>
     <string name="permission_popup_settings">Abrir ajustes</string>
-    <!-- Patreon support prompt (MainActivity) -->
-    <string name="patreon_prompt_title">Apoyar a Rivo</string>
-    <string name="patreon_prompt_confirm">Donaciones</string>
-    <string name="patreon_prompt_dismiss">Quizá más tarde</string>
-    <string name="patreon_prompt_body">Rivo es gratuito y de código abierto. Si te gusta la aplicación, ¡por favor considera apoyar su desarrollo en Patreon!</string>
-    <!-- Disable ads warning dialog -->
-    <string name="ads_disable_dialog_title">Apoya el desarrollo de código abierto</string>
-    <string name="ads_disable_dialog_body">Mostrar anuncios ayuda a mantener Rivo libre y de código abierto. Sin ingresos de anuncios o donaciones comunitarias, mantenimiento continuo, corrección de errores y desarrollo pueden desaparecer. ¿Estás seguro de que quieres desactivar los anuncios?</string>
-    <string name="ads_disable_dialog_confirm">Quitar anuncios</string>
-    <string name="ads_disable_dialog_keep">Mantener anuncios habilitados</string>
     <!-- Default dialer prompt -->
-    <string name="default_dialer_headline">Haz de Rivo tu marcador oficial</string>
-    <string name="default_dialer_description">Para hacer y recibir llamadas, administrar tu historial de llamadas y protegerte contra el spam, Rivo necesita ser configurada como tu aplicación de teléfono predeterminada.</string>
-    <string name="default_dialer_denied_message">Rivo no puede funcionar sin este permiso. Inténtalo de nuevo.</string>
+    <string name="default_dialer_headline">Haz de AukDialer tu marcador oficial</string>
+    <string name="default_dialer_description">Para hacer y recibir llamadas, administrar tu historial de llamadas y protegerte contra el spam, AukDialer necesita ser configurada como tu aplicación de teléfono predeterminada.</string>
+    <string name="default_dialer_denied_message">AukDialer no puede funcionar sin este permiso. Inténtalo de nuevo.</string>
     <string name="default_dialer_set_as_default">Establecer como predeterminado</string>
     <!-- Top bar / bottom navigation -->
-    <string name="top_bar_search_placeholder">Buscar en Rivo</string>
+    <string name="top_bar_search_placeholder">Buscar en AukDialer</string>
     <string name="content_desc_search">Buscar</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">Historial de llamadas</string>
@@ -110,7 +100,7 @@
     <string name="content_desc_clear_all_logs">Borrar todos los registros</string>
     <string name="content_desc_delete_selected">Borrar selección</string>
     <string name="recents_permission_title">Historial de llamadas</string>
-    <string name="recents_permission_description">Rivo necesita acceso a tus registros de llamadas para mostrar tu actividad reciente y llamadas perdidas.</string>
+    <string name="recents_permission_description">AukDialer necesita acceso a tus registros de llamadas para mostrar tu actividad reciente y llamadas perdidas.</string>
     <string name="recents_favorites">Favoritos</string>
     <string name="recents_empty_call_log">No hay llamadas</string>
     <string name="content_desc_dialpad">Teclado</string>
@@ -121,7 +111,7 @@
     <string name="contact_move_local_memory_supporting">Solo en dispositivo</string>
     <string name="content_desc_move">Mover</string>
     <string name="contacts_empty_title">No se encontraron contactos</string>
-    <string name="contacts_permission_rationale">Para mostrar tu lista de contactos e identificar llamadas entrantes, Rivo necesita permiso para acceder a tus contactos.</string>
+    <string name="contacts_permission_rationale">Para mostrar tu lista de contactos e identificar llamadas entrantes, AukDialer necesita permiso para acceder a tus contactos.</string>
     <!-- Contact details -->
     <string name="contact_details_qr_content_desc">Código QR</string>
     <string name="contact_details_call">Llamar</string>
@@ -189,7 +179,7 @@
     <string name="search_no_results_hint">Prueba con otro nombre o número</string>
     <string name="search_results_header">Resultados de búsqueda</string>
     <string name="search_contacts_permission_title">Se requiere permiso de Contactos</string>
-    <string name="search_contacts_permission_description">Para mostrar tu lista de contactos e identificar llamadas entrantes, Rivo necesita permiso para acceder a tus contactos.</string>
+    <string name="search_contacts_permission_description">Para mostrar tu lista de contactos e identificar llamadas entrantes, AukDialer necesita permiso para acceder a tus contactos.</string>
     <!-- Call screen -->
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Llamada finalizada</string>
@@ -225,8 +215,6 @@
     <string name="backup_import_failed">Error al importar: %1$s</string>
     <!-- Settings > root -->
     <string name="settings_title">Ajustes</string>
-    <string name="settings_support_rivo_title">Apoyar a Rivo</string>
-    <string name="settings_support_rivo_description">Ayúdanos a mantener Rivo libre y de código abierto</string>
     <string name="settings_donate">Donar</string>
     <string name="settings_interface_headline">Apariencia</string>
     <string name="settings_interface_supporting">Tema, colores y accesibilidad</string>
@@ -240,7 +228,7 @@
     <string name="settings_backup_restore_supporting">Importar y exportar contactos y registros</string>
     <string name="settings_manage_contacts_headline">Administrar contactos</string>
     <string name="settings_manage_contacts_supporting">Fusionar duplicados y limpiar tu lista</string>
-    <string name="settings_about_headline">Acerca de Rivo</string>
+    <string name="settings_about_headline">Acerca de AukDialer</string>
     <string name="settings_about_supporting">Política de privacidad, licencia y versión</string>
     <!-- Settings > Interface -->
     <string name="settings_interface_title">Interfaz de usuario</string>
@@ -431,23 +419,19 @@
     <string name="settings_voicemail_vibration">Vibración</string>
     <!-- Settings > About -->
     <string name="about_title">Acerca de</string>
-    <string name="about_logo_content_desc">Logo de Rivo</string>
-    <string name="about_app_display_name">Rivo</string>
+    <string name="about_logo_content_desc">Logo de AukDialer</string>
+    <string name="about_app_display_name">AukDialer</string>
     <string name="about_app_card_title">Acerca de la aplicación</string>
-    <string name="about_app_card_body">Rivo es una aplicación moderna que aporta simplicidad y elegancia a tus llamadas. Diseñada con Material You, se adapta perfectamente a tu tema.</string>
+    <string name="about_app_card_body">AukDialer es una aplicación moderna que aporta simplicidad y elegancia a tus llamadas. Diseñada con Material You, se adapta perfectamente a tu tema.</string>
     <string name="about_version">Versión</string>
     <string name="about_build_number">Número de compilación</string>
     <string name="contributors_title">Colaboradores</string>
     <string name="about_contributors_supporting">Conoce al equipo detrás del proyecto</string>
-    <string name="about_patreon">Apóyanos</string>
-    <string name="about_patreon_supporting">Ayuda a mantener el proyecto vivo</string>
-    <string name="about_discord">Servidor de Discord</string>
-    <string name="about_discord_supporting">Únase a la comunidad</string>
     <string name="about_source_code">Código fuente</string>
     <string name="about_source_code_supporting">Ver el código fuente en GitHub</string>
     <string name="about_check_updates">Buscar actualizaciones</string>
     <string name="about_current_version">Versión actual: %1$s</string>
-    <string name="about_copyright">©️ Proyecto RivoPhone 2025-2026</string>
+    <string name="about_copyright">©️ Proyecto AukDialer 2025-2026</string>
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Director de desarrollo</string>
     <string name="contributor_role_developer">Desarrollador</string>

@@ -2,6 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="rivo_window_background">#FFF8F9FF</color>
-    <color name="rivo_splash_background">#FFF8F9FF</color>
+    <color name="auk_window_background">#FFF8F9FF</color>
+    <color name="auk_splash_background">#FFF8F9FF</color>
 </resources>

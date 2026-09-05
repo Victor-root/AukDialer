@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RivoPhone</string>
+    <string name="app_name">Phone</string>
 
     <!-- Shared actions / generic labels reused across multiple screens -->
     <string name="action_cancel">Cancel</string>
@@ -84,26 +84,14 @@
     <string name="permission_popup_grant">Grant Permissions</string>
     <string name="permission_popup_settings">Open Settings</string>
 
-    <!-- Patreon support prompt (MainActivity) -->
-    <string name="patreon_prompt_title">Support Rivo</string>
-    <string name="patreon_prompt_confirm">Support Us</string>
-    <string name="patreon_prompt_dismiss">Maybe later</string>
-    <string name="patreon_prompt_body">Rivo is free and open source. If you like the app, please consider supporting its development on Patreon!</string>
-
-    <!-- Disable ads warning dialog -->
-    <string name="ads_disable_dialog_title">Support Open-Source Development</string>
-    <string name="ads_disable_dialog_body">Displaying ads helps keep Rivo free and open-source. Without ad revenue or community donations, ongoing maintenance, bug fixes, and development may die out. Are you sure you want to disable ads?</string>
-    <string name="ads_disable_dialog_confirm">Disable Ads</string>
-    <string name="ads_disable_dialog_keep">Keep Ads Enabled</string>
-
     <!-- Default dialer prompt -->
-    <string name="default_dialer_headline">Make Rivo your official dialer</string>
-    <string name="default_dialer_description">To make and receive calls, manage your call history, and experience spam protection, Rivo needs to be set as your default phone app.</string>
-    <string name="default_dialer_denied_message">Rivo cannot function without this permission. Please try again.</string>
+    <string name="default_dialer_headline">Make AukDialer your official dialer</string>
+    <string name="default_dialer_description">To make and receive calls, manage your call history, and experience spam protection, AukDialer needs to be set as your default phone app.</string>
+    <string name="default_dialer_denied_message">AukDialer cannot function without this permission. Please try again.</string>
     <string name="default_dialer_set_as_default">Set as default</string>
 
     <!-- Top bar / bottom navigation -->
-    <string name="top_bar_search_placeholder">Search in Rivo</string>
+    <string name="top_bar_search_placeholder">Search in AukDialer</string>
     <string name="content_desc_search">Search</string>
 
     <!-- Recents / Call log -->
@@ -119,7 +107,7 @@
     <string name="content_desc_clear_all_logs">Clear all logs</string>
     <string name="content_desc_delete_selected">Delete selected</string>
     <string name="recents_permission_title">Call History</string>
-    <string name="recents_permission_description">Rivo needs access to your call logs to show your recent activity and missed calls.</string>
+    <string name="recents_permission_description">AukDialer needs access to your call logs to show your recent activity and missed calls.</string>
     <string name="recents_favorites">Favorites</string>
     <string name="recents_empty_call_log">Your call log is empty</string>
     <string name="content_desc_dialpad">Dialpad</string>
@@ -132,7 +120,7 @@
     <string name="contact_move_local_memory_supporting">Device only</string>
     <string name="content_desc_move">Move</string>
     <string name="contacts_empty_title">No contacts found</string>
-    <string name="contacts_permission_rationale">To show your contact list and identify incoming calls, Rivo needs permission to access your contacts.</string>
+    <string name="contacts_permission_rationale">To show your contact list and identify incoming calls, AukDialer needs permission to access your contacts.</string>
 
     <!-- Contact details -->
     <string name="contact_details_qr_title">Contact QR</string>
@@ -208,7 +196,7 @@
     <string name="search_no_results_hint">Try a different name or number</string>
     <string name="search_results_header">Search Results</string>
     <string name="search_contacts_permission_title">Contacts permission required</string>
-    <string name="search_contacts_permission_description">To search your contacts and identify incoming calls, Rivo needs access to your contacts.</string>
+    <string name="search_contacts_permission_description">To search your contacts and identify incoming calls, AukDialer needs access to your contacts.</string>
 
     <!-- Call screen -->
     <string name="call_screen_sim_label">SIM %1$s</string>
@@ -248,8 +236,6 @@
 
     <!-- Settings > root -->
     <string name="settings_title">Settings</string>
-    <string name="settings_support_rivo_title">Support Rivo</string>
-    <string name="settings_support_rivo_description">Help us keep Rivo free and open source</string>
     <string name="settings_donate">Donate</string>
     <string name="settings_interface_headline">Interface</string>
     <string name="settings_interface_supporting">Theme, colors, and accessibility</string>
@@ -263,13 +249,20 @@
     <string name="settings_backup_restore_supporting">Import and export contacts and logs</string>
     <string name="settings_manage_contacts_headline">Manage Contacts</string>
     <string name="settings_manage_contacts_supporting">Merge duplicates and clean up your list</string>
-    <string name="settings_about_headline">About Rivo</string>
+    <string name="settings_about_headline">About AukDialer</string>
     <string name="settings_about_supporting">Version, licenses, and privacy policy</string>
 
     <!-- Settings > Interface -->
     <string name="settings_interface_title">User Interface</string>
     <string name="settings_group_color">Colour</string>
     <string name="settings_group_avatars">Avatars</string>
+    <string name="settings_group_app_icon">App icon</string>
+    <string name="settings_app_icon">Icon colour</string>
+    <string name="settings_app_icon_supporting">Pick the colour of the icon on your home screen</string>
+    <string name="app_icon_change_title">Change the app icon?</string>
+    <string name="app_icon_change_message">AukDialer will close so your home screen can pick up the new icon. Open it again straight after.</string>
+    <string name="app_icon_change_confirm">Change and close</string>
+    <string name="app_icon_change_cancel">Cancel</string>
     <string name="settings_group_shape_motion">Shape &amp; motion</string>
     <string name="settings_group_navigation">Navigation</string>
     <string name="settings_interface_restart_required">Restart required to apply theme changes fully.</string>
@@ -495,23 +488,19 @@
 
     <!-- Settings > About -->
     <string name="about_title">About</string>
-    <string name="about_logo_content_desc">Rivo Logo</string>
-    <string name="about_app_display_name">Rivo</string>
+    <string name="about_logo_content_desc">AukDialer Logo</string>
+    <string name="about_app_display_name">AukDialer</string>
     <string name="about_app_card_title">About the App</string>
-    <string name="about_app_card_body">Rivo is a modern dialer app that brings simplicity and elegance to calling. Designed with Material You, it adapts seamlessly to your theme.</string>
+    <string name="about_app_card_body">AukDialer is a modern dialer app that brings simplicity and elegance to calling. Designed with Material You, it adapts seamlessly to your theme.</string>
     <string name="about_version">Version</string>
     <string name="about_build_number">Build number</string>
     <string name="contributors_title">Contributors</string>
     <string name="about_contributors_supporting">Meet the team behind the project</string>
-    <string name="about_patreon">Support Us</string>
-    <string name="about_patreon_supporting">Help keep the project alive</string>
-    <string name="about_discord">Discord Server</string>
-    <string name="about_discord_supporting">Join the community</string>
     <string name="about_source_code">Source Code</string>
     <string name="about_source_code_supporting">View the source code on GitHub</string>
     <string name="about_check_updates">Check for Updates</string>
     <string name="about_current_version">Current version: %1$s</string>
-    <string name="about_copyright">© 2025-2026 RivoPhone Project</string>
+    <string name="about_copyright">© 2025-2026 AukDialer Project</string>
 
     <!-- Settings > Contributors -->
     <string name="contributor_role_lead_developer">Lead Developer</string>
@@ -592,7 +581,7 @@
     <string name="settings_call_recording_notice">Recording calls may be restricted by your device or by law in your region. Make sure you are allowed to record before using this feature.</string>
     <string name="settings_call_default_background">Default call background</string>
     <string name="settings_call_default_background_set">A custom image is shown on every call</string>
-    <string name="settings_call_default_background_none">Not set — calls use the app theme</string>
+    <string name="settings_call_default_background_none">Not set, calls use the app theme</string>
     <string name="settings_call_default_background_choose">Choose image</string>
     <string name="settings_call_default_background_change">Change</string>
     <string name="settings_call_default_background_supporting">Shown on every incoming and outgoing call, unless a contact has its own background.</string>
