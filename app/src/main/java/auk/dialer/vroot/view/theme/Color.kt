@@ -121,24 +121,71 @@ val AukDarkColorScheme: ColorScheme = darkColorScheme(
     onTertiaryFixedVariant = Color(0xFF523F5F)
 )
 
-private const val AMOLED_OUTLINE_VARIANT = 0xFF5A5E66
+/**
+ * Strips the accent tint out of every surface and text role, leaving plain white, grey and black.
+ *
+ * Material derives those roles from the accent, which turns the whole app into a wash of one hue:
+ * pink pages and pink body text on a red accent. The accent belongs on the bars, the buttons and
+ * the aurora behind the content, not on the paragraph the reader is trying to read.
+ */
+fun ColorScheme.withNeutralSurfaces(dark: Boolean, amoled: Boolean): ColorScheme = when {
+    dark && amoled -> copy(
+        background = Color(0xFF000000),
+        onBackground = Color(0xFFE6E6E6),
+        surface = Color(0xFF000000),
+        onSurface = Color(0xFFE6E6E6),
+        surfaceVariant = Color(0xFF333333),
+        onSurfaceVariant = Color(0xFFC2C2C2),
+        surfaceDim = Color(0xFF000000),
+        surfaceBright = Color(0xFF3A3A3A),
+        surfaceContainerLowest = Color(0xFF000000),
+        surfaceContainerLow = Color(0xFF141414),
+        surfaceContainer = Color(0xFF1A1A1A),
+        surfaceContainerHigh = Color(0xFF242424),
+        surfaceContainerHighest = Color(0xFF2E2E2E),
+        outline = Color(0xFF8A8A8A),
+        outlineVariant = Color(0xFF3A3A3A),
+        surfaceTint = Color.Transparent
+    )
 
-fun ColorScheme.toAmoledColorScheme(): ColorScheme = copy(
-    background = Color(0xFF000000),
-    surface = Color(0xFF000000),
-    surfaceDim = Color(0xFF000000),
-    surfaceContainerLowest = Color(0xFF000000),
-    surfaceContainerLow = Color(0xFF0A0A0A),
-    surfaceContainer = Color(0xFF121212),
-    surfaceContainerHigh = Color(0xFF1A1A1A),
-    surfaceContainerHighest = Color(0xFF222222),
-    surfaceBright = Color(0xFF2C2C2C),
-    surfaceVariant = Color(0xFF1F1F1F),
-    onSurfaceVariant = Color(0xFFC9CCD4),
-    surfaceTint = Color.Transparent,
-    outline = Color(0xFF9096A0),
-    outlineVariant = Color(AMOLED_OUTLINE_VARIANT)
-)
+    dark -> copy(
+        background = Color(0xFF121212),
+        onBackground = Color(0xFFE6E6E6),
+        surface = Color(0xFF121212),
+        onSurface = Color(0xFFE6E6E6),
+        surfaceVariant = Color(0xFF3A3A3A),
+        onSurfaceVariant = Color(0xFFC2C2C2),
+        surfaceDim = Color(0xFF121212),
+        surfaceBright = Color(0xFF3A3A3A),
+        surfaceContainerLowest = Color(0xFF0A0A0A),
+        surfaceContainerLow = Color(0xFF1C1C1C),
+        surfaceContainer = Color(0xFF222222),
+        surfaceContainerHigh = Color(0xFF2C2C2C),
+        surfaceContainerHighest = Color(0xFF363636),
+        outline = Color(0xFF8A8A8A),
+        outlineVariant = Color(0xFF3A3A3A),
+        surfaceTint = Color.Transparent
+    )
+
+    else -> copy(
+        background = Color(0xFFFFFFFF),
+        onBackground = Color(0xFF1A1A1A),
+        surface = Color(0xFFFFFFFF),
+        onSurface = Color(0xFF1A1A1A),
+        surfaceVariant = Color(0xFFE4E4E4),
+        onSurfaceVariant = Color(0xFF474747),
+        surfaceDim = Color(0xFFDDDDDD),
+        surfaceBright = Color(0xFFFFFFFF),
+        surfaceContainerLowest = Color(0xFFFFFFFF),
+        surfaceContainerLow = Color(0xFFF6F6F6),
+        surfaceContainer = Color(0xFFF1F1F1),
+        surfaceContainerHigh = Color(0xFFEBEBEB),
+        surfaceContainerHighest = Color(0xFFE5E5E5),
+        outline = Color(0xFF787878),
+        outlineVariant = Color(0xFFCACACA),
+        surfaceTint = Color.Transparent
+    )
+}
 
 private const val D65_XN = 0.95047f
 private const val D65_YN = 1.00000f

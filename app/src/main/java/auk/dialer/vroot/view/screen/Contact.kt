@@ -157,7 +157,7 @@ fun ContactScreenContent(
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Box (

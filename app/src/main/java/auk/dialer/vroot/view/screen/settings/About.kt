@@ -35,6 +35,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContributorsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -56,7 +57,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = Color.Transparent,
     ) { padding ->
         Column(
             modifier = Modifier

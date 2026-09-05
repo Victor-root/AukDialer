@@ -57,6 +57,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination<RootGraph>(style = NoTransitions::class)
@@ -82,7 +83,7 @@ fun FavoritesScreenContent(
                 TopBar(navigator)
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {

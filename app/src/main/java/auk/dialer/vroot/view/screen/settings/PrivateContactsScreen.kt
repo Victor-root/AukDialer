@@ -117,6 +117,7 @@ fun PrivateContactsScreen(
     )
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             if (isSelecting) {
                 TopAppBar(

@@ -60,7 +60,7 @@ fun SearchScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Color.Transparent,
         // The search field carries the status bar inset itself, so its accent band reaches behind
         // the bar rather than starting under it.
         contentWindowInsets = WindowInsets.safeDrawing
