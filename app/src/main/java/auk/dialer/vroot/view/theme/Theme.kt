@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.view.components.AukAuroraBackground
 import org.koin.compose.koinInject
 
 const val KEY_CUSTOM_PRIMARY_COLOR: String = "custom_primary_color"
@@ -114,10 +113,11 @@ fun AukTheme(
             if (!systemBars) {
                 content()
             } else {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // The page itself, under the screens, which are transparent so it shows
-                    // through: they carry no accent of their own any more, the colour lives here.
-                    AukAuroraBackground()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(colorScheme.background)
+                ) {
                     content()
                     // Edge to edge off: an opaque accent band over the navigation bar area, so it
                     // reads as a solid bar matching the header. On: nothing, and the app shows
