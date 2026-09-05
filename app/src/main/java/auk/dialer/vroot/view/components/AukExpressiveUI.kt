@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -216,9 +217,16 @@ fun AukExpressiveCard(
 
     if (cardsEnabled) {
         Card(
-            modifier = modifier.fillMaxWidth(),
+            // The fill is a brush, which cardColors cannot take, so the card itself stays clear and
+            // the gradient is painted under it.
+            modifier = modifier
+                .fillMaxWidth()
+                .background(brush = aukAuroraCardBrush(containerColor), shape = resolvedShape),
             shape = resolvedShape,
-            colors = CardDefaults.cardColors(containerColor = containerColor),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
             elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat),
             border = aukAccentCardBorder()
         ) {
