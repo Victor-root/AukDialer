@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -106,10 +105,7 @@ fun BottomBar(
     )
 
     ShortNavigationBar(
-        // No fill of its own at all: surfaceContainer is close enough to white that even veiled it
-        // still read as a flat pale slab next to the more saturated wash right above it. Fully clear,
-        // the bar shows the exact same wash the rest of the screen does, with nothing added.
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         tabs.forEach { tab ->

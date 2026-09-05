@@ -198,7 +198,7 @@ fun AukExpressiveCard(
     title: String? = null,
     icon: ImageVector? = null,
     shape: Shape? = null,
-    containerColor: Color? = null,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     isCompact: Boolean = false,
     showCards: Boolean? = null,
     content: @Composable ColumnScope.() -> Unit
@@ -215,17 +215,11 @@ fun AukExpressiveCard(
     val horizontalPadding = if (isCompact) 4.dp else 8.dp
 
     if (cardsEnabled) {
-        // No colour of its own: a thin neutral veil over whatever is already drawn behind it, the
-        // one continuous wash the theme paints once behind every screen. That is what keeps a card
-        // reading as the same background as the page around it rather than as a second, separately
-        // computed patch of colour that stops dead at the card's own edge.
-        val resolvedContainerColor = containerColor
-            ?: MaterialTheme.colorScheme.surfaceContainerLow.aukVeiled()
         Card(
             modifier = modifier.fillMaxWidth(),
             shape = resolvedShape,
             colors = CardDefaults.cardColors(
-                containerColor = resolvedContainerColor,
+                containerColor = containerColor,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat),
