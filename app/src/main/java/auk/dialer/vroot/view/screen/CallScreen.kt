@@ -907,7 +907,18 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
     )
     
     val iconRotation by remember { derivedStateOf {
-        dragProgress.value * 135f
+        val progress = dragProgress.value
+        if (progress < -0.2f) {
+            // The call-end glyph isn't the call glyph rotated 180 degrees, it's a different
+            // icon with its own resting orientation, so it gets its own 0..-135 sweep from the
+            // point it swaps in instead of inheriting the call icon's rotation. That way it
+            // rotates away from its own resting pose, mirroring the answer side, rather than
+            // continuing the call icon's rotation back toward how it looks when answering.
+            val declineProgress = ((progress + 0.2f) / 0.8f).coerceIn(-1f, 0f)
+            declineProgress * 135f
+        } else {
+            progress * 135f
+        }
     } }
 
     Box(
@@ -1168,7 +1179,18 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                         modifier = Modifier
                             .size(32.dp)
                             .graphicsLayer {
-                                rotationZ = dragProgress.value * -90f
+                                val progress = dragProgress.value
+                                rotationZ = if (progress > 0.2f) {
+                                    // The call-end glyph has its own resting orientation rather
+                                    // than being the call glyph rotated 180 degrees, so it gets
+                                    // its own 0..-90 sweep from the point it swaps in instead of
+                                    // inheriting the call icon's rotation, mirroring the answer
+                                    // side instead of rotating back toward how it looks then.
+                                    val declineProgress = ((progress - 0.2f) / 0.8f).coerceIn(0f, 1f)
+                                    declineProgress * -90f
+                                } else {
+                                    progress * -90f
+                                }
                             }
                     )
                 }
