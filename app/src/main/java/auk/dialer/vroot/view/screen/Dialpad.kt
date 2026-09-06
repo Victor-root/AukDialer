@@ -42,8 +42,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.InterceptPlatformTextInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -191,6 +193,11 @@ fun DialPadScreen(
         }
     }
 
+    // Measured from the keypad Surface itself instead of a guessed constant, so the empty state and
+    // the search results reserve exactly the room it actually takes on this device.
+    var keypadHeightPx by remember { mutableIntStateOf(0) }
+    val keypadHeight = with(LocalDensity.current) { keypadHeightPx.toDp() }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -220,7 +227,7 @@ fun DialPadScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 420.dp),
+                        .padding(bottom = keypadHeight),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -256,7 +263,7 @@ fun DialPadScreen(
             if (searchResults.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 6.dp, bottom = 420.dp)
+                    contentPadding = PaddingValues(top = 6.dp, bottom = keypadHeight)
                 ) {
                     itemsIndexed(searchResults) { index, contact ->
                         val contactNumber = contact.phoneNumbers.firstOrNull()
@@ -329,7 +336,8 @@ fun DialPadScreen(
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .onGloballyPositioned { keypadHeightPx = it.size.height },
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 16.dp,
                 shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
