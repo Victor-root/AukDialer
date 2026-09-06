@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -442,6 +443,17 @@ class CallService : InCallService() {
         if (BuildConfig.DEBUG) {
             Log.d(DEBUG_TAG, "onCallAdded: state=${call.details.state} direction=${call.details.callDirection} account=${call.details.accountHandle}")
         }
+
+        // INCLUDE_SELF_MANAGED_CALLS (needed for the debug test line below) also hands us every
+        // other app's self-managed calls, e.g. WhatsApp/Signal VoIP. Only our own debug line should
+        // ever reach CallActivity; anything else is left alone for its own app to handle.
+        val isSelfManaged = call.details.hasProperty(Call.Details.PROPERTY_SELF_MANAGED)
+        val isOwnDebugAccount = call.details.accountHandle?.componentName == ComponentName(this, DebugCallConnectionService::class.java)
+        if (isSelfManaged && !isOwnDebugAccount) {
+            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: ignoring another app's self-managed call (${call.details.accountHandle})")
+            return
+        }
+
         instance = this
         redialCount = 0
         call.registerCallback(callCallback)
