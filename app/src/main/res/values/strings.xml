@@ -260,6 +260,8 @@
     <string name="settings_manage_contacts_supporting">Merge duplicates and clean up your list</string>
     <string name="settings_about_headline">About AukDialer</string>
     <string name="settings_about_supporting">Version, licenses, and privacy policy</string>
+    <string name="settings_debug_simulate_call_headline">Simulate an incoming call</string>
+    <string name="settings_debug_simulate_call_supporting">Test the call screen without placing a real call (debug builds only)</string>
 
     <!-- Settings > Interface -->
     <string name="settings_interface_title">User Interface</string>
