@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,17 +84,6 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
-
-@Composable
-private fun audioRouteLabel(audioRoute: Int, audioState: CallAudioState?): String {
-    val bluetoothShortLabel = stringResource(R.string.audio_route_bluetooth_short)
-    return when (audioRoute) {
-        CallAudioState.ROUTE_SPEAKER -> stringResource(R.string.audio_route_speaker)
-        CallAudioState.ROUTE_BLUETOOTH -> try { audioState?.activeBluetoothDevice?.name ?: bluetoothShortLabel } catch (e: Exception) { bluetoothShortLabel }
-        CallAudioState.ROUTE_WIRED_HEADSET -> stringResource(R.string.audio_route_headset)
-        else -> stringResource(R.string.audio_route_handset)
-    }
-}
 
 @Composable
 fun ExpressiveCallScreen(
@@ -193,6 +183,7 @@ fun ExpressiveCallScreen(
     }
 
     if (showAudioPicker) {
+        val earIcon = ImageVector.vectorResource(id = R.drawable.ic_ear)
         val supported = audioState?.supportedRouteMask ?: 0
         val handsetLabel = stringResource(R.string.audio_route_handset)
         val speakerLabel = stringResource(R.string.audio_route_speaker)
@@ -230,7 +221,7 @@ fun ExpressiveCallScreen(
                     CallAudioState.ROUTE_SPEAKER -> Icons.AutoMirrored.Filled.VolumeUp
                     CallAudioState.ROUTE_BLUETOOTH -> Icons.Default.Bluetooth
                     CallAudioState.ROUTE_WIRED_HEADSET -> Icons.Default.Headset
-                    else -> Icons.Default.Phone
+                    else -> earIcon
                 }
             }
         )
@@ -256,14 +247,6 @@ fun ExpressiveCallScreen(
         else -> ""
     }
 
-    val audioRoute = audioState?.route ?: CallAudioState.ROUTE_EARPIECE
-    val audioIcon = when (audioRoute) {
-        CallAudioState.ROUTE_SPEAKER -> Icons.AutoMirrored.Filled.VolumeUp
-        CallAudioState.ROUTE_BLUETOOTH -> Icons.Default.Bluetooth
-        CallAudioState.ROUTE_WIRED_HEADSET -> Icons.Default.Headset
-        else -> Icons.Default.Phone
-    }
-    val audioLabel = audioRouteLabel(audioRoute, audioState)
     val hasBluetooth = ((audioState?.supportedRouteMask ?: 0) and CallAudioState.ROUTE_BLUETOOTH) != 0
 
     val otherCallCard: @Composable () -> Unit = {
