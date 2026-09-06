@@ -236,6 +236,55 @@ fun ActiveCallControls(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
+        if (!showKeypad) {
+            // Add call, message and hold wait until the keypad closes: alongside the header above,
+            // there isn't room for the keypad, this row and the one below it all at once.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(cellSpacing),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CallActionButton(
+                    icon = Icons.Default.Add,
+                    isActive = false,
+                    label = stringResource(R.string.action_add_call),
+                    compact = compact,
+                    modifier = Modifier.weight(1f),
+                    onClick = onAddCall
+                )
+                if (recordingEnabled) {
+                    CallActionButton(
+                        icon = if (isRecording) Icons.Default.StopCircle else Icons.Default.FiberManualRecord,
+                        isActive = isRecording,
+                        isDanger = isRecording,
+                        label = if (isRecording) stringResource(R.string.action_stop_recording) else stringResource(R.string.action_record),
+                        compact = compact,
+                        modifier = Modifier.weight(1f),
+                        onClick = onToggleRecording
+                    )
+                } else {
+                    CallActionButton(
+                        icon = Icons.AutoMirrored.Filled.Message,
+                        isActive = false,
+                        label = stringResource(R.string.action_message),
+                        compact = compact,
+                        modifier = Modifier.weight(1f),
+                        onClick = onMessage
+                    )
+                }
+                CallActionButton(
+                    icon = if (isHolding) Icons.Default.PlayArrow else Icons.Default.Pause,
+                    isActive = isHolding,
+                    label = if (isHolding) stringResource(R.string.action_resume) else stringResource(R.string.action_hold),
+                    compact = compact,
+                    modifier = Modifier.weight(1f),
+                    onClick = onToggleHold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(cellSpacing))
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(cellSpacing),
@@ -265,55 +314,6 @@ fun ActiveCallControls(
                 modifier = Modifier.weight(1f),
                 onClick = onAudioClick
             )
-        }
-
-        if (!showKeypad) {
-            // Add call, hold and message wait until the keypad closes: alongside the header above,
-            // there isn't room for the keypad, this row and a second one all at once.
-            Spacer(modifier = Modifier.height(cellSpacing))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(cellSpacing),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CallActionButton(
-                    icon = Icons.Default.Add,
-                    isActive = false,
-                    label = stringResource(R.string.action_add_call),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onAddCall
-                )
-                CallActionButton(
-                    icon = if (isHolding) Icons.Default.PlayArrow else Icons.Default.Pause,
-                    isActive = isHolding,
-                    label = if (isHolding) stringResource(R.string.action_resume) else stringResource(R.string.action_hold),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onToggleHold
-                )
-                if (recordingEnabled) {
-                    CallActionButton(
-                        icon = if (isRecording) Icons.Default.StopCircle else Icons.Default.FiberManualRecord,
-                        isActive = isRecording,
-                        isDanger = isRecording,
-                        label = if (isRecording) stringResource(R.string.action_stop_recording) else stringResource(R.string.action_record),
-                        compact = compact,
-                        modifier = Modifier.weight(1f),
-                        onClick = onToggleRecording
-                    )
-                } else {
-                    CallActionButton(
-                        icon = Icons.AutoMirrored.Filled.Message,
-                        isActive = false,
-                        label = stringResource(R.string.action_message),
-                        compact = compact,
-                        modifier = Modifier.weight(1f),
-                        onClick = onMessage
-                    )
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(if (compact) 16.dp else 24.dp))
