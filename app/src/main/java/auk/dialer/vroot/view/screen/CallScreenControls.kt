@@ -236,52 +236,40 @@ fun ActiveCallControls(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        if (showKeypad) {
-            // The keypad plus the header above it already compete hard for room on screen; mute,
-            // speaker, add call, hold and message can wait until the keypad closes again, so only
-            // its own toggle stays here to close it.
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                CallActionButton(
-                    icon = Icons.Default.Dialpad,
-                    isActive = true,
-                    label = stringResource(R.string.action_keypad),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onToggleKeypad
-                )
-            }
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(cellSpacing),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CallActionButton(
-                    icon = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
-                    isActive = isMuted,
-                    label = stringResource(R.string.action_mute),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onToggleMute
-                )
-                CallActionButton(
-                    icon = Icons.Default.Dialpad,
-                    isActive = showKeypad,
-                    label = stringResource(R.string.action_keypad),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onToggleKeypad
-                )
-                CallActionButton(
-                    icon = callAudioRouteIcon(audioRoute),
-                    isActive = audioActive,
-                    label = callAudioRouteLabel(audioRoute),
-                    compact = compact,
-                    modifier = Modifier.weight(1f),
-                    onClick = onAudioClick
-                )
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(cellSpacing),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CallActionButton(
+                icon = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
+                isActive = isMuted,
+                label = stringResource(R.string.action_mute),
+                compact = compact,
+                modifier = Modifier.weight(1f),
+                onClick = onToggleMute
+            )
+            CallActionButton(
+                icon = Icons.Default.Dialpad,
+                isActive = showKeypad,
+                label = stringResource(R.string.action_keypad),
+                compact = compact,
+                modifier = Modifier.weight(1f),
+                onClick = onToggleKeypad
+            )
+            CallActionButton(
+                icon = callAudioRouteIcon(audioRoute),
+                isActive = audioActive,
+                label = callAudioRouteLabel(audioRoute),
+                compact = compact,
+                modifier = Modifier.weight(1f),
+                onClick = onAudioClick
+            )
+        }
 
+        if (!showKeypad) {
+            // Add call, hold and message wait until the keypad closes: alongside the header above,
+            // there isn't room for the keypad, this row and a second one all at once.
             Spacer(modifier = Modifier.height(cellSpacing))
 
             Row(
