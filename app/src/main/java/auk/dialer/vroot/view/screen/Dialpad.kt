@@ -216,28 +216,35 @@ fun DialPadScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
         ) {
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) {
 
                 if (number.isEmpty()) {
+                    // Scaled from the space actually left above the keypad on this device, between
+                    // the two sizes already checked on a small phone and a tall emulator screen.
+                    val heightRatio = ((maxHeight - 320.dp) / (500.dp - 320.dp)).coerceIn(0f, 1f)
+                    val iconBoxSize = 64.dp + (88.dp - 64.dp) * heightRatio
+                    val iconSize = 30.dp + (iconBoxSize - 64.dp) * 0.25f
+                    val iconCornerRadius = 20.dp + (iconBoxSize - 64.dp) * (1f / 3f)
+
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(iconCornerRadius),
                             color = MaterialTheme.colorScheme.surfaceContainerLow,
-                            modifier = Modifier.size(64.dp)
+                            modifier = Modifier.size(iconBoxSize)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     Icons.Default.Dialpad,
                                     null,
-                                    modifier = Modifier.size(30.dp),
+                                    modifier = Modifier.size(iconSize),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
