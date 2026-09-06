@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Room instantiates its generated *_Impl database class by reflection
+# (getDeclaredConstructor().newInstance()), so nothing in the visible call graph appears to use
+# its no-arg constructor. Without this, R8 strips it as dead code and the app crashes on startup
+# in release only, with a NoSuchMethodException on that constructor.
+-keep class * extends androidx.room.RoomDatabase {
+    <init>();
+}
