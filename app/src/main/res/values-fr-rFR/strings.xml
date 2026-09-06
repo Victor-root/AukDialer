@@ -22,8 +22,8 @@
     <string name="action_end">Raccrocher</string>
     <string name="action_mute">Muet</string>
     <string name="action_keypad">Clavier</string>
-    <string name="action_add_call">Ajouter un appel</string>
-    <string name="action_hold">Mettre en attente</string>
+    <string name="action_add_call">Ajouter</string>
+    <string name="action_hold">Attente</string>
     <string name="action_resume">Reprendre</string>
     <string name="action_end_call">Raccrocher</string>
     <string name="content_desc_selected_item">Sélectionné</string>
