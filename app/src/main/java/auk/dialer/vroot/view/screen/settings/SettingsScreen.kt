@@ -10,10 +10,13 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.DebugCallSimulator
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
 import com.ramcosta.composedestinations.annotation.Destination
@@ -29,6 +32,7 @@ fun SettingsScreen(
     navigator: DestinationsNavigator
 ) {
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -116,6 +120,19 @@ fun SettingsScreen(
                         leadingIcon = Icons.Outlined.Info,
                         onClick = { navigator.navigate(AboutScreenDestination) }
                     )
+                }
+            }
+
+            if (BuildConfig.DEBUG) {
+                item {
+                    AukExpressiveCard {
+                        AukListItem(
+                            headline = stringResource(R.string.settings_debug_simulate_call_headline),
+                            supporting = stringResource(R.string.settings_debug_simulate_call_supporting),
+                            leadingIcon = Icons.Outlined.BugReport,
+                            onClick = { DebugCallSimulator.simulateIncomingCall(context) }
+                        )
+                    }
                 }
             }
 

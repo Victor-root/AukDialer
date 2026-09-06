@@ -245,6 +245,8 @@
     <string name="settings_manage_contacts_supporting">Fusionner les doublons et nettoyer votre liste</string>
     <string name="settings_about_headline">À propos de AukDialer</string>
     <string name="settings_about_supporting">Version, licences et politique de confidentialité</string>
+    <string name="settings_debug_simulate_call_headline">Simuler un appel entrant</string>
+    <string name="settings_debug_simulate_call_supporting">Teste l’écran d’appel sans passer un vrai appel (versions de test uniquement)</string>
     <!-- Settings > Interface -->
     <string name="settings_interface_title">Interface utilisateur</string>
     <string name="settings_interface_restart_required">Un redémarrage est nécessaire pour appliquer entièrement les changements de thème.</string>
