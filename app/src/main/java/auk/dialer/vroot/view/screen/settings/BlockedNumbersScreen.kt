@@ -41,7 +41,6 @@ import com.ramcosta.composedestinations.result.ResultRecipient
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -103,7 +102,6 @@ fun BlockedNumbersScreen(
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

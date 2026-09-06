@@ -64,7 +64,6 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 }
             )
         },
-        containerColor = Color.Transparent,
     ) { padding ->
         Column(
             modifier = Modifier

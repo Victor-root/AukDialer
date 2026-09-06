@@ -27,7 +27,6 @@ import auk.dialer.vroot.view.components.AukConfirmationDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -87,7 +86,6 @@ fun BackupRestoreScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.Transparent,
     ) { padding ->
         LazyColumn(
             modifier = Modifier

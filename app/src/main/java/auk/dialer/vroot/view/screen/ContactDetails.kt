@@ -438,7 +438,6 @@ fun ContactDetailsScreen(
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
