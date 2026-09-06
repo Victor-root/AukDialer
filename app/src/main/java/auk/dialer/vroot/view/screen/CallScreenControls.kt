@@ -121,7 +121,9 @@ fun CallActionButton(
         label = "CallActionContent"
     )
 
-    val buttonHeight = if (compact) 60.dp else 74.dp
+    // Tall enough to fit a two-line label (icon + line + line + padding) so every button in the
+    // grid matches, whether its own label needs one line or two.
+    val buttonHeight = if (compact) 76.dp else 84.dp
     val iconSize = if (compact) 22.dp else 26.dp
 
     Surface(
