@@ -466,20 +466,14 @@
     <string name="about_title">À propos</string>
     <string name="about_logo_content_desc">Logo AukDialer</string>
     <string name="about_app_display_name">AukDialer</string>
-    <string name="about_app_card_title">À propos de l’application</string>
-    <string name="about_app_card_body">AukDialer est une application de numérotation moderne qui allie simplicité et élégance. Conçue avec Material You, elle s’adapte parfaitement à votre thème.</string>
-    <string name="about_version">Version</string>
-    <string name="about_build_number">Numéro de build</string>
-    <string name="contributors_title">Contributeurs</string>
-    <string name="about_contributors_supporting">Découvrez l’équipe derrière le projet</string>
+    <string name="about_author_title">Auteur</string>
+    <string name="about_author_repo_supporting">Dépôt %1$s</string>
+    <string name="about_follow_github">Suivre sur GitHub</string>
     <string name="about_source_code">Code source</string>
     <string name="about_source_code_supporting">Voir le code source sur GitHub</string>
     <string name="about_check_updates">Vérifier les mises à jour</string>
     <string name="about_current_version">Version actuelle : %1$s</string>
     <string name="about_copyright">© 2025-2026 Projet AukDialer</string>
-    <!-- Settings > Contributors -->
-    <string name="contributor_role_lead_developer">Développeur principal</string>
-    <string name="contributor_role_developer">Développeur</string>
     <string name="nav_favorites">Favoris</string>
     <string name="favorites_permission_title">Autorisation d’accès aux contacts requise</string>
     <string name="favorites_permission_description">Autorisez l’accès à vos contacts pour afficher vos favoris ici.</string>

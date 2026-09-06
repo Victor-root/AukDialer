@@ -7,10 +7,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Launch
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -30,9 +29,9 @@ import auk.dialer.vroot.controller.util.getAppVersion
 import auk.dialer.vroot.controller.util.openLink
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
+import auk.dialer.vroot.view.components.AukSectionHeader
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.ContributorsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import androidx.compose.ui.graphics.Color
@@ -119,51 +118,28 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            AukExpressiveCard {
-                Column(
-                    modifier = Modifier.padding(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Shield,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = stringResource(R.string.about_app_card_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.about_app_card_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            Column(modifier = Modifier.fillMaxWidth()) {
+                AukSectionHeader(
+                    title = stringResource(R.string.about_author_title),
+                    contentPadding = PaddingValues(vertical = 4.dp)
+                )
+                AukExpressiveCard {
+                    val authorGithubUrl = "https://github.com/Victor-root"
+                    AukListItem(
+                        headline = "Victor-root",
+                        supporting = stringResource(
+                            R.string.about_author_repo_supporting,
+                            stringResource(R.string.about_app_display_name)
+                        ),
+                        leadingIcon = Icons.Outlined.Person,
+                        onClick = { openLink(context, authorGithubUrl) }
+                    )
+                    AukListItem(
+                        headline = stringResource(R.string.about_follow_github),
+                        leadingIcon = Icons.AutoMirrored.Outlined.Launch,
+                        onClick = { openLink(context, authorGithubUrl) }
                     )
                 }
-            }
-
-            Button(
-                onClick = { navigator.navigate(ContributorsScreenDestination) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            ) {
-                Icon(Icons.Outlined.Groups, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.contributors_title),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.labelLarge
-                )
             }
 
             AukExpressiveCard {
