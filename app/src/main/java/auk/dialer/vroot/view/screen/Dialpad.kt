@@ -227,7 +227,7 @@ fun DialPadScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = keypadHeight),
+                        .padding(top = 32.dp, bottom = keypadHeight),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
