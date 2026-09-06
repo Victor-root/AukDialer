@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -130,7 +131,7 @@ fun CallActionButton(
             }
         },
         modifier = modifier
-            .height(buttonHeight)
+            .heightIn(min = buttonHeight)
             .scale(scale),
         enabled = enabled,
         shape = RoundedCornerShape(cornerRadius.dp),
@@ -141,7 +142,7 @@ fun CallActionButton(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp),
+                .padding(horizontal = 6.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -158,7 +159,7 @@ fun CallActionButton(
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 color = contentColor,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
