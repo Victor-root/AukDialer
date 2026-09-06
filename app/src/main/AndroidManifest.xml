@@ -415,6 +415,15 @@
             <meta-data
                 android:name="android.telecom.IN_CALL_SERVICE_UI"
                 android:value="true" />
+            <!--
+            Telecom hides self-managed calls (VoIP-style, incl. the debug test line above) from an
+            InCallService by default, even the default dialer, unless it opts in here. CallService
+            filters out any self-managed call that isn't its own debug test line, so this doesn't
+            pull other apps' VoIP calls (WhatsApp, Signal, ...) onto AukDialer's call screen.
+            -->
+            <meta-data
+                android:name="android.telecom.INCLUDE_SELF_MANAGED_CALLS"
+                android:value="true" />
             <intent-filter>
                 <action android:name="android.telecom.InCallService" />
             </intent-filter>
