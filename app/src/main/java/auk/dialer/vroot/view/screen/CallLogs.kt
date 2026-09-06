@@ -196,7 +196,7 @@ fun CallLogFullScreen(
                         CallLogFilter.Missed -> filteredLogsByContact.filter { it.type == CallLog.Calls.MISSED_TYPE }
                         CallLogFilter.Incoming -> filteredLogsByContact.filter { it.type == CallLog.Calls.INCOMING_TYPE }
                         CallLogFilter.Outgoing -> filteredLogsByContact.filter { it.type == CallLog.Calls.OUTGOING_TYPE }
-                        CallLogFilter.Contacts -> filteredLogsByContact.filter { it.name != null && it.name != it.number }
+                        CallLogFilter.Contacts -> filteredLogsByContact.filter { it.contactId != null }
                     }
 
                     if (finalLogs.isEmpty()) {
