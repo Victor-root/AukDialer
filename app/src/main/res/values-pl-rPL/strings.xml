@@ -452,20 +452,11 @@
     <string name="about_title">O aplikacji</string>
     <string name="about_logo_content_desc">Logo AukDialer</string>
     <string name="about_app_display_name">AukDialer</string>
-    <string name="about_app_card_title">Informacje o aplikacji</string>
-    <string name="about_app_card_body">AukDialer to nowoczesna aplikacja telefoniczna, która zapewnia prostotę i elegancję podczas dzwonienia. Dzięki zaprojektowaniu w stylu Material You płynnie dostosowuje się do Twojego motywu.</string>
-    <string name="about_version">Wersja</string>
-    <string name="about_build_number">Numer kompilacji</string>
-    <string name="contributors_title">Współtwórcy</string>
-    <string name="about_contributors_supporting">Poznaj zespół stojący za tym projektem</string>
     <string name="about_source_code">Kod źródłowy</string>
     <string name="about_source_code_supporting">Zobacz kod źródłowy na GitHubie</string>
     <string name="about_check_updates">Sprawdź aktualizacje</string>
     <string name="about_current_version">Aktualna wersja: %1$s</string>
     <string name="about_copyright">© 2025-2026 Projekt AukDialer</string>
-    <!-- Settings > Contributors -->
-    <string name="contributor_role_lead_developer">Główny programista</string>
-    <string name="contributor_role_developer">Programista</string>
     <!-- Favorites -->
     <string name="nav_favorites">Ulubione</string>
     <string name="favorites_permission_title">Wymagane uprawnienie do kontaktów</string>

@@ -454,20 +454,11 @@
     <string name="about_title">О проекте</string>
     <string name="about_logo_content_desc">Значок AukDialer</string>
     <string name="about_app_display_name">AukDialer</string>
-    <string name="about_app_card_title">О приложении</string>
-    <string name="about_app_card_body">AukDialer — современное приложение для звонков, сочетающее простоту и элегантность. Благодаря поддержке Material You оно плавно подстраивается под вашу тему оформления.</string>
-    <string name="about_version">Версия приложения</string>
-    <string name="about_build_number">Номер сборки</string>
-    <string name="contributors_title">Поддержавшие проект</string>
-    <string name="about_contributors_supporting">Команда разработчиков</string>
     <string name="about_source_code">Исходный код</string>
     <string name="about_source_code_supporting">Ознакомьтесь с исходным кодом на GitHub.</string>
     <string name="about_check_updates">Проверить наличие обновлений</string>
     <string name="about_current_version">Текущая версия: %1$s</string>
     <string name="about_copyright">©️ 2025-2026 AukDialer Project</string>
-    <!-- Settings > Contributors -->
-    <string name="contributor_role_lead_developer">Ведущий разработчик</string>
-    <string name="contributor_role_developer">Разработчик</string>
     <!-- Favorites -->
     <string name="nav_favorites">Избранные</string>
     <string name="favorites_permission_title">Требуется разрешение на доступ к контактам</string>

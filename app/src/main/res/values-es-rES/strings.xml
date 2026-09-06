@@ -417,20 +417,11 @@
     <string name="about_title">Acerca de</string>
     <string name="about_logo_content_desc">Logo de AukDialer</string>
     <string name="about_app_display_name">AukDialer</string>
-    <string name="about_app_card_title">Acerca de la aplicación</string>
-    <string name="about_app_card_body">AukDialer es una aplicación moderna que aporta simplicidad y elegancia a tus llamadas. Diseñada con Material You, se adapta perfectamente a tu tema.</string>
-    <string name="about_version">Versión</string>
-    <string name="about_build_number">Número de compilación</string>
-    <string name="contributors_title">Colaboradores</string>
-    <string name="about_contributors_supporting">Conoce al equipo detrás del proyecto</string>
     <string name="about_source_code">Código fuente</string>
     <string name="about_source_code_supporting">Ver el código fuente en GitHub</string>
     <string name="about_check_updates">Buscar actualizaciones</string>
     <string name="about_current_version">Versión actual: %1$s</string>
     <string name="about_copyright">©️ Proyecto AukDialer 2025-2026</string>
-    <!-- Settings > Contributors -->
-    <string name="contributor_role_lead_developer">Director de desarrollo</string>
-    <string name="contributor_role_developer">Desarrollador</string>
     <!-- Favorites -->
     <string name="nav_favorites">Favoritos</string>
     <string name="favorites_permission_title">Se necesita permiso de contactos</string>

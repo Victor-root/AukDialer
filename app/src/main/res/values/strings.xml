@@ -507,21 +507,14 @@
     <string name="about_title">About</string>
     <string name="about_logo_content_desc">AukDialer Logo</string>
     <string name="about_app_display_name">AukDialer</string>
-    <string name="about_app_card_title">About the App</string>
-    <string name="about_app_card_body">AukDialer is a modern dialer app that brings simplicity and elegance to calling. Designed with Material You, it adapts seamlessly to your theme.</string>
-    <string name="about_version">Version</string>
-    <string name="about_build_number">Build number</string>
-    <string name="contributors_title">Contributors</string>
-    <string name="about_contributors_supporting">Meet the team behind the project</string>
+    <string name="about_author_title">Author</string>
+    <string name="about_author_repo_supporting">%1$s repository</string>
+    <string name="about_follow_github">Follow on GitHub</string>
     <string name="about_source_code">Source Code</string>
     <string name="about_source_code_supporting">View the source code on GitHub</string>
     <string name="about_check_updates">Check for Updates</string>
     <string name="about_current_version">Current version: %1$s</string>
     <string name="about_copyright">© 2025-2026 AukDialer Project</string>
-
-    <!-- Settings > Contributors -->
-    <string name="contributor_role_lead_developer">Lead Developer</string>
-    <string name="contributor_role_developer">Developer</string>
 
     <!-- Favorites -->
     <string name="nav_favorites">Favorites</string>
