@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.Icon
@@ -49,6 +48,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,11 +64,12 @@ private fun callAudioRouteLabel(route: Int): String = when (route) {
     else -> stringResource(R.string.audio_route_handset)
 }
 
+@Composable
 private fun callAudioRouteIcon(route: Int): ImageVector = when (route) {
     CallAudioState.ROUTE_SPEAKER -> Icons.AutoMirrored.Filled.VolumeUp
     CallAudioState.ROUTE_BLUETOOTH -> Icons.Default.Bluetooth
     CallAudioState.ROUTE_WIRED_HEADSET -> Icons.Default.Headset
-    else -> Icons.Default.Phone
+    else -> ImageVector.vectorResource(id = R.drawable.ic_ear)
 }
 
 @Composable
