@@ -503,7 +503,7 @@ fun CallLogFullContent(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp),
+                        contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         if (favorites.isNotEmpty() && selectedFilter == CallLogFilter.All) {
