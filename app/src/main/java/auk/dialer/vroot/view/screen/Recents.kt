@@ -459,7 +459,7 @@ fun CallLogFullContent(
                 CallLogFilter.Missed -> baseLogs.filter { it.type == CallLog.Calls.MISSED_TYPE }
                 CallLogFilter.Incoming -> baseLogs.filter { it.type == CallLog.Calls.INCOMING_TYPE }
                 CallLogFilter.Outgoing -> baseLogs.filter { it.type == CallLog.Calls.OUTGOING_TYPE }
-                CallLogFilter.Contacts -> baseLogs.filter { it.name != null && it.name != it.number }
+                CallLogFilter.Contacts -> baseLogs.filter { it.contactId != null }
             }
         }
 
