@@ -63,16 +63,8 @@ fun SearchScreen(
         // The search field carries the status bar inset itself, so its accent band reaches behind
         // the bar rather than starting under it.
         contentWindowInsets = WindowInsets.safeDrawing
-            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            ContactSearchContent(
-                navigator = navigator,
-                isGranted = permState.status == PermissionStatus.Granted,
-                onRequestPermission = { permState.launchPermissionRequest() },
-                listState = listState
-            )
-
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+        floatingActionButton = {
             ScrollToTopButton(
                 visible = showButton,
                 onClick = {
@@ -80,6 +72,15 @@ fun SearchScreen(
                         listState.animateScrollToItem(0)
                     }
                 }
+            )
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            ContactSearchContent(
+                navigator = navigator,
+                isGranted = permState.status == PermissionStatus.Granted,
+                onRequestPermission = { permState.launchPermissionRequest() },
+                listState = listState
             )
         }
     }

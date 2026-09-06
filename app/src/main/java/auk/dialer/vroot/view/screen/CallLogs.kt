@@ -151,6 +151,16 @@ fun CallLogFullScreen(
                 }
             }
         },
+        floatingActionButton = {
+            ScrollToTopButton(
+                visible = showButton && selectedEntries.isEmpty(),
+                onClick = {
+                    scope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                }
+            )
+        }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -260,15 +270,6 @@ fun CallLogFullScreen(
                     }
                 }
             }
-
-            ScrollToTopButton(
-                visible = showButton && selectedEntries.isEmpty(),
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0)
-                    }
-                }
-            )
         }
     }
 }

@@ -148,17 +148,27 @@ fun ContactScreenContent(
             }
         },
         floatingActionButton = {
-            if (selectedIds.isEmpty()) {
-                FloatingActionButton(
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                ScrollToTopButton(
+                    visible = showButton && selectedIds.isEmpty(),
                     onClick = {
-                        navigator.navigate(ContactEditScreenDestination())
-                    },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
-                ) {
-                    Icon(Icons.Default.PersonAdd, stringResource(R.string.action_add_contact))
+                        scope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    }
+                )
+                if (selectedIds.isEmpty()) {
+                    FloatingActionButton(
+                        onClick = {
+                            navigator.navigate(ContactEditScreenDestination())
+                        },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                    ) {
+                        Icon(Icons.Default.PersonAdd, stringResource(R.string.action_add_contact))
+                    }
                 }
             }
         },
@@ -178,15 +188,6 @@ fun ContactScreenContent(
                         selectedIds - id
                     } else {
                         selectedIds + id
-                    }
-                }
-            )
-
-            ScrollToTopButton(
-                visible = showButton && selectedIds.isEmpty(),
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0)
                     }
                 }
             )

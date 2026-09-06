@@ -25,7 +25,7 @@ import com.ramcosta.composedestinations.generated.destinations.SearchScreenDesti
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-private val TopBarSearchMinHeight = 56.dp
+private val TopBarSearchMinHeight = 48.dp
 
 @Composable
 fun TopBar(navigator: DestinationsNavigator) {
@@ -34,7 +34,7 @@ fun TopBar(navigator: DestinationsNavigator) {
             onClick = { navigator.navigate(SearchScreenDestination) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 6.dp)
                 .heightIn(min = TopBarSearchMinHeight),
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,

@@ -45,7 +45,7 @@ fun AukPullToRefreshIndicator(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopCenter
     ) {
-        PullToRefreshDefaults.LoadingIndicator(
+        PullToRefreshDefaults.Indicator(
             state = state,
             isRefreshing = isRefreshing,
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
