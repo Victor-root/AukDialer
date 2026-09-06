@@ -42,10 +42,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.InterceptPlatformTextInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -193,11 +191,6 @@ fun DialPadScreen(
         }
     }
 
-    // Measured from the keypad Surface itself instead of a guessed constant, so the empty state and
-    // the search results reserve exactly the room it actually takes on this device.
-    var keypadHeightPx by remember { mutableIntStateOf(0) }
-    val keypadHeight = with(LocalDensity.current) { keypadHeightPx.toDp() }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -218,115 +211,120 @@ fun DialPadScreen(
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize().padding(top =innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+                .fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
         ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
 
-            if (number.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 32.dp, bottom = keypadHeight),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(28.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        modifier = Modifier.size(88.dp)
+                if (number.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.Default.Dialpad,
-                                null,
-                                modifier = Modifier.size(36.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.dialpad_start_dialing),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        stringResource(R.string.dialpad_start_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-
-            if (searchResults.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 6.dp, bottom = keypadHeight)
-                ) {
-                    itemsIndexed(searchResults) { index, contact ->
-                        val contactNumber = contact.phoneNumbers.firstOrNull()
-                        val isFirst = index == 0
-                        val isLast = index == searchResults.size - 1
-
                         Surface(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            shape = when {
-                                isFirst && isLast -> RoundedCornerShape(28.dp)
-                                isFirst -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-                                isLast -> RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
-                                else -> androidx.compose.ui.graphics.RectangleShape
-                            },
-                            color = MaterialTheme.colorScheme.surfaceContainerLow
+                            shape = RoundedCornerShape(28.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            modifier = Modifier.size(88.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(
-                                    top = if (isFirst) 8.dp else 0.dp,
-                                    bottom = if (isLast) 8.dp else 0.dp
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Dialpad,
+                                    null,
+                                    modifier = Modifier.size(36.dp),
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.dialpad_start_dialing),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            stringResource(R.string.dialpad_start_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                if (searchResults.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 6.dp, bottom = 16.dp)
+                    ) {
+                        itemsIndexed(searchResults) { index, contact ->
+                            val contactNumber = contact.phoneNumbers.firstOrNull()
+                            val isFirst = index == 0
+                            val isLast = index == searchResults.size - 1
+
+                            Surface(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                shape = when {
+                                    isFirst && isLast -> RoundedCornerShape(28.dp)
+                                    isFirst -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                                    isLast -> RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
+                                    else -> androidx.compose.ui.graphics.RectangleShape
+                                },
+                                color = MaterialTheme.colorScheme.surfaceContainerLow
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                Column(
+                                    modifier = Modifier.padding(
+                                        top = if (isFirst) 8.dp else 0.dp,
+                                        bottom = if (isLast) 8.dp else 0.dp
+                                    )
                                 ) {
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        AukListItem(
-                                            headline = auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder),
-                                            supporting = buildString {
-                                                contact.nickname?.let { append("$it • ") }
-                                                contactNumber?.let { append(formatPhoneNumber(it)) }
-                                            }.ifEmpty { null },
-                                            avatarName = contact.name,
-                                            photoUri = contact.photoUri,
-                                            onClick = {
-                                                navigator.navigate(
-                                                    ContactDetailsScreenDestination(
-                                                        contactId = contact.id
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(modifier = Modifier.weight(1f)) {
+                                            AukListItem(
+                                                headline = auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder),
+                                                supporting = buildString {
+                                                    contact.nickname?.let { append("$it • ") }
+                                                    contactNumber?.let { append(formatPhoneNumber(it)) }
+                                                }.ifEmpty { null },
+                                                avatarName = contact.name,
+                                                photoUri = contact.photoUri,
+                                                onClick = {
+                                                    navigator.navigate(
+                                                        ContactDetailsScreenDestination(
+                                                            contactId = contact.id
+                                                        )
                                                     )
-                                                )
-                                            }
-                                        )
-                                    }
-                                    contactNumber?.let { num ->
-                                        IconButton(
-                                            onClick = { performCall(num, contact.id) },
-                                            modifier = Modifier.padding(end = 8.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.Call,
-                                                contentDescription = stringResource(R.string.content_desc_call_named, contact.name),
-                                                tint = MaterialTheme.colorScheme.primary
+                                                }
                                             )
                                         }
+                                        contactNumber?.let { num ->
+                                            IconButton(
+                                                onClick = { performCall(num, contact.id) },
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.Call,
+                                                    contentDescription = stringResource(R.string.content_desc_call_named, contact.name),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
                                     }
-                                }
-                                if (!isLast) {
-                                    AukDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                    )
+                                    if (!isLast) {
+                                        AukDivider(
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -336,9 +334,7 @@ fun DialPadScreen(
 
             Surface(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .onGloballyPositioned { keypadHeightPx = it.size.height },
+                    .fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 16.dp,
                 shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
