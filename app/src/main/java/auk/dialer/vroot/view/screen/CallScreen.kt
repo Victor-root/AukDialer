@@ -321,12 +321,53 @@ fun ExpressiveCallScreen(
         }
     }
 
-    val heroSection: @Composable () -> Unit = {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    val statusPill: @Composable () -> Unit = {
+        Surface(
+            color = when (callState) {
+                Call.STATE_ACTIVE -> MaterialTheme.colorScheme.primaryContainer
+                Call.STATE_HOLDING -> MaterialTheme.colorScheme.tertiaryContainer
+                else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f)
+            },
+            shape = CircleShape
         ) {
-            if (!showKeypad) {
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.titleSmallEmphasized,
+                color = when (callState) {
+                    Call.STATE_ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
+                    Call.STATE_HOLDING -> MaterialTheme.colorScheme.onTertiaryContainer
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+            )
+        }
+    }
+
+    val heroSection: @Composable () -> Unit = {
+        if (showKeypad) {
+            // The keypad and the full button grid already fill most of the screen below this, so
+            // the avatar, phone number, recording and SIM chips are dropped: at full size they used
+            // to push the name past the top of the screen and get clipped there.
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = contactName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                statusPill()
+            }
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 AnimatedVisibility(
                     visible = showCallScreenAvatar,
                     enter = fadeIn() + expandVertically(),
@@ -341,81 +382,63 @@ fun ExpressiveCallScreen(
                         Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 20.dp))
                     }
                 }
-            }
 
-            Text(
-                text = contactName,
-                style = if (isLandscape) MaterialTheme.typography.headlineMediumEmphasized else MaterialTheme.typography.displaySmallEmphasized,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            if (phoneNumber.isNotEmpty() && phoneNumber != contactName) {
                 Text(
-                    text = phoneNumber,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    text = contactName,
+                    style = if (isLandscape) MaterialTheme.typography.headlineMediumEmphasized else MaterialTheme.typography.displaySmallEmphasized,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp)
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                color = when (callState) {
-                    Call.STATE_ACTIVE -> MaterialTheme.colorScheme.primaryContainer
-                    Call.STATE_HOLDING -> MaterialTheme.colorScheme.tertiaryContainer
-                    else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f)
-                },
-                shape = CircleShape
-            ) {
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.titleSmallEmphasized,
-                    color = when (callState) {
-                        Call.STATE_ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
-                        Call.STATE_HOLDING -> MaterialTheme.colorScheme.onTertiaryContainer
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
-                )
-            }
-
-            if (isRecording) {
-                Row(
-                    modifier = Modifier.padding(top = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.FiberManualRecord,
-                        contentDescription = null,
-                        tint = MaterialTheme.callColors.decline,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
+                if (phoneNumber.isNotEmpty() && phoneNumber != contactName) {
                     Text(
-                        text = stringResource(R.string.call_recording_in_progress),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.callColors.decline
+                        text = phoneNumber,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-            }
 
-            if (simLabel != null) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Text(
-                        text = simLabel,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                    )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                statusPill()
+
+                if (isRecording) {
+                    Row(
+                        modifier = Modifier.padding(top = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.FiberManualRecord,
+                            contentDescription = null,
+                            tint = MaterialTheme.callColors.decline,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.call_recording_in_progress),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.callColors.decline
+                        )
+                    }
+                }
+
+                if (simLabel != null) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = simLabel,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
                 }
             }
         }
