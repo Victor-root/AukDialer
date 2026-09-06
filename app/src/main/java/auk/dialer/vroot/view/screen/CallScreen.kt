@@ -644,7 +644,10 @@ fun ExpressiveCallScreen(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+                    // Centering can push the header above the top of this box once the keypad and
+                    // the button grid leave it too little room; anchoring to the top when the keypad
+                    // is open sends any overflow down into the keypad instead of behind the status bar.
+                    verticalArrangement = if (showKeypad) Arrangement.Top else Arrangement.Center,
                     modifier = Modifier.weight(1f)
                 ) {
                     heroSection()
