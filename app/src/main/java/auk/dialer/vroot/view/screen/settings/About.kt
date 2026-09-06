@@ -30,8 +30,6 @@ import auk.dialer.vroot.controller.util.getAppVersion
 import auk.dialer.vroot.controller.util.openLink
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
-import auk.dialer.vroot.view.theme.AukMaterialShapes
-import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContributorsScreenDestination
@@ -46,7 +44,6 @@ import org.koin.compose.koinInject
 fun AboutScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val appInfo = getAppVersion(context)
-    val logoMorph = rememberAukMorphShape(AukMaterialShapes.Cookie12Sided, AukMaterialShapes.Circle) { 0.25f }
     val launcherIconManager = koinInject<LauncherIconManager>()
     // The badge below is a small copy of the launcher icon, so it takes that icon's own colour
     // rather than the in-app theme accent, which is a separate setting.
@@ -86,7 +83,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 ) {
                     Surface(
                         modifier = Modifier.size(88.dp),
-                        shape = logoMorph,
+                        shape = MaterialTheme.shapes.extraLarge,
                         color = logoColor,
                         contentColor = Color.White,
                         shadowElevation = 4.dp

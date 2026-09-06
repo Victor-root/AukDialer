@@ -102,7 +102,7 @@ fun AZListScroll(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
         ) {
             finalGrouped.entries.forEach { (initial, contactsForChar) ->
                 stickyHeader {
@@ -123,7 +123,9 @@ fun AZListScroll(
                 }
 
                 item {
-                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    // Right side leaves room for the alphabet index bar so its letters don't sit on
+                    // top of the card's own border.
+                    Box(modifier = Modifier.padding(start = 16.dp, end = 36.dp)) {
                         AukExpressiveCard(isCompact = true) {
                             val unknownLabel = stringResource(R.string.label_unknown)
                             contactsForChar.forEachIndexed { index, contact ->
