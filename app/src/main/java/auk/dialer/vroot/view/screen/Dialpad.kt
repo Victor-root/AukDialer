@@ -232,20 +232,20 @@ fun DialPadScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(36.dp),
+                        shape = RoundedCornerShape(28.dp),
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(88.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 Icons.Default.Dialpad,
                                 null,
-                                modifier = Modifier.size(48.dp),
+                                modifier = Modifier.size(36.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.dialpad_start_dialing),
                         style = MaterialTheme.typography.headlineSmall,
@@ -254,9 +254,10 @@ fun DialPadScreen(
                     Text(
                         stringResource(R.string.dialpad_start_hint),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
