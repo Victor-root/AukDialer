@@ -1,21 +1,24 @@
 package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,7 +28,8 @@ import com.ramcosta.composedestinations.generated.destinations.SearchScreenDesti
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-private val TopBarSearchMinHeight = 48.dp
+private val TopBarSearchMinHeight = 44.dp
+private val TopBarActionButtonSize = 36.dp
 
 @Composable
 fun TopBar(navigator: DestinationsNavigator) {
@@ -34,7 +38,7 @@ fun TopBar(navigator: DestinationsNavigator) {
             onClick = { navigator.navigate(SearchScreenDestination) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
                 .heightIn(min = TopBarSearchMinHeight),
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -61,14 +65,22 @@ fun TopBar(navigator: DestinationsNavigator) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                IconButton(
-                    onClick = { navigator.navigate(SettingsScreenDestination) }
+                // A plain IconButton carries Material's own 48dp minimum touch target, which was
+                // quietly forcing this whole row (and the search pill around it) back up to 56dp
+                // tall no matter what height the pill itself asked for. Sized directly instead.
+                Surface(
+                    onClick = { navigator.navigate(SettingsScreenDestination) },
+                    modifier = Modifier.size(TopBarActionButtonSize),
+                    shape = CircleShape,
+                    color = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Tune,
-                        contentDescription = stringResource(R.string.settings_title),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = stringResource(R.string.settings_title)
+                        )
+                    }
                 }
             }
         }
