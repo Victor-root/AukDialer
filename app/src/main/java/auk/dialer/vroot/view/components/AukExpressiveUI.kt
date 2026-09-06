@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.theme.LocalAccentBarColor
@@ -521,7 +522,10 @@ fun AukListItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = headline,
-                    style = headlineStyle,
+                    // Tighter than the style's own line height, which otherwise reads as more
+                    // space between a wrapped headline's two lines than between the headline and
+                    // the supporting text below it.
+                    style = headlineStyle.copy(lineHeight = 20.sp),
                     color = headlineColor,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -532,7 +536,8 @@ fun AukListItem(
                         style = AukListItemDefaults.supportingStyle(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
                 if (supporting2 != null) {
