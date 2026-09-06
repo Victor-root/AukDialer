@@ -439,6 +439,16 @@ fun ContactDetailsScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            ScrollToTopButton(
+                visible = showButton,
+                onClick = {
+                    scope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                }
+            )
+        },
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
@@ -1031,15 +1041,6 @@ fun ContactDetailsScreen(
                     item { Spacer(modifier = Modifier.height(100.dp)) }
                 }
             }
-
-            ScrollToTopButton(
-                visible = showButton,
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0)
-                    }
-                }
-            )
         }
     }
 }

@@ -144,6 +144,14 @@ fun InterfaceScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            ScrollToTopButton(
+                visible = showButton,
+                onClick = {
+                    scope.launch { listState.animateScrollToItem(0) }
+                }
+            )
+        }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             LazyColumn(
@@ -401,13 +409,6 @@ fun InterfaceScreen(
                     )
                 ) {}
             }
-
-            ScrollToTopButton(
-                visible = showButton,
-                onClick = {
-                    scope.launch { listState.animateScrollToItem(0) }
-                }
-            )
         }
     }
 }
