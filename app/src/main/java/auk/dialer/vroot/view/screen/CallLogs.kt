@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -152,7 +151,6 @@ fun CallLogFullScreen(
                 }
             }
         },
-        containerColor = Color.Transparent,
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {

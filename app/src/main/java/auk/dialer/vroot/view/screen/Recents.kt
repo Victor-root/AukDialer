@@ -64,7 +64,6 @@ import auk.dialer.vroot.modal.data.displayLabel
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination<RootGraph>(style = NoTransitions::class)
@@ -199,8 +198,7 @@ fun RecentScreenContent(
                     Icon(Icons.Default.Dialpad, stringResource(R.string.content_desc_dialpad))
                 }
             }
-        },
-        containerColor = Color.Transparent
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier.padding(innerPadding).fillMaxSize()

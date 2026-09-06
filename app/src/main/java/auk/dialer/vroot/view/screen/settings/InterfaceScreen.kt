@@ -144,7 +144,6 @@ fun InterfaceScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.Transparent,
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             LazyColumn(

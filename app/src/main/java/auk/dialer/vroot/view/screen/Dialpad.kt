@@ -192,7 +192,6 @@ fun DialPadScreen(
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

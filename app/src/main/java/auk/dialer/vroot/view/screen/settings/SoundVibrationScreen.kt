@@ -28,7 +28,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -49,7 +48,6 @@ fun SoundVibrationScreen(
     var missedCallNotifications by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MISSED_CALL_NOTIFICATIONS, true)) }
 
     Scaffold(
-        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
