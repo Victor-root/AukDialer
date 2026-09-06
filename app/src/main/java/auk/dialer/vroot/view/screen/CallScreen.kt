@@ -10,6 +10,7 @@ import android.telecom.Call
 import android.telecom.TelecomManager
 import android.telecom.CallAudioState
 import android.telecom.VideoProfile
+import android.util.Log
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -51,7 +52,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -63,6 +66,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
 import coil.compose.AsyncImage
@@ -104,6 +108,20 @@ fun ExpressiveCallScreen(
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+
+    if (BuildConfig.DEBUG) {
+        val insetsDensity = LocalDensity.current
+        val statusBarTopPx = WindowInsets.statusBars.getTop(insetsDensity)
+        val cutoutTopPx = WindowInsets.displayCutout.getTop(insetsDensity)
+        val systemBarsTopPx = WindowInsets.systemBars.getTop(insetsDensity)
+        LaunchedEffect(statusBarTopPx, cutoutTopPx, systemBarsTopPx) {
+            Log.d(
+                "AukCallDebug",
+                "insets: statusBarTop=${statusBarTopPx}px cutoutTop=${cutoutTopPx}px systemBarsTop=${systemBarsTopPx}px density=${insetsDensity.density}"
+            )
+        }
+    }
+
     val preferenceManager = koinInject<PreferenceManager>()
     val contactsRepo = koinInject<IContactsRepository>()
     val telecomManager = remember { context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager }
@@ -358,7 +376,12 @@ fun ExpressiveCallScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = if (BuildConfig.DEBUG) {
+                        Modifier.onGloballyPositioned {
+                            Log.d("AukCallDebug", "compactNameText: y=${it.positionInRoot().y} height=${it.size.height}")
+                        }
+                    } else Modifier
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 statusPill()
@@ -636,7 +659,14 @@ fun ExpressiveCallScreen(
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Top))
                     .navigationBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .then(
+                        if (BuildConfig.DEBUG) {
+                            Modifier.onGloballyPositioned {
+                                Log.d("AukCallDebug", "outerColumn: y=${it.positionInRoot().y} height=${it.size.height} width=${it.size.width}")
+                            }
+                        } else Modifier
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -648,7 +678,15 @@ fun ExpressiveCallScreen(
                     // the button grid leave it too little room; anchoring to the top when the keypad
                     // is open sends any overflow down into the keypad instead of behind the status bar.
                     verticalArrangement = if (showKeypad) Arrangement.Top else Arrangement.Center,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(
+                            if (BuildConfig.DEBUG) {
+                                Modifier.onGloballyPositioned {
+                                    Log.d("AukCallDebug", "heroBox: y=${it.positionInRoot().y} height=${it.size.height} showKeypad=$showKeypad")
+                                }
+                            } else Modifier
+                        )
                 ) {
                     heroSection()
                 }
