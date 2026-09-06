@@ -229,15 +229,15 @@ fun DialPadScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(28.dp),
+                            shape = RoundedCornerShape(20.dp),
                             color = MaterialTheme.colorScheme.surfaceContainerLow,
-                            modifier = Modifier.size(88.dp)
+                            modifier = Modifier.size(64.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     Icons.Default.Dialpad,
                                     null,
-                                    modifier = Modifier.size(36.dp),
+                                    modifier = Modifier.size(30.dp),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
