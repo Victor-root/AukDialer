@@ -17,8 +17,10 @@ import android.telecom.DisconnectCause
 import android.telecom.InCallService
 import android.telecom.TelecomManager
 import android.telecom.VideoProfile
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
@@ -54,6 +56,7 @@ class CallService : InCallService() {
     }
 
     companion object {
+        private const val DEBUG_TAG = "AukCallDebug"
         private const val CHANNEL_ID = "call_channel"
         private const val MISSED_CHANNEL_ID = "missed_call_channel"
         private const val NOTIFICATION_ID = 101
@@ -436,12 +439,16 @@ class CallService : InCallService() {
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
+        if (BuildConfig.DEBUG) {
+            Log.d(DEBUG_TAG, "onCallAdded: state=${call.details.state} direction=${call.details.callDirection} account=${call.details.accountHandle}")
+        }
         instance = this
         redialCount = 0
         call.registerCallback(callCallback)
 
         val number = call.details.handle?.schemeSpecificPart ?: ""
         if (isNumberBlocked(number)) {
+            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
             handleBlockedCall(call, number)
             return
         }
@@ -454,7 +461,9 @@ class CallService : InCallService() {
         }
         try {
             startActivity(intent)
+            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) succeeded")
         } catch (e: Exception) {
+            if (BuildConfig.DEBUG) Log.e(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) failed", e)
         }
     }
 

@@ -6,6 +6,8 @@ import android.telecom.ConnectionService
 import android.telecom.DisconnectCause
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 
 /**
  * Backs the debug-only "Simulate an incoming call" button (see [DebugCallSimulator]): a
@@ -16,33 +18,63 @@ import android.telecom.TelecomManager
  */
 class DebugCallConnectionService : ConnectionService() {
 
+    private fun d(message: String) {
+        if (BuildConfig.DEBUG) Log.d(TAG, message)
+    }
+
     override fun onCreateIncomingConnection(
         connectionManagerPhoneAccount: PhoneAccountHandle?,
         request: ConnectionRequest
-    ): Connection = createTestConnection(request).apply { setRinging() }
+    ): Connection {
+        d("onCreateIncomingConnection: address=${request.address}")
+        return createTestConnection(request).apply { setRinging() }
+    }
+
+    override fun onCreateIncomingConnectionFailed(
+        connectionManagerPhoneAccount: PhoneAccountHandle?,
+        request: ConnectionRequest?
+    ) {
+        super.onCreateIncomingConnectionFailed(connectionManagerPhoneAccount, request)
+        d("onCreateIncomingConnectionFailed: account=$connectionManagerPhoneAccount")
+    }
 
     override fun onCreateOutgoingConnection(
         connectionManagerPhoneAccount: PhoneAccountHandle?,
         request: ConnectionRequest
-    ): Connection = createTestConnection(request).apply { setDialing() }
+    ): Connection {
+        d("onCreateOutgoingConnection: address=${request.address}")
+        return createTestConnection(request).apply { setDialing() }
+    }
+
+    override fun onCreateOutgoingConnectionFailed(
+        connectionManagerPhoneAccount: PhoneAccountHandle?,
+        request: ConnectionRequest?
+    ) {
+        super.onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount, request)
+        d("onCreateOutgoingConnectionFailed: account=$connectionManagerPhoneAccount")
+    }
 
     private fun createTestConnection(request: ConnectionRequest): Connection {
         return object : Connection() {
             override fun onAnswer(videoState: Int) {
+                d("connection.onAnswer")
                 setActive()
             }
 
             override fun onReject(rejectReason: Int) {
+                d("connection.onReject")
                 setDisconnected(DisconnectCause(DisconnectCause.REJECTED))
                 destroy()
             }
 
             override fun onDisconnect() {
+                d("connection.onDisconnect")
                 setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
                 destroy()
             }
 
             override fun onAbort() {
+                d("connection.onAbort")
                 setDisconnected(DisconnectCause(DisconnectCause.CANCELED))
                 destroy()
             }
@@ -59,5 +91,9 @@ class DebugCallConnectionService : ConnectionService() {
             connectionCapabilities = Connection.CAPABILITY_HOLD or Connection.CAPABILITY_SUPPORT_HOLD or Connection.CAPABILITY_MUTE
             audioModeIsVoip = true
         }
+    }
+
+    private companion object {
+        private const val TAG = "AukCallDebug"
     }
 }
