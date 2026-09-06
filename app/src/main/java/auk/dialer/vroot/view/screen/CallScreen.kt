@@ -223,6 +223,10 @@ fun ExpressiveCallScreen(
     }
     val isRecording by CallRecorder.isRecording.collectAsState()
 
+    // Once the call is over there is nothing left to answer, decline, mute or hold: showing any of
+    // those rows for the last beat before the screen closes reads as the call having connected.
+    val callHasEnded = callState == Call.STATE_DISCONNECTED || callState == Call.STATE_DISCONNECTING
+
     val statusText = when (callState) {
         Call.STATE_DISCONNECTED -> stringResource(R.string.call_status_ended)
         Call.STATE_HOLDING -> stringResource(R.string.call_status_on_hold)
@@ -596,6 +600,7 @@ fun ExpressiveCallScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     when {
+                        callHasEnded -> {}
                         showKeypad -> keypadSection(true)
                         callState == Call.STATE_RINGING -> incomingControls(true)
                         else -> activeControls(true)
@@ -622,7 +627,7 @@ fun ExpressiveCallScreen(
                     heroSection()
                 }
 
-                if (showKeypad) {
+                if (showKeypad && !callHasEnded) {
                     Box(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), contentAlignment = Alignment.Center) {
                         keypadSection(false)
                     }
@@ -635,10 +640,10 @@ fun ExpressiveCallScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    if (callState == Call.STATE_RINGING) {
-                        incomingControls(false)
-                    } else {
-                        activeControls(false)
+                    when {
+                        callHasEnded -> {}
+                        callState == Call.STATE_RINGING -> incomingControls(false)
+                        else -> activeControls(false)
                     }
                 }
             }
