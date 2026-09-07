@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="auk_window_background">#FF111418</color>
-    <color name="auk_splash_background">#FF111418</color>
+    <!-- Kept the same as the light variant in colors.xml: the splash icon is a flat
+         white glyph, so this needs contrast against it rather than matching the window
+         background, and stays the default launcher colour (Violet) regardless of
+         light/dark. -->
+    <color name="auk_splash_background">#FF7B2DDC</color>
 
     <style name="Theme.AukDialer" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/auk_window_background</item>
