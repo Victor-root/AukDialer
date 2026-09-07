@@ -269,7 +269,6 @@
     <string name="settings_interface_title">User Interface</string>
     <string name="settings_group_color">Colour</string>
     <string name="settings_group_avatars">Avatars</string>
-    <string name="settings_group_app_icon">App icon</string>
     <string name="app_icon_change_title">Change the app icon?</string>
     <string name="app_icon_change_message">AukDialer will close so your home screen can pick up the new icon. Open it again straight after.</string>
     <string name="app_icon_change_confirm">Change and close</string>
@@ -284,6 +283,9 @@
     <string name="settings_interface_primary_color_supporting">Accent colour used across the app</string>
     <string name="settings_interface_app_icon_color">Icon colour</string>
     <string name="settings_interface_app_icon_color_supporting">Colour of the icon on your home screen</string>
+    <string name="settings_interface_icon_mode_system">System</string>
+    <string name="settings_interface_icon_mode_custom">Custom</string>
+    <string name="settings_interface_icon_custom_color">Choose a colour</string>
     <string name="settings_interface_amoled">Amoled dark mode</string>
     <string name="settings_interface_amoled_supporting">Uses pitch black for UI elements.</string>
     <string name="settings_interface_edge_to_edge">Edge to edge</string>

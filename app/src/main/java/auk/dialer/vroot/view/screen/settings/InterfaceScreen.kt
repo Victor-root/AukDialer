@@ -34,6 +34,7 @@ import auk.dialer.vroot.view.components.AukListItem
 import auk.dialer.vroot.view.components.AukListItemDefaults
 import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
+import auk.dialer.vroot.view.components.AukToggleButton
 import auk.dialer.vroot.view.components.ScrollToTopButton
 import auk.dialer.vroot.view.theme.CUSTOM_PRIMARY_COLOR_UNSET
 import auk.dialer.vroot.view.theme.KEY_CUSTOM_PRIMARY_COLOR
@@ -89,6 +90,7 @@ fun InterfaceScreen(
     // alias says which icon is really on screen.
     var appIconColor by remember { mutableStateOf(launcherIconManager.currentColor()) }
     var pendingIconColor by remember { mutableStateOf<Int?>(null) }
+    var iconFollowsSystem by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_ICON_FOLLOWS_SYSTEM, false)) }
 
     val restartRequiredMessage = stringResource(R.string.settings_interface_restart_required)
     val restartActionLabel = stringResource(R.string.settings_interface_restart_action)
@@ -104,6 +106,28 @@ fun InterfaceScreen(
                 (context as? Activity)?.recreate()
             }
         }
+    }
+
+    // Snapped to the nearest of the twenty presets, same as a manual pick: the
+    // icon has no continuous-colour variant to fall back to.
+    fun syncIconToSystem() {
+        val target = LauncherIconManager.nearestColor(dynamicLightColorScheme(context).primary.toArgb())
+        if (launcherIconManager.isChangeNeeded(target)) {
+            pendingIconColor = target
+        }
+    }
+
+    fun setIconFollowsSystem(value: Boolean) {
+        iconFollowsSystem = value
+        prefs.setBoolean(PreferenceManager.KEY_ICON_FOLLOWS_SYSTEM, value)
+        if (value) syncIconToSystem()
+    }
+
+    // Catches up with wallpaper changes made since the last visit: system mode
+    // is "follow", not "sync once", so every time this screen opens is another
+    // chance to notice the wallpaper moved on.
+    LaunchedEffect(Unit) {
+        if (iconFollowsSystem) syncIconToSystem()
     }
 
     val avatarShapeOptions = listOf(
@@ -191,6 +215,67 @@ fun InterfaceScreen(
                         }
 
                         AukDivider(Modifier.padding(horizontal = 16.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.AppShortcut,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.settings_interface_app_icon_color),
+                                    style = AukListItemDefaults.headlineStyle()
+                                )
+                                Text(
+                                    text = stringResource(R.string.settings_interface_app_icon_color_supporting),
+                                    style = AukListItemDefaults.supportingStyle(),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            AukToggleButton(
+                                checked = iconFollowsSystem,
+                                onCheckedChange = { checked -> if (checked) setIconFollowsSystem(true) },
+                                label = stringResource(R.string.settings_interface_icon_mode_system),
+                                modifier = Modifier.weight(1f)
+                            )
+                            AukToggleButton(
+                                checked = !iconFollowsSystem,
+                                onCheckedChange = { checked -> if (checked) setIconFollowsSystem(false) },
+                                label = stringResource(R.string.settings_interface_icon_mode_custom),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        if (!iconFollowsSystem) {
+                            AukDivider(Modifier.padding(horizontal = 16.dp))
+                            AukColorSelectListItem(
+                                headline = stringResource(R.string.settings_interface_icon_custom_color),
+                                colors = paletteColors,
+                                selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
+                                onColorSelected = { color ->
+                                    // Picking the icon already in place would close the
+                                    // app for nothing.
+                                    val target = color.toArgb()
+                                    if (launcherIconManager.isChangeNeeded(target)) {
+                                        pendingIconColor = target
+                                    }
+                                }
+                            )
+                        }
+
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSwitchListItem(
                             headline = stringResource(R.string.settings_interface_amoled),
                             supporting = stringResource(R.string.settings_interface_amoled_supporting),
@@ -212,26 +297,6 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 edgeToEdge = it
                                 prefs.setBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, it)
-                            }
-                        )
-                    }
-                }
-
-                item {
-                    AukExpressiveCard(title = stringResource(R.string.settings_group_app_icon)) {
-                        AukColorSelectListItem(
-                            headline = stringResource(R.string.settings_interface_app_icon_color),
-                            supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
-                            leadingIcon = Icons.Outlined.AppShortcut,
-                            colors = paletteColors,
-                            selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
-                            onColorSelected = { color ->
-                                // Picking the icon already in place would close the
-                                // app for nothing.
-                                val target = color.toArgb()
-                                if (launcherIconManager.isChangeNeeded(target)) {
-                                    pendingIconColor = target
-                                }
                             }
                         )
                     }
