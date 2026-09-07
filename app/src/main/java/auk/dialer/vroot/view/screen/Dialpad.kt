@@ -64,6 +64,7 @@ import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.view.screen.transitions.SlideUpTransitions
 import auk.dialer.vroot.view.theme.callColors
+import kotlin.concurrent.thread
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
@@ -112,7 +113,9 @@ fun DialPadScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            toneGenerator.release()
+            // Release talks to the audio service over binder and can briefly block; running it on
+            // a background thread keeps that off the screen's closing slide-down animation.
+            thread { toneGenerator.release() }
         }
     }
 
