@@ -3,6 +3,7 @@ package auk.dialer.vroot
 import android.content.Intent
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -75,8 +76,14 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // TEMPORARY: see LauncherIconManager.logAliasStatesForDebug.
-        GlobalContext.get().get<auk.dialer.vroot.controller.util.LauncherIconManager>().logAliasStatesForDebug()
+        // TEMPORARY: the previous log confirmed the right (and only) alias is
+        // enabled, so the splash-always-violet bug is not a state problem on
+        // our side. This checks whether the OS actually starts the activity
+        // through that alias, to tell apart a wrong launch from the OS simply
+        // not honouring the alias's own splash theme.
+        if (BuildConfig.DEBUG) {
+            Log.d("AukIconDebug", "launched via component=${intent?.component}")
+        }
 
         setContent {
             AukTheme {
