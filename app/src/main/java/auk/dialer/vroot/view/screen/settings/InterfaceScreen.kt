@@ -116,6 +116,29 @@ fun InterfaceScreen(
         }
     }
 
+    // Picking the icon colour already in place would close the app for nothing.
+    fun offerIconColorChange(target: Int) {
+        if (launcherIconManager.isChangeNeeded(target)) {
+            pendingIconColor = target
+        }
+    }
+
+    // Snapped to the nearest of the twenty presets, same as a manual pick: the
+    // icon has no continuous-colour variant to fall back to.
+    fun nearestSystemIconColor(): Int =
+        LauncherIconManager.nearestColor(dynamicLightColorScheme(context).primary.toArgb())
+
+    fun setApplyColorToIcon(value: Boolean) {
+        applyColorToIcon = value
+        prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, value)
+        // Only the manual colour picker reports its pick separately. Turning this on
+        // while system colours are already active is itself the moment the icon needs
+        // to catch up.
+        if (value && dynamicColors) {
+            offerIconColorChange(nearestSystemIconColor())
+        }
+    }
+
     val avatarShapeOptions = listOf(
         stringResource(R.string.settings_interface_avatar_shape_squircle) to 0,
         stringResource(R.string.settings_interface_avatar_shape_circle) to 1,
@@ -188,10 +211,7 @@ fun InterfaceScreen(
                                 customPrimaryColor = color.toArgb()
                                 prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
                                 if (applyColorToIcon) {
-                                    val target = LauncherIconManager.nearestColor(customPrimaryColor)
-                                    if (launcherIconManager.isChangeNeeded(target)) {
-                                        pendingIconColor = target
-                                    }
+                                    offerIconColorChange(LauncherIconManager.nearestColor(customPrimaryColor))
                                 }
                             },
                             contentBeforeGrid = { onSelect ->
@@ -218,20 +238,14 @@ fun InterfaceScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(MaterialTheme.shapes.medium)
-                                        .clickable {
-                                            applyColorToIcon = !applyColorToIcon
-                                            prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, applyColorToIcon)
-                                        }
+                                        .clickable { setApplyColorToIcon(!applyColorToIcon) }
                                         .padding(vertical = 4.dp),
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Checkbox(
                                         checked = applyColorToIcon,
-                                        onCheckedChange = { checked ->
-                                            applyColorToIcon = checked
-                                            prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, checked)
-                                        }
+                                        onCheckedChange = { checked -> setApplyColorToIcon(checked) }
                                     )
                                     Text(
                                         text = stringResource(R.string.settings_interface_apply_color_to_icon),
@@ -249,14 +263,7 @@ fun InterfaceScreen(
                                 leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_color_filter),
                                 colors = paletteColors,
                                 selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
-                                onColorSelected = { color ->
-                                    // Picking the icon already in place would close the
-                                    // app for nothing.
-                                    val target = color.toArgb()
-                                    if (launcherIconManager.isChangeNeeded(target)) {
-                                        pendingIconColor = target
-                                    }
-                                }
+                                onColorSelected = { color -> offerIconColorChange(color.toArgb()) }
                             )
                         }
 
@@ -473,7 +480,22 @@ fun InterfaceScreen(
                             pendingDynamicColorChange = false
                             dynamicColors = true
                             prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)
-                            (context as? Activity)?.finishAffinity()
+                            // Folded into this same close instead of a second confirm
+                            // dialog: the checkbox is already the user's consent to
+                            // change the icon too.
+                            val iconTarget = if (applyColorToIcon) {
+                                nearestSystemIconColor().takeIf { launcherIconManager.isChangeNeeded(it) }
+                            } else {
+                                null
+                            }
+                            if (iconTarget != null) {
+                                appIconColor = iconTarget
+                                launcherIconManager.apply(iconTarget) {
+                                    (context as? Activity)?.finishAffinity()
+                                }
+                            } else {
+                                (context as? Activity)?.finishAffinity()
+                            }
                         }
                     ),
                     dismissAction = AukDialogAction(
