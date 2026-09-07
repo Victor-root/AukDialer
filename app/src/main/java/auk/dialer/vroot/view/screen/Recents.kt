@@ -85,6 +85,11 @@ fun RecentScreenContent(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val viewModel: CallLogViewModel = koinActivityViewModel()
+    val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
+    val settingsState by prefs.settingsChanged.collectAsState()
+    val filtersVisible = remember(settingsState) {
+        prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
+    }
 
     var selectedEntries by remember { mutableStateOf(setOf<CallLogEntry>()) }
 
@@ -178,7 +183,13 @@ fun RecentScreenContent(
                     if (!selecting) {
                         Column {
                             TopBar(navigator)
-                            filterChipsRow()
+                            AnimatedVisibility(
+                                visible = filtersVisible,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                filterChipsRow()
+                            }
                         }
                     } else {
                         batchActionBar()

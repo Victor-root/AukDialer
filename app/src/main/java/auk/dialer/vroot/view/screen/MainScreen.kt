@@ -1,6 +1,7 @@
 package auk.dialer.vroot.view.screen
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -52,6 +53,9 @@ fun MainScreen(
     val visibleTabs = remember(settingsState) { prefs.getVisibleBottomNavTabs() }
     val defaultTab = remember(settingsState) {
         prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)
+    }
+    val filtersVisible = remember(settingsState) {
+        prefs.getBoolean(PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
     }
 
     val requestedTab = initialTab ?: defaultTab
@@ -121,10 +125,16 @@ fun MainScreen(
                     } else {
                         Column {
                             TopBar(navigator)
-                            when (currentTab) {
-                                PreferenceManager.TAB_RECENTS -> recentsFilterBar?.invoke()
-                                PreferenceManager.TAB_CONTACTS -> contactsFilterBar?.invoke()
-                                else -> {}
+                            AnimatedVisibility(
+                                visible = filtersVisible,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                when (currentTab) {
+                                    PreferenceManager.TAB_RECENTS -> recentsFilterBar?.invoke()
+                                    PreferenceManager.TAB_CONTACTS -> contactsFilterBar?.invoke()
+                                    else -> {}
+                                }
                             }
                         }
                     }

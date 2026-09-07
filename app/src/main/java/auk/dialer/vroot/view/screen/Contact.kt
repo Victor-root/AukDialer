@@ -76,6 +76,11 @@ fun ContactScreenContent(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val contactsVM: ContactsViewModel = koinActivityViewModel()
+    val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
+    val settingsState by prefs.settingsChanged.collectAsState()
+    val filtersVisible = remember(settingsState) {
+        prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
+    }
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
 
@@ -138,7 +143,13 @@ fun ContactScreenContent(
                         if (!selecting) {
                             Column {
                                 TopBar(navigator)
-                                filterBar()
+                                AnimatedVisibility(
+                                    visible = filtersVisible,
+                                    enter = fadeIn() + expandVertically(),
+                                    exit = fadeOut() + shrinkVertically()
+                                ) {
+                                    filterBar()
+                                }
                             }
                         } else {
                             batchActionBar()
