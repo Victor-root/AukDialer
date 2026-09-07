@@ -1005,20 +1005,23 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                 },
             contentAlignment = Alignment.Center
         ) {
+            // A cross-fade would show the call and call-end glyphs overlapping for the
+            // duration of the fade, and since both spin independently that read as a
+            // ghosting/double-vision glitch rather than a clean swap. The rotation
+            // already gives the incoming glyph a continuous sweep from the swap point,
+            // so an instant swap here reads as smooth without needing a fade too.
             val icon = if (dragProgress.value < -0.2f) Icons.Default.CallEnd else Icons.Default.Call
-            
-            Crossfade(targetState = icon, animationSpec = tween(150), label = "icon") { targetIcon ->
-                Icon(
-                    targetIcon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .graphicsLayer { 
-                            rotationZ = iconRotation 
-                        }
-                )
-            }
+
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier
+                    .size(32.dp)
+                    .graphicsLayer {
+                        rotationZ = iconRotation
+                    }
+            )
         }
     }
 }
@@ -1169,31 +1172,34 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                     },
                 contentAlignment = Alignment.Center
             ) {
+                // A cross-fade would show the call and call-end glyphs overlapping for the
+                // duration of the fade, and since both spin independently that read as a
+                // ghosting/double-vision glitch rather than a clean swap. The rotation
+                // already gives the incoming glyph a continuous sweep from the swap point,
+                // so an instant swap here reads as smooth without needing a fade too.
                 val icon = if (dragProgress.value > 0.2f) Icons.Default.CallEnd else Icons.Default.Call
 
-                Crossfade(targetState = icon, animationSpec = tween(150), label = "vertIconCrossfade") { targetIcon ->
-                    Icon(
-                        targetIcon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .graphicsLayer {
-                                val progress = dragProgress.value
-                                rotationZ = if (progress > 0.2f) {
-                                    // The call-end glyph has its own resting orientation rather
-                                    // than being the call glyph rotated 180 degrees, so it gets
-                                    // its own 0..-90 sweep from the point it swaps in instead of
-                                    // inheriting the call icon's rotation, mirroring the answer
-                                    // side instead of rotating back toward how it looks then.
-                                    val declineProgress = ((progress - 0.2f) / 0.8f).coerceIn(0f, 1f)
-                                    declineProgress * -90f
-                                } else {
-                                    progress * -90f
-                                }
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .graphicsLayer {
+                            val progress = dragProgress.value
+                            rotationZ = if (progress > 0.2f) {
+                                // The call-end glyph has its own resting orientation rather
+                                // than being the call glyph rotated 180 degrees, so it gets
+                                // its own 0..-90 sweep from the point it swaps in instead of
+                                // inheriting the call icon's rotation, mirroring the answer
+                                // side instead of rotating back toward how it looks then.
+                                val declineProgress = ((progress - 0.2f) / 0.8f).coerceIn(0f, 1f)
+                                declineProgress * -90f
+                            } else {
+                                progress * -90f
                             }
-                    )
-                }
+                        }
+                )
             }
         }
     }
