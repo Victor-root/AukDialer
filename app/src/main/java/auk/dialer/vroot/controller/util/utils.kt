@@ -40,6 +40,20 @@ private fun getRelativeDay(context: Context, timestamp: Long): String? {
     }
 }
 
+// Deriving the best pattern for a locale and building a SimpleDateFormat from it are both
+// non-trivial: a call log grouped by day was calling formatDateHeader per entry, redoing this for
+// every single call instead of once per distinct pattern, which is what actually made grouping a
+// few thousand entries slow. Only the skeleton and locale affect the result, and there are only
+// ever two skeletons, so a small per-thread cache turns that into at most two lookups.
+private val dateHeaderFormatCache = ThreadLocal.withInitial { mutableMapOf<Pair<Locale, String>, SimpleDateFormat>() }
+
+private fun dateHeaderFormat(locale: Locale, skeleton: String): SimpleDateFormat {
+    return dateHeaderFormatCache.get()!!.getOrPut(locale to skeleton) {
+        val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
+        SimpleDateFormat(pattern, locale)
+    }
+}
+
 fun formatDateHeader(context: Context, timestamp: Long): String {
     val relative = getRelativeDay(context, timestamp)
     if (relative != null) return relative
@@ -49,8 +63,7 @@ fun formatDateHeader(context: Context, timestamp: Long): String {
     // the locale for the right order instead of assuming one.
     val locale = Locale.getDefault()
     val skeleton = if (isSameYear(timestamp, System.currentTimeMillis())) "MMMMd" else "yMMMMd"
-    val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
-    return SimpleDateFormat(pattern, locale).format(Date(timestamp))
+    return dateHeaderFormat(locale, skeleton).format(Date(timestamp))
 }
 
 fun formatDate(context: Context, timestamp: Long): String {

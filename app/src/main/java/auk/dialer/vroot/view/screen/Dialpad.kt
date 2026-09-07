@@ -6,8 +6,6 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.net.Uri
 import android.provider.ContactsContract
-import android.util.Log
-import android.view.Choreographer
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -98,33 +96,6 @@ fun DialPadScreen(
     val number = textFieldValue.text
 
     var showSocialDialog by remember { mutableStateOf(false) }
-
-    // TEMPORARY: frame-timing probe for the open/close jank report. Logs every frame this screen
-    // is on screen for that takes noticeably longer than one vsync, opening through closing, so
-    // the slow ones stand out in logcat by when they happen. Not gated by BuildConfig.DEBUG on
-    // purpose: debug builds have no R8 optimization and are slow everywhere, which would drown out
-    // a real, narrower cause. Remove this whole block once the cause is found.
-    DisposableEffect(Unit) {
-        Log.d("AukJankProbe", "dialpad composed")
-        var lastFrameTimeNanos = 0L
-        val callback = object : Choreographer.FrameCallback {
-            override fun doFrame(frameTimeNanos: Long) {
-                if (lastFrameTimeNanos != 0L) {
-                    val deltaMs = (frameTimeNanos - lastFrameTimeNanos) / 1_000_000
-                    if (deltaMs > 24) {
-                        Log.d("AukJankProbe", "slow frame: ${deltaMs}ms")
-                    }
-                }
-                lastFrameTimeNanos = frameTimeNanos
-                Choreographer.getInstance().postFrameCallback(this)
-            }
-        }
-        Choreographer.getInstance().postFrameCallback(callback)
-        onDispose {
-            Choreographer.getInstance().removeFrameCallback(callback)
-            Log.d("AukJankProbe", "dialpad disposed")
-        }
-    }
 
     BackHandler(enabled = number.isNotEmpty()) {
         textFieldValue = TextFieldValue("")
@@ -229,10 +200,7 @@ fun DialPadScreen(
                 colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.dialpad_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        Log.d("AukJankProbe", "back tapped")
-                        navigator.navigateUp()
-                    }) {
+                    IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
