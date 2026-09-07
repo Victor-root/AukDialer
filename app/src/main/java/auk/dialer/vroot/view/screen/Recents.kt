@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.screen
 
 import android.Manifest
 import android.provider.CallLog
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
@@ -390,9 +391,17 @@ fun CallLogFullContent(
             }
         }
 
+        // TEMPORARY: see the matching block in Dialpad.kt. Remove together with it.
+        DisposableEffect(Unit) {
+            Log.d("AukJankProbe", "recents content composed")
+            onDispose { Log.d("AukJankProbe", "recents content disposed") }
+        }
+
         LaunchedEffect(Unit) {
+            Log.d("AukJankProbe", "fetchLogs start")
             viewModel.fetchLogs()
             contactsVM.fetchContacts()
+            Log.d("AukJankProbe", "fetchLogs end")
         }
 
         val logs by viewModel.allCallLogs.collectAsState()
