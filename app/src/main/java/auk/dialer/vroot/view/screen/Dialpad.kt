@@ -229,7 +229,10 @@ fun DialPadScreen(
                 colors = aukAccentTopAppBarColors(),
                 title = { Text(stringResource(R.string.dialpad_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
+                    IconButton(onClick = {
+                        Log.d("AukJankProbe", "back tapped")
+                        navigator.navigateUp()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
