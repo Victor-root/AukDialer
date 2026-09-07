@@ -61,6 +61,16 @@ class LauncherIconManager(
      * same broadcast to come back to it, plus a short settle, and only then
      * lets the caller close.
      *
+     * Below UPSIDE_DOWN_CAKE, that swap is twenty separate calls (enable the
+     * target, then disable each of the other nineteen in turn), and every one
+     * of them fires its own broadcast. Closing on the first of those, before
+     * the rest of the loop has run, could leave an old alias still enabled
+     * alongside the new one; both are then live at once, and anything that
+     * resolves the launch component independently of whatever the home screen
+     * icon happens to redraw with (the splash screen's own theme lookup, in
+     * particular) can keep landing on the old colour. So closing waits on the
+     * loop actually finishing, not just on hearing from it once.
+     *
      * The caller must close with finishAffinity(). The task was started from an
      * alias that is now disabled, so its base intent no longer resolves and the
      * next launch would fail to restore the task.
@@ -72,6 +82,7 @@ class LauncherIconManager(
 
         val handler = Handler(Looper.getMainLooper())
         var done = false
+        var togglesComplete = false
         var receiver: BroadcastReceiver? = null
 
         fun finish() {
@@ -82,11 +93,21 @@ class LauncherIconManager(
             onApplied()
         }
 
+        // No-op until the toggle loop below has actually completed, so an early
+        // broadcast (the first of several, on the pre-UPSIDE_DOWN_CAKE path)
+        // cannot close the app while older aliases are still waiting to be
+        // disabled.
+        fun finishOnceSettled() {
+            if (togglesComplete) {
+                handler.postDelayed({ finish() }, SETTLE_MS)
+            }
+        }
+
         // Registered before the swap so the broadcast cannot be missed.
         val packageWatcher = object : BroadcastReceiver() {
             override fun onReceive(c: Context, intent: Intent) {
                 if (intent.data?.encodedSchemeSpecificPart == context.packageName) {
-                    handler.postDelayed({ finish() }, SETTLE_MS)
+                    finishOnceSettled()
                 }
             }
         }
@@ -117,6 +138,14 @@ class LauncherIconManager(
                 }
             }
             preferenceManager.setInt(PreferenceManager.KEY_APP_ICON_COLOR, target)
+
+            // Back on the main thread: the flag and finish() are only ever touched
+            // there. Covers the case where every relevant broadcast already arrived
+            // (and found togglesComplete still false) before the loop above finished.
+            handler.post {
+                togglesComplete = true
+                finishOnceSettled()
+            }
         }
 
         // Safety net, so the app always closes even if the broadcast never lands.
