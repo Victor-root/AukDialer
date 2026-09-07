@@ -40,6 +40,7 @@ import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
 import auk.dialer.vroot.view.theme.CUSTOM_PRIMARY_COLOR_UNSET
+import auk.dialer.vroot.view.theme.aukDynamicColorScheme
 import auk.dialer.vroot.view.theme.KEY_CUSTOM_PRIMARY_COLOR
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -124,9 +125,11 @@ fun InterfaceScreen(
     }
 
     // Snapped to the nearest of the twenty presets, same as a manual pick: the
-    // icon has no continuous-colour variant to fall back to.
+    // icon has no continuous-colour variant to fall back to. Goes through the same
+    // OEM mismatch correction as the theme itself, or the icon and the theme could
+    // disagree on broken devices.
     fun nearestSystemIconColor(): Int =
-        LauncherIconManager.nearestColor(dynamicLightColorScheme(context).primary.toArgb())
+        LauncherIconManager.nearestColor(aukDynamicColorScheme(context, darkTheme = false).primary.toArgb())
 
     fun setApplyColorToIcon(value: Boolean) {
         applyColorToIcon = value
