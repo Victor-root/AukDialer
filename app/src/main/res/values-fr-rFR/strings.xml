@@ -262,6 +262,7 @@
     <string name="settings_interface_material_you_supporting">Coloration de l’application basée sur le fond d’écran.</string>
     <string name="settings_interface_primary_color">Couleur principale</string>
     <string name="settings_interface_primary_color_supporting">Couleur d’accentuation utilisée dans toute l’application</string>
+    <string name="settings_interface_apply_color_to_icon">Appliquer aussi à l’icône</string>
     <string name="settings_interface_app_icon_color">Couleur de l’icône</string>
     <string name="settings_interface_app_icon_color_supporting">Couleur de l’icône sur votre écran d’accueil</string>
     <string name="settings_interface_amoled">Mode sombre Amoled</string>

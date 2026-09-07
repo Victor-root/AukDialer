@@ -456,7 +456,8 @@ fun AukColorPickerDialog(
     selectedColor: Color?,
     onColorSelected: (Color) -> Unit,
     icon: ImageVector? = null,
-    dismissLabel: String = stringResource(R.string.action_cancel)
+    dismissLabel: String = stringResource(R.string.action_cancel),
+    extraContent: (@Composable ColumnScope.() -> Unit)? = null
 ) {
     AukDialog(
         onDismissRequest = onDismissRequest,
@@ -467,6 +468,7 @@ fun AukColorPickerDialog(
             onClick = onDismissRequest
         )
     ) {
+        extraContent?.invoke(this)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(ColorPickerSpacing, Alignment.CenterHorizontally),

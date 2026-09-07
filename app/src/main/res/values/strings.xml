@@ -282,6 +282,7 @@
     <string name="settings_interface_material_you_supporting">Wallpaper based app color theming.</string>
     <string name="settings_interface_primary_color">Primary Color</string>
     <string name="settings_interface_primary_color_supporting">Accent colour used across the app</string>
+    <string name="settings_interface_apply_color_to_icon">Also apply to the app icon</string>
     <string name="settings_interface_app_icon_color">Icon colour</string>
     <string name="settings_interface_app_icon_color_supporting">Colour of the icon on your home screen</string>
     <string name="settings_interface_amoled">Amoled dark mode</string>
