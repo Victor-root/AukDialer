@@ -257,6 +257,7 @@ class PreferenceManager(context: Context) {
         const val KEY_VIBRATE_ON_HANGUP = "vibrate_on_hangup"
         const val KEY_ROUND_AVATARS = "round_avatars"
         const val KEY_SHOW_DIVIDERS = "show_dividers"
+        const val KEY_SHOW_HEADER_FILTERS = "show_header_filters"
         const val KEY_TRANSITION_STYLE = "transition_animation_style"
         const val KEY_DIALPAD_STYLE = "dialpad_style"
         const val KEY_VOICEMAIL_NUMBER = "voicemail_number"

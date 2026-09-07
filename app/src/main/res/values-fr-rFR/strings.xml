@@ -90,6 +90,8 @@
     <!-- Top bar / bottom navigation -->
     <string name="top_bar_search_placeholder">Rechercher</string>
     <string name="content_desc_search">Rechercher</string>
+    <string name="content_desc_show_filters">Afficher les filtres</string>
+    <string name="content_desc_hide_filters">Masquer les filtres</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">Historique des appels</string>
     <string name="call_history_with_contact">Historique avec %1$s</string>
