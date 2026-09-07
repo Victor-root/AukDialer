@@ -22,12 +22,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
 import com.ramcosta.composedestinations.generated.destinations.SearchScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -116,8 +118,8 @@ fun TopBar(navigator: DestinationsNavigator) {
                 onClick = { navigator.navigate(SettingsScreenDestination) },
                 modifier = Modifier.size(TopBarActionButtonSize),
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.Transparent,
+                contentColor = LocalOnAccentBarColor.current
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
