@@ -247,6 +247,8 @@ fun BlockedNumbersScreen(
                                         AukListItem(
                                             headline = matchedContact.name,
                                             supporting = formatPhoneNumber(entry.originalNumber),
+                                            headlineMaxLines = 2,
+                                            supportingMaxLines = 2,
                                             avatarName = matchedContact.name,
                                             photoUri = matchedContact.photoUri,
                                             onClick = { }
@@ -255,6 +257,8 @@ fun BlockedNumbersScreen(
                                         AukListItem(
                                             headline = formatPhoneNumber(entry.originalNumber),
                                             supporting = stringResource(R.string.blocked_list_item_supporting),
+                                            headlineMaxLines = 2,
+                                            supportingMaxLines = 2,
                                             leadingIcon = Icons.Outlined.Block,
                                             onClick = { }
                                         )

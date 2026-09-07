@@ -138,6 +138,7 @@ fun AZListScroll(
                                 AukListItem(
                                     headline = displayName,
                                     supporting = null,
+                                    headlineMaxLines = 2,
                                     avatarName = contact.name,
                                     photoUri = contact.photoUri,
                                     onClick = {

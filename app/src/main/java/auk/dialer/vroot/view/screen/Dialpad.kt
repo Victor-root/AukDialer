@@ -305,6 +305,8 @@ fun DialPadScreen(
                                                     contact.nickname?.let { append("$it • ") }
                                                     contactNumber?.let { append(formatPhoneNumber(it)) }
                                                 }.ifEmpty { null },
+                                                headlineMaxLines = 2,
+                                                supportingMaxLines = 2,
                                                 avatarName = contact.name,
                                                 photoUri = contact.photoUri,
                                                 onClick = {

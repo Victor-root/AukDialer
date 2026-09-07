@@ -387,6 +387,12 @@ fun AukListItem(
     onLongClickLabel: String? = null,
     containerColor: Color = Color.Unspecified,
     headlineStyle: TextStyle = AukListItemDefaults.headlineStyle(),
+    // Null lets a wrapped line stand rather than clip it, right for a settings row read
+    // one at a time; rows repeated many at a time (a contact or call log list) pass an
+    // explicit cap instead, where a wrapped outlier would break the list's rhythm.
+    headlineMaxLines: Int? = null,
+    supportingMaxLines: Int? = null,
+    supporting2MaxLines: Int? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     supportingContent: (@Composable ColumnScope.() -> Unit)? = null,
     trailingContent: (@Composable RowScope.() -> Unit)? = null
@@ -527,7 +533,7 @@ fun AukListItem(
                     // the supporting text below it.
                     style = headlineStyle.copy(lineHeight = 20.sp),
                     color = headlineColor,
-                    maxLines = 2,
+                    maxLines = headlineMaxLines ?: Int.MAX_VALUE,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (supporting != null) {
@@ -535,7 +541,7 @@ fun AukListItem(
                         text = supporting,
                         style = AukListItemDefaults.supportingStyle(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
+                        maxLines = supportingMaxLines ?: Int.MAX_VALUE,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp)
                     )
@@ -545,7 +551,7 @@ fun AukListItem(
                         text = supporting2,
                         style = AukListItemDefaults.metaStyle(),
                         color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
+                        maxLines = supporting2MaxLines ?: Int.MAX_VALUE,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp)
                     )

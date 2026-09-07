@@ -217,6 +217,8 @@ fun ContactPickerDialog(
                     AukListItem(
                         headline = contact.name,
                         supporting = contact.phoneNumbers.firstOrNull() ?: stringResource(R.string.settings_speed_dial_no_number),
+                        headlineMaxLines = 2,
+                        supportingMaxLines = 2,
                         avatarName = contact.name,
                         photoUri = contact.photoUri,
                         onClick = {

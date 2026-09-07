@@ -99,6 +99,8 @@ fun CallRecordingsScreen(
                         AukListItem(
                             headline = file.nameWithoutExtension,
                             supporting = recordingSubtitle(file),
+                            headlineMaxLines = 2,
+                            supportingMaxLines = 2,
                             leadingIcon = Icons.Outlined.MicNone,
                             onClick = { CallRecorder.play(context, file) }
                         )
