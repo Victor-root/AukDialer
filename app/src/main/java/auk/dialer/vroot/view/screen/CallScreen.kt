@@ -906,20 +906,12 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
         label = "iconTint"
     )
     
-    val iconRotation by remember { derivedStateOf {
-        val progress = dragProgress.value
-        if (progress < -0.2f) {
-            // The call-end glyph isn't the call glyph rotated 180 degrees, it's a different
-            // icon with its own resting orientation, so it gets its own 0..-135 sweep from the
-            // point it swaps in instead of inheriting the call icon's rotation. That way it
-            // rotates away from its own resting pose, mirroring the answer side, rather than
-            // continuing the call icon's rotation back toward how it looks when answering.
-            val declineProgress = ((progress + 0.2f) / 0.8f).coerceIn(-1f, 0f)
-            declineProgress * 135f
-        } else {
-            progress * 135f
-        }
-    } }
+    // The call-end glyph isn't the call glyph rotated 180 degrees, it's a different icon
+    // with its own resting orientation. Swapping to it at the same instant its own
+    // rotation formula reaches 0 (the drag's very start, not partway through, see the
+    // icon swap below) means it never inherits a nonzero angle from the call glyph, so
+    // there's nothing to reset and no jump to see: both read 0 at that instant either way.
+    val iconRotation by remember { derivedStateOf { dragProgress.value * 135f } }
 
     Box(
         modifier = Modifier
@@ -1010,7 +1002,7 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
             // ghosting/double-vision glitch rather than a clean swap. The rotation
             // already gives the incoming glyph a continuous sweep from the swap point,
             // so an instant swap here reads as smooth without needing a fade too.
-            val icon = if (dragProgress.value < -0.2f) Icons.Default.CallEnd else Icons.Default.Call
+            val icon = if (dragProgress.value < 0f) Icons.Default.CallEnd else Icons.Default.Call
 
             Icon(
                 icon,
@@ -1177,8 +1169,12 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                 // ghosting/double-vision glitch rather than a clean swap. The rotation
                 // already gives the incoming glyph a continuous sweep from the swap point,
                 // so an instant swap here reads as smooth without needing a fade too.
-                val icon = if (dragProgress.value > 0.2f) Icons.Default.CallEnd else Icons.Default.Call
+                val icon = if (dragProgress.value > 0f) Icons.Default.CallEnd else Icons.Default.Call
 
+                // Swapping to the call-end glyph at the same instant its own rotation
+                // formula reaches 0 (the drag's very start) means it never inherits a
+                // nonzero angle from the call glyph, so there's nothing to reset and no
+                // jump to see: both read 0 at that instant either way.
                 Icon(
                     icon,
                     contentDescription = null,
@@ -1186,18 +1182,7 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                     modifier = Modifier
                         .size(32.dp)
                         .graphicsLayer {
-                            val progress = dragProgress.value
-                            rotationZ = if (progress > 0.2f) {
-                                // The call-end glyph has its own resting orientation rather
-                                // than being the call glyph rotated 180 degrees, so it gets
-                                // its own 0..-90 sweep from the point it swaps in instead of
-                                // inheriting the call icon's rotation, mirroring the answer
-                                // side instead of rotating back toward how it looks then.
-                                val declineProgress = ((progress - 0.2f) / 0.8f).coerceIn(0f, 1f)
-                                declineProgress * -90f
-                            } else {
-                                progress * -90f
-                            }
+                            rotationZ = dragProgress.value * -90f
                         }
                 )
             }
