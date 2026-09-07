@@ -254,7 +254,6 @@
     <string name="settings_interface_restart_required">Un redémarrage est nécessaire pour appliquer entièrement les changements de thème.</string>
     <string name="settings_interface_restart_action">Redémarrer</string>
     <string name="settings_interface_material_you">Thème Material You</string>
-    <string name="settings_group_app_icon">Icône de l’application</string>
     <string name="app_icon_change_title">Changer l’icône ?</string>
     <string name="app_icon_change_message">AukDialer va se fermer pour que votre écran d’accueil affiche la nouvelle icône. Rouvrez l’application juste après.</string>
     <string name="app_icon_change_confirm">Changer et fermer</string>
@@ -264,6 +263,9 @@
     <string name="settings_interface_primary_color_supporting">Couleur d’accentuation utilisée dans toute l’application</string>
     <string name="settings_interface_app_icon_color">Couleur de l’icône</string>
     <string name="settings_interface_app_icon_color_supporting">Couleur de l’icône sur votre écran d’accueil</string>
+    <string name="settings_interface_icon_mode_system">Système</string>
+    <string name="settings_interface_icon_mode_custom">Personnalisé</string>
+    <string name="settings_interface_icon_custom_color">Choisir une couleur</string>
     <string name="settings_interface_amoled">Mode sombre Amoled</string>
     <string name="settings_interface_amoled_supporting">Utilise un noir profond pour les éléments de l’interface.</string>
     <string name="settings_interface_edge_to_edge">Bord à bord</string>
