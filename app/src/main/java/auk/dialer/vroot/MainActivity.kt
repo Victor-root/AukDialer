@@ -75,6 +75,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // TEMPORARY: see LauncherIconManager.logAliasStatesForDebug.
+        GlobalContext.get().get<auk.dialer.vroot.controller.util.LauncherIconManager>().logAliasStatesForDebug()
+
         setContent {
             AukTheme {
                 val navController = rememberNavController()
