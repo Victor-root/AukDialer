@@ -94,6 +94,11 @@ fun InterfaceScreen(
     var appIconColor by remember { mutableStateOf(launcherIconManager.currentColor()) }
     var pendingIconColor by remember { mutableStateOf<Int?>(null) }
     var applyColorToIcon by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, false)) }
+    // dynamicLightColorScheme/dynamicDarkColorScheme read Android's system dynamic-colour
+    // resources, and that doesn't take effect live in the running process the way the app's
+    // own colour math does, so switching to system colours needs the same close-and-reopen
+    // flow as an icon change.
+    var pendingDynamicColorChange by remember { mutableStateOf(false) }
 
     val restartRequiredMessage = stringResource(R.string.settings_interface_restart_required)
     val restartActionLabel = stringResource(R.string.settings_interface_restart_action)
@@ -196,8 +201,7 @@ fun InterfaceScreen(
                                         selected = dynamicColors,
                                         icon = Icons.Outlined.Palette,
                                         onClick = {
-                                            dynamicColors = true
-                                            prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)
+                                            pendingDynamicColorChange = true
                                             onSelect()
                                         }
                                     )
@@ -451,6 +455,30 @@ fun InterfaceScreen(
                     dismissAction = AukDialogAction(
                         label = stringResource(R.string.app_icon_change_cancel),
                         onClick = { pendingIconColor = null }
+                    )
+                ) {}
+            }
+
+            // System colours come from an Android API that doesn't pick up live in the
+            // running process, so this needs the same close-and-reopen flow as an icon change.
+            if (pendingDynamicColorChange) {
+                AukDialog(
+                    onDismissRequest = { pendingDynamicColorChange = false },
+                    title = stringResource(R.string.theme_color_change_title),
+                    icon = Icons.Outlined.Palette,
+                    supportingText = stringResource(R.string.theme_color_change_message),
+                    confirmAction = AukDialogAction(
+                        label = stringResource(R.string.app_icon_change_confirm),
+                        onClick = {
+                            pendingDynamicColorChange = false
+                            dynamicColors = true
+                            prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)
+                            (context as? Activity)?.finishAffinity()
+                        }
+                    ),
+                    dismissAction = AukDialogAction(
+                        label = stringResource(R.string.app_icon_change_cancel),
+                        onClick = { pendingDynamicColorChange = false }
                     )
                 ) {}
             }
