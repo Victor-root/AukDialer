@@ -838,7 +838,8 @@ fun AukColorSelectListItem(
     modifier: Modifier = Modifier,
     supporting: String? = null,
     leadingIcon: ImageVector? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    extraDialogContent: (@Composable ColumnScope.() -> Unit)? = null
 ) {
     var showPicker by remember { mutableStateOf(false) }
 
@@ -875,7 +876,8 @@ fun AukColorSelectListItem(
             onColorSelected = {
                 showPicker = false
                 onColorSelected(it)
-            }
+            },
+            extraContent = extraDialogContent
         )
     }
 }

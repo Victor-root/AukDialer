@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.screen.settings
 
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -89,6 +91,7 @@ fun InterfaceScreen(
     // alias says which icon is really on screen.
     var appIconColor by remember { mutableStateOf(launcherIconManager.currentColor()) }
     var pendingIconColor by remember { mutableStateOf<Int?>(null) }
+    var applyColorToIcon by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, false)) }
 
     val restartRequiredMessage = stringResource(R.string.settings_interface_restart_required)
     val restartActionLabel = stringResource(R.string.settings_interface_restart_action)
@@ -185,7 +188,37 @@ fun InterfaceScreen(
                                 onColorSelected = { color ->
                                     customPrimaryColor = color.toArgb()
                                     prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
+                                    if (applyColorToIcon) {
+                                        val target = LauncherIconManager.nearestColor(customPrimaryColor)
+                                        if (launcherIconManager.isChangeNeeded(target)) {
+                                            pendingIconColor = target
+                                        }
+                                    }
                                     showRestartPrompt()
+                                },
+                                extraDialogContent = {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .clickable {
+                                                applyColorToIcon = !applyColorToIcon
+                                                prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, applyColorToIcon)
+                                            },
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(
+                                            checked = applyColorToIcon,
+                                            onCheckedChange = { checked ->
+                                                applyColorToIcon = checked
+                                                prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, checked)
+                                            }
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.settings_interface_apply_color_to_icon),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             )
                         }
