@@ -47,7 +47,15 @@ fun TopBar(navigator: DestinationsNavigator) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 4.dp,
+                    // With the filter row hidden this is the last thing in the header, and 4dp put
+                    // it right against the header's own edge. Only touches this collapsed case so
+                    // the spacing above the filter row, when it's shown, stays exactly as it was.
+                    bottom = if (filtersVisible) 4.dp else 12.dp
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -90,15 +98,11 @@ fun TopBar(navigator: DestinationsNavigator) {
                 },
                 modifier = Modifier.size(TopBarActionButtonSize),
                 shape = CircleShape,
-                color = if (filtersVisible) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                },
+                color = if (filtersVisible) MaterialTheme.colorScheme.primary else Color.Transparent,
                 contentColor = if (filtersVisible) {
                     MaterialTheme.colorScheme.onPrimary
                 } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    LocalOnAccentBarColor.current
                 }
             ) {
                 Box(contentAlignment = Alignment.Center) {
