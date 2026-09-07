@@ -997,15 +997,11 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                 },
             contentAlignment = Alignment.Center
         ) {
-            // A cross-fade would show the call and call-end glyphs overlapping for the
-            // duration of the fade, and since both spin independently that read as a
-            // ghosting/double-vision glitch rather than a clean swap. The rotation
-            // already gives the incoming glyph a continuous sweep from the swap point,
-            // so an instant swap here reads as smooth without needing a fade too.
-            val icon = if (dragProgress.value < 0f) Icons.Default.CallEnd else Icons.Default.Call
-
+            // Same glyph both ways, just rotating the other way: swapping to a visually
+            // different call-end icon is what read as a flip, no matter when the swap
+            // happened. The colour and label already say which action is which.
             Icon(
-                icon,
+                Icons.Default.Call,
                 contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier
@@ -1164,19 +1160,11 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                     },
                 contentAlignment = Alignment.Center
             ) {
-                // A cross-fade would show the call and call-end glyphs overlapping for the
-                // duration of the fade, and since both spin independently that read as a
-                // ghosting/double-vision glitch rather than a clean swap. The rotation
-                // already gives the incoming glyph a continuous sweep from the swap point,
-                // so an instant swap here reads as smooth without needing a fade too.
-                val icon = if (dragProgress.value > 0f) Icons.Default.CallEnd else Icons.Default.Call
-
-                // Swapping to the call-end glyph at the same instant its own rotation
-                // formula reaches 0 (the drag's very start) means it never inherits a
-                // nonzero angle from the call glyph, so there's nothing to reset and no
-                // jump to see: both read 0 at that instant either way.
+                // Same glyph both ways, just rotating the other way: swapping to a visually
+                // different call-end icon is what read as a flip, no matter when the swap
+                // happened. The colour and label already say which action is which.
                 Icon(
-                    icon,
+                    Icons.Default.Call,
                     contentDescription = null,
                     tint = iconTint,
                     modifier = Modifier
