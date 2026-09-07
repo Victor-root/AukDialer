@@ -10,6 +10,8 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,6 +48,26 @@ class LauncherIconManager(
                 else -> suffix == DEFAULT_SUFFIX
             }
         }?.first ?: DEFAULT_COLOR
+    }
+
+    // TEMPORARY: pinning down why the splash screen keeps showing Violet regardless
+    // of the picked colour. Logs every alias's actual state as PackageManager
+    // reports it, so a real device's logcat says whether more than one is enabled
+    // at once. Remove once the cause is confirmed.
+    fun logAliasStatesForDebug() {
+        if (!BuildConfig.DEBUG) return
+        val pm = context.packageManager
+        ICONS.forEach { (_, suffix) ->
+            val state = runCatching { pm.getComponentEnabledSetting(aliasComponent(suffix)) }.getOrNull()
+            val stateLabel = when (state) {
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> "ENABLED"
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> "DISABLED"
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT -> "DEFAULT"
+                else -> "unknown($state)"
+            }
+            Log.d("AukIconDebug", "alias=$suffix state=$stateLabel")
+        }
+        Log.d("AukIconDebug", "currentColor()=#${Integer.toHexString(currentColor())}")
     }
 
     fun isChangeNeeded(color: Int): Boolean = nearestColor(color) != currentColor()
