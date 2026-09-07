@@ -204,7 +204,9 @@ fun InterfaceScreen(
                                             .clickable {
                                                 applyColorToIcon = !applyColorToIcon
                                                 prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, applyColorToIcon)
-                                            },
+                                            }
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Checkbox(
@@ -222,6 +224,23 @@ fun InterfaceScreen(
                                 }
                             )
                         }
+
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukColorSelectListItem(
+                            headline = stringResource(R.string.settings_interface_app_icon_color),
+                            supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
+                            leadingIcon = Icons.Outlined.AppShortcut,
+                            colors = paletteColors,
+                            selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
+                            onColorSelected = { color ->
+                                // Picking the icon already in place would close the
+                                // app for nothing.
+                                val target = color.toArgb()
+                                if (launcherIconManager.isChangeNeeded(target)) {
+                                    pendingIconColor = target
+                                }
+                            }
+                        )
 
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSwitchListItem(
@@ -245,26 +264,6 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 edgeToEdge = it
                                 prefs.setBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, it)
-                            }
-                        )
-                    }
-                }
-
-                item {
-                    AukExpressiveCard(title = stringResource(R.string.settings_group_app_icon)) {
-                        AukColorSelectListItem(
-                            headline = stringResource(R.string.settings_interface_app_icon_color),
-                            supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
-                            leadingIcon = Icons.Outlined.AppShortcut,
-                            colors = paletteColors,
-                            selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
-                            onColorSelected = { color ->
-                                // Picking the icon already in place would close the
-                                // app for nothing.
-                                val target = color.toArgb()
-                                if (launcherIconManager.isChangeNeeded(target)) {
-                                    pendingIconColor = target
-                                }
                             }
                         )
                     }

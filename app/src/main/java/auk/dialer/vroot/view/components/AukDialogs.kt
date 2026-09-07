@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -332,7 +333,7 @@ private fun AukDialogActionButton(
         Button(
             onClick = action.onClick,
             shapes = buttonShapes,
-            modifier = modifier.height(DialogActionHeight),
+            modifier = modifier.heightIn(min = DialogActionHeight),
             enabled = action.enabled,
             colors = if (action.destructive) {
                 ButtonDefaults.buttonColors(
@@ -346,7 +347,8 @@ private fun AukDialogActionButton(
             Text(
                 text = action.label,
                 style = MaterialTheme.typography.labelLargeEmphasized,
-                maxLines = 1,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
@@ -354,13 +356,14 @@ private fun AukDialogActionButton(
         FilledTonalButton(
             onClick = action.onClick,
             shapes = buttonShapes,
-            modifier = modifier.height(DialogActionHeight),
+            modifier = modifier.heightIn(min = DialogActionHeight),
             enabled = action.enabled
         ) {
             Text(
                 text = action.label,
                 style = MaterialTheme.typography.labelLargeEmphasized,
-                maxLines = 1,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
@@ -468,7 +471,6 @@ fun AukColorPickerDialog(
             onClick = onDismissRequest
         )
     ) {
-        extraContent?.invoke(this)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(ColorPickerSpacing, Alignment.CenterHorizontally),
@@ -485,6 +487,7 @@ fun AukColorPickerDialog(
                 }
             }
         }
+        extraContent?.invoke(this)
     }
 }
 
