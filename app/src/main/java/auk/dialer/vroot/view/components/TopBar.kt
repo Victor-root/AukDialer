@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,10 +39,7 @@ private val TopBarActionButtonSize = 44.dp
 @Composable
 fun TopBar(navigator: DestinationsNavigator) {
     val prefs = koinInject<PreferenceManager>()
-    val settingsState by prefs.settingsChanged.collectAsState()
-    val filtersVisible = remember(settingsState) {
-        prefs.getBoolean(PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
-    }
+    val filtersVisible by prefs.showHeaderFilters.collectAsState()
 
     AukAccentHeader {
         Row(
@@ -88,7 +84,7 @@ fun TopBar(navigator: DestinationsNavigator) {
 
             Surface(
                 onClick = {
-                    prefs.setBoolean(PreferenceManager.KEY_SHOW_HEADER_FILTERS, !filtersVisible)
+                    prefs.setShowHeaderFilters(!filtersVisible)
                 },
                 modifier = Modifier.size(TopBarActionButtonSize),
                 shape = CircleShape,

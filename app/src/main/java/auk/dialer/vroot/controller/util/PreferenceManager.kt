@@ -36,6 +36,18 @@ class PreferenceManager(context: Context) {
         prefs.edit().putBoolean(key, value).apply()
     }
 
+    // The header filter toggle needs to react the instant it's tapped, on the same screen that
+    // shows the button. Deriving it from settingsChanged (SharedPreferences' own change listener,
+    // dispatched on a posted message rather than in step with the click) added a visible lag, so
+    // it gets its own StateFlow that updates in the same frame as the tap instead.
+    private val _showHeaderFilters = MutableStateFlow(getBoolean(KEY_SHOW_HEADER_FILTERS, false))
+    val showHeaderFilters: StateFlow<Boolean> = _showHeaderFilters.asStateFlow()
+
+    fun setShowHeaderFilters(value: Boolean) {
+        setBoolean(KEY_SHOW_HEADER_FILTERS, value)
+        _showHeaderFilters.value = value
+    }
+
     fun getString(key: String, defaultValue: String?): String? {
         return try {
             prefs.getString(key, defaultValue)
