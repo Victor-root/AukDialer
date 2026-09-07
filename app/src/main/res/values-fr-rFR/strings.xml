@@ -258,6 +258,8 @@
     <string name="app_icon_change_message">AukDialer va se fermer pour que votre écran d’accueil affiche la nouvelle icône. Rouvrez l’application juste après.</string>
     <string name="app_icon_change_confirm">Changer et fermer</string>
     <string name="app_icon_change_cancel">Annuler</string>
+    <string name="theme_color_change_title">Passer aux couleurs système ?</string>
+    <string name="theme_color_change_message">AukDialer va se fermer pour prendre en compte les couleurs de votre fond d’écran. Rouvrez l’application juste après.</string>
     <string name="settings_interface_primary_color">Couleur principale</string>
     <string name="settings_interface_primary_color_supporting">Couleur d’accentuation utilisée dans toute l’application</string>
     <string name="settings_interface_apply_color_to_icon">Appliquer aussi à l’icône</string>

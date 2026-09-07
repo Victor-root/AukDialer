@@ -273,6 +273,8 @@
     <string name="app_icon_change_message">AukDialer will close so your home screen can pick up the new icon. Open it again straight after.</string>
     <string name="app_icon_change_confirm">Change and close</string>
     <string name="app_icon_change_cancel">Cancel</string>
+    <string name="theme_color_change_title">Switch to system colours?</string>
+    <string name="theme_color_change_message">AukDialer will close so it can pick up your wallpaper colours. Open it again straight after.</string>
     <string name="settings_group_shape_motion">Shape &amp; motion</string>
     <string name="settings_group_navigation">Navigation</string>
     <string name="settings_interface_restart_required">Restart required to apply theme changes fully.</string>
