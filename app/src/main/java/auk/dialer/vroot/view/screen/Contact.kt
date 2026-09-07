@@ -77,10 +77,7 @@ fun ContactScreenContent(
     val scope = rememberCoroutineScope()
     val contactsVM: ContactsViewModel = koinActivityViewModel()
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
-    val settingsState by prefs.settingsChanged.collectAsState()
-    val filtersVisible = remember(settingsState) {
-        prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
-    }
+    val filtersVisible by prefs.showHeaderFilters.collectAsState()
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
 

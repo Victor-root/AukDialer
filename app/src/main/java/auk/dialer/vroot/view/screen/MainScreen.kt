@@ -54,9 +54,7 @@ fun MainScreen(
     val defaultTab = remember(settingsState) {
         prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)
     }
-    val filtersVisible = remember(settingsState) {
-        prefs.getBoolean(PreferenceManager.KEY_SHOW_HEADER_FILTERS, false)
-    }
+    val filtersVisible by prefs.showHeaderFilters.collectAsState()
 
     val requestedTab = initialTab ?: defaultTab
     val startPage = visibleTabs.indexOf(requestedTab).coerceAtLeast(0)
