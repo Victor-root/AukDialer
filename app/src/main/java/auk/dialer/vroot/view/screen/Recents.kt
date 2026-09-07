@@ -362,6 +362,8 @@ fun AddFavoriteDialog(
                     AukListItem(
                         headline = contact.name,
                         supporting = contact.phoneNumbers.firstOrNull() ?: "",
+                        headlineMaxLines = 2,
+                        supportingMaxLines = 2,
                         avatarName = contact.name,
                         photoUri = contact.photoUri,
                         onClick = {

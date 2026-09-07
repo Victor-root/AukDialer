@@ -73,7 +73,9 @@ fun CallLogTileSimple(
                         append(formatDate(context, log.date))
                         if (log.duration > 0) append(" • ${android.text.format.DateUtils.formatElapsedTime(log.duration)}")
                     },
-                    avatarName = "", 
+                    headlineMaxLines = 2,
+                    supportingMaxLines = 2,
+                    avatarName = "",
                     badgeIcon = icon,
                     badgeColor = badgeColor,
                     headlineColor = headlineColor,
@@ -148,6 +150,7 @@ fun CallLogTile(
                         append(displayName)
                         if (log.count > 1) append(" (${log.count})")
                     },
+                    headlineMaxLines = 2,
                     // One line of detail, not two. The number is dropped when the
                     // contact is known, since the name already identifies them and
                     // spelling it out is what pushed the time off the row.
