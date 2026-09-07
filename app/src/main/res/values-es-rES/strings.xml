@@ -239,7 +239,6 @@
     <string name="settings_interface_restart_required">Es necesario reiniciar para aplicar los cambios del tema.</string>
     <string name="settings_interface_restart_action">Reiniciar</string>
     <string name="settings_interface_material_you">Diseño Material You</string>
-    <string name="settings_interface_material_you_supporting">Tema de color basado en el fondo de pantalla.</string>
     <string name="settings_interface_primary_color">Color primario</string>
     <string name="settings_interface_amoled">Modo oscuro AMOLED</string>
     <string name="settings_interface_amoled_supporting">Utiliza el color negro para los elementos de la interfaz de usuario.</string>

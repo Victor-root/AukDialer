@@ -277,8 +277,7 @@
     <string name="settings_group_navigation">Navigation</string>
     <string name="settings_interface_restart_required">Restart required to apply theme changes fully.</string>
     <string name="settings_interface_restart_action">Restart</string>
-    <string name="settings_interface_material_you">Material You theming</string>
-    <string name="settings_interface_material_you_supporting">Wallpaper based app color theming.</string>
+    <string name="settings_interface_material_you">Material You</string>
     <string name="settings_interface_primary_color">Primary Color</string>
     <string name="settings_interface_primary_color_supporting">Accent colour used across the app</string>
     <string name="settings_interface_apply_color_to_icon">Also apply to the app icon</string>

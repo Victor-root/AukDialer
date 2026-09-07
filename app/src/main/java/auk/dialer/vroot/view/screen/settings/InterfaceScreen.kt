@@ -22,12 +22,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukColorSelectListItem
+import auk.dialer.vroot.view.components.AukColorSwatch
 import auk.dialer.vroot.view.components.AukDialog
 import auk.dialer.vroot.view.components.AukDialogAction
 import auk.dialer.vroot.view.components.AukDivider
@@ -165,82 +167,94 @@ fun InterfaceScreen(
             ) {
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_color)) {
-                        AukSwitchListItem(
-                            headline = stringResource(R.string.settings_interface_material_you),
-                            supporting = stringResource(R.string.settings_interface_material_you_supporting),
-                            leadingIcon = Icons.Outlined.Palette,
-                            checked = dynamicColors,
-                            onCheckedChange = {
-                                dynamicColors = it
-                                prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, it)
-                                showRestartPrompt()
+                        AukColorSelectListItem(
+                            headline = stringResource(R.string.settings_interface_primary_color),
+                            supporting = stringResource(R.string.settings_interface_primary_color_supporting),
+                            leadingIcon = Icons.Outlined.ColorLens,
+                            colors = paletteColors,
+                            selectedColor = if (dynamicColors) {
+                                null
+                            } else {
+                                paletteColors.firstOrNull { it.toArgb() == customPrimaryColor }
+                            },
+                            onColorSelected = { color ->
+                                dynamicColors = false
+                                prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, false)
+                                customPrimaryColor = color.toArgb()
+                                prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
+                                if (applyColorToIcon) {
+                                    val target = LauncherIconManager.nearestColor(customPrimaryColor)
+                                    if (launcherIconManager.isChangeNeeded(target)) {
+                                        pendingIconColor = target
+                                    }
+                                }
+                            },
+                            contentBeforeGrid = { onSelect ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    AukColorSwatch(
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        selected = dynamicColors,
+                                        icon = Icons.Outlined.Palette,
+                                        onClick = {
+                                            dynamicColors = true
+                                            prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)
+                                            onSelect()
+                                        }
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.settings_interface_material_you),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                AukDivider()
+                            },
+                            contentAfterGrid = {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .clickable {
+                                            applyColorToIcon = !applyColorToIcon
+                                            prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, applyColorToIcon)
+                                        }
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = applyColorToIcon,
+                                        onCheckedChange = { checked ->
+                                            applyColorToIcon = checked
+                                            prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, checked)
+                                        }
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.settings_interface_apply_color_to_icon),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         )
 
-                        if (!dynamicColors) {
+                        if (!applyColorToIcon) {
                             AukDivider(Modifier.padding(horizontal = 16.dp))
                             AukColorSelectListItem(
-                                headline = stringResource(R.string.settings_interface_primary_color),
-                                supporting = stringResource(R.string.settings_interface_primary_color_supporting),
-                                leadingIcon = Icons.Outlined.ColorLens,
+                                headline = stringResource(R.string.settings_interface_app_icon_color),
+                                supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
+                                leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_color_filter),
                                 colors = paletteColors,
-                                selectedColor = paletteColors.firstOrNull { it.toArgb() == customPrimaryColor },
+                                selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
                                 onColorSelected = { color ->
-                                    customPrimaryColor = color.toArgb()
-                                    prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
-                                    if (applyColorToIcon) {
-                                        val target = LauncherIconManager.nearestColor(customPrimaryColor)
-                                        if (launcherIconManager.isChangeNeeded(target)) {
-                                            pendingIconColor = target
-                                        }
-                                    }
-                                    showRestartPrompt()
-                                },
-                                extraDialogContent = {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(MaterialTheme.shapes.medium)
-                                            .clickable {
-                                                applyColorToIcon = !applyColorToIcon
-                                                prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, applyColorToIcon)
-                                            }
-                                            .padding(vertical = 4.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Checkbox(
-                                            checked = applyColorToIcon,
-                                            onCheckedChange = { checked ->
-                                                applyColorToIcon = checked
-                                                prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, checked)
-                                            }
-                                        )
-                                        Text(
-                                            text = stringResource(R.string.settings_interface_apply_color_to_icon),
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
+                                    // Picking the icon already in place would close the
+                                    // app for nothing.
+                                    val target = color.toArgb()
+                                    if (launcherIconManager.isChangeNeeded(target)) {
+                                        pendingIconColor = target
                                     }
                                 }
                             )
                         }
-
-                        AukDivider(Modifier.padding(horizontal = 16.dp))
-                        AukColorSelectListItem(
-                            headline = stringResource(R.string.settings_interface_app_icon_color),
-                            supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
-                            leadingIcon = Icons.Outlined.AppShortcut,
-                            colors = paletteColors,
-                            selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
-                            onColorSelected = { color ->
-                                // Picking the icon already in place would close the
-                                // app for nothing.
-                                val target = color.toArgb()
-                                if (launcherIconManager.isChangeNeeded(target)) {
-                                    pendingIconColor = target
-                                }
-                            }
-                        )
 
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSwitchListItem(
@@ -251,7 +265,6 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 amoledMode = it
                                 prefs.setBoolean(PreferenceManager.KEY_AMOLED_MODE, it)
-                                showRestartPrompt()
                             }
                         )
 

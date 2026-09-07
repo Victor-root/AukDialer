@@ -245,7 +245,6 @@
     <string name="settings_interface_restart_required">Neustart erforderlich, um Designthema vollständig anzuwenden.</string>
     <string name="settings_interface_restart_action">Neustart</string>
     <string name="settings_interface_material_you">Material You Design</string>
-    <string name="settings_interface_material_you_supporting">Hintergrund-basiertes App-Farbthema</string>
     <string name="settings_interface_primary_color">Primärfarbe</string>
     <string name="settings_interface_amoled">Amoled Dark Mode</string>
     <string name="settings_interface_amoled_supporting">Komplett schwarz für Oberflächen-Elemente</string>

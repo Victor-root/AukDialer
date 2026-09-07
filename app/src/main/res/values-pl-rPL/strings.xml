@@ -245,7 +245,6 @@
     <string name="settings_interface_restart_required">Pełne zastosowanie zmian motywu wymaga ponownego uruchomienia aplikacji.</string>
     <string name="settings_interface_restart_action">Uruchom ponownie</string>
     <string name="settings_interface_material_you">Motyw Material You</string>
-    <string name="settings_interface_material_you_supporting">Dopasowanie kolorystyki aplikacji do tapety systemowej.</string>
     <string name="settings_interface_primary_color">Kolor główny</string>
     <string name="settings_interface_amoled">Tryb ciemny AMOLED</string>
     <string name="settings_interface_amoled_supporting">Używa głębokiej czerni dla elementów interfejsu.</string>
