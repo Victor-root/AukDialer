@@ -461,19 +461,27 @@ fun CallLogFullContent(
         val displayOrder = remember(settingsState) { prefs.getInt(auk.dialer.vroot.controller.util.PreferenceManager.KEY_CONTACT_DISPLAY_ORDER, 0) }
 
         val filteredLogs = remember(logs, selectedFilter, blockLogVisibility) {
+            val start = System.currentTimeMillis()
             val baseLogs = if (blockLogVisibility == 0) logs.filter { !it.isBlocked } else logs
 
-            when (selectedFilter) {
+            val result = when (selectedFilter) {
                 CallLogFilter.All -> baseLogs
                 CallLogFilter.Missed -> baseLogs.filter { it.type == CallLog.Calls.MISSED_TYPE }
                 CallLogFilter.Incoming -> baseLogs.filter { it.type == CallLog.Calls.INCOMING_TYPE }
                 CallLogFilter.Outgoing -> baseLogs.filter { it.type == CallLog.Calls.OUTGOING_TYPE }
                 CallLogFilter.Contacts -> baseLogs.filter { it.contactId != null }
             }
+            // TEMPORARY: see the matching block in Dialpad.kt. Remove together with it.
+            Log.d("AukJankProbe", "filteredLogs: ${logs.size} logs in ${System.currentTimeMillis() - start}ms")
+            result
         }
 
         val groupedLogs = remember(filteredLogs) {
-            filteredLogs.groupBy { formatDateHeader(context, it.date) }
+            val start = System.currentTimeMillis()
+            val result = filteredLogs.groupBy { formatDateHeader(context, it.date) }
+            // TEMPORARY: see the matching block in Dialpad.kt. Remove together with it.
+            Log.d("AukJankProbe", "groupedLogs: ${result.size} groups in ${System.currentTimeMillis() - start}ms")
+            result
         }
 
         val pullToRefreshState = rememberPullToRefreshState()
