@@ -8,7 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.DebugCallSimulator
+import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
+import org.koin.compose.koinInject
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.*
@@ -33,6 +35,10 @@ fun SettingsScreen(
 ) {
     val listState = rememberLazyListState()
     val context = LocalContext.current
+    val prefs = koinInject<PreferenceManager>()
+    var debugCallNumber by remember {
+        mutableStateOf(prefs.getString(PreferenceManager.KEY_DEBUG_CALL_NUMBER, "") ?: "")
+    }
 
     Scaffold(
         topBar = {
@@ -126,11 +132,24 @@ fun SettingsScreen(
             if (BuildConfig.DEBUG) {
                 item {
                     AukExpressiveCard {
+                        OutlinedTextField(
+                            value = debugCallNumber,
+                            onValueChange = {
+                                debugCallNumber = it
+                                prefs.setString(PreferenceManager.KEY_DEBUG_CALL_NUMBER, it)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            label = { Text(stringResource(R.string.settings_debug_simulate_call_number_label)) },
+                            placeholder = { Text(stringResource(R.string.settings_debug_simulate_call_number_placeholder)) },
+                            singleLine = true
+                        )
                         AukListItem(
                             headline = stringResource(R.string.settings_debug_simulate_call_headline),
                             supporting = stringResource(R.string.settings_debug_simulate_call_supporting),
                             leadingIcon = Icons.Outlined.BugReport,
-                            onClick = { DebugCallSimulator.simulateIncomingCall(context) }
+                            onClick = { DebugCallSimulator.simulateIncomingCall(context, debugCallNumber) }
                         )
                     }
                 }

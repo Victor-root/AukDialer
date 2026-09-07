@@ -313,6 +313,7 @@ class PreferenceManager(context: Context) {
         const val KEY_RECENTS_FAVORITES_COLLAPSED = "recents_favorites_collapsed"
         const val KEY_APP_ICON_COLOR = "app_icon_color"
         const val KEY_APPLY_COLOR_TO_ICON = "apply_color_to_icon"
+        const val KEY_DEBUG_CALL_NUMBER = "debug_call_number"
 
         const val TAB_RECENTS = 0
         const val TAB_FAVORITES = 1
