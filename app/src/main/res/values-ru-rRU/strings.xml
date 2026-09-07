@@ -246,7 +246,6 @@
     <string name="settings_interface_restart_required">Для полного применения темы требуется перезапуск</string>
     <string name="settings_interface_restart_action">Перезапуск</string>
     <string name="settings_interface_material_you">Тема Material You</string>
-    <string name="settings_interface_material_you_supporting">Динамическая тема на основе обоев</string>
     <string name="settings_interface_primary_color">Основной цвет</string>
     <string name="settings_interface_amoled">AMOLED тёмный режим</string>
     <string name="settings_interface_amoled_supporting">Использует чёрный тон для элементов интерфейса.</string>

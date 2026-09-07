@@ -460,7 +460,8 @@ fun AukColorPickerDialog(
     onColorSelected: (Color) -> Unit,
     icon: ImageVector? = null,
     dismissLabel: String = stringResource(R.string.action_cancel),
-    extraContent: (@Composable ColumnScope.() -> Unit)? = null
+    contentBeforeGrid: (@Composable ColumnScope.(onSelect: () -> Unit) -> Unit)? = null,
+    contentAfterGrid: (@Composable ColumnScope.() -> Unit)? = null
 ) {
     AukDialog(
         onDismissRequest = onDismissRequest,
@@ -471,6 +472,7 @@ fun AukColorPickerDialog(
             onClick = onDismissRequest
         )
     ) {
+        contentBeforeGrid?.invoke(this, onDismissRequest)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(ColorPickerSpacing, Alignment.CenterHorizontally),
@@ -487,7 +489,7 @@ fun AukColorPickerDialog(
                 }
             }
         }
-        extraContent?.invoke(this)
+        contentAfterGrid?.invoke(this)
     }
 }
 

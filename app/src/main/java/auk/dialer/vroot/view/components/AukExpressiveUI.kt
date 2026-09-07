@@ -766,7 +766,8 @@ fun AukColorSwatch(
     selected: Boolean,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    size: Dp = AukColorSwatchDefaults.Size
+    size: Dp = AukColorSwatchDefaults.Size,
+    icon: ImageVector? = null
 ) {
     val progress by animateFloatAsState(
         targetValue = if (selected) 1f else 0f,
@@ -784,13 +785,21 @@ fun AukColorSwatch(
     }
     val selectedDescription = stringResource(R.string.content_desc_selected_item)
 
-    val check: @Composable () -> Unit = {
+    // Idle shows the caller's icon (a stand-in for a non-flat swatch, such as the
+    // wallpaper option), selected always shows the check like every other swatch.
+    val content: @Composable () -> Unit = {
         Box(contentAlignment = Alignment.Center) {
             if (progress > 0f) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = selectedDescription,
                     modifier = Modifier.size(size * 0.45f * progress)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(size * 0.5f)
                 )
             }
         }
@@ -805,7 +814,7 @@ fun AukColorSwatch(
             color = color,
             contentColor = onColor,
             shadowElevation = AukElevation.Flat,
-            content = check
+            content = content
         )
     } else {
         Surface(
@@ -814,7 +823,7 @@ fun AukColorSwatch(
             color = color,
             contentColor = onColor,
             shadowElevation = AukElevation.Flat,
-            content = check
+            content = content
         )
     }
 }
@@ -839,7 +848,8 @@ fun AukColorSelectListItem(
     supporting: String? = null,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
-    extraDialogContent: (@Composable ColumnScope.() -> Unit)? = null
+    contentBeforeGrid: (@Composable ColumnScope.(onSelect: () -> Unit) -> Unit)? = null,
+    contentAfterGrid: (@Composable ColumnScope.() -> Unit)? = null
 ) {
     var showPicker by remember { mutableStateOf(false) }
 
@@ -877,7 +887,8 @@ fun AukColorSelectListItem(
                 showPicker = false
                 onColorSelected(it)
             },
-            extraContent = extraDialogContent
+            contentBeforeGrid = contentBeforeGrid,
+            contentAfterGrid = contentAfterGrid
         )
     }
 }
