@@ -3,5 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="auk_window_background">#FFF8F9FF</color>
-    <color name="auk_splash_background">#FFF8F9FF</color>
+    <!-- The splash icon is a flat white glyph, so this needs contrast against it rather
+         than matching the window background: it stays the default launcher colour
+         (Violet) regardless of light/dark, same as every colour-specific alias theme in
+         themes.xml already does with its own hardcoded colour. -->
+    <color name="auk_splash_background">#FF7B2DDC</color>
 </resources>
