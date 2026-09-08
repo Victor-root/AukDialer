@@ -590,6 +590,7 @@
     <string name="call_recordings_empty">Aucun enregistrement</string>
     <string name="call_recordings_empty_description">Les enregistrements réalisés pendant vos appels apparaîtront ici.</string>
     <string name="call_recordings_play">Lire</string>
+    <string name="call_recordings_pause">Pause</string>
     <string name="call_recordings_share">Partager l’enregistrement</string>
     <string name="call_recordings_delete_title">Supprimer l’enregistrement ?</string>
     <string name="call_recordings_delete_message">Cet enregistrement sera définitivement supprimé de votre appareil.</string>

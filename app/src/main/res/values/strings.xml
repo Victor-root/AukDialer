@@ -617,6 +617,7 @@
     <string name="call_recordings_empty">No recordings</string>
     <string name="call_recordings_empty_description">Recordings you make during calls will appear here.</string>
     <string name="call_recordings_play">Play</string>
+    <string name="call_recordings_pause">Pause</string>
     <string name="call_recordings_share">Share recording</string>
     <string name="call_recordings_delete_title">Delete recording?</string>
     <string name="call_recordings_delete_message">This recording will be permanently removed from your device.</string>
