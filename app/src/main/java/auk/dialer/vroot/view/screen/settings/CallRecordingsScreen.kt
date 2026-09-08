@@ -1,11 +1,13 @@
 package auk.dialer.vroot.view.screen.settings
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.MicNone
@@ -44,6 +46,36 @@ fun CallRecordingsScreen(
     var recordings by remember { mutableStateOf<List<File>>(emptyList()) }
     var pendingDelete by remember { mutableStateOf<File?>(null) }
     val shareTitle = stringResource(R.string.call_recordings_share)
+
+    var playingFile by remember { mutableStateOf<File?>(null) }
+    var player by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    fun stopPlayback() {
+        player?.apply { runCatching { stop() }; release() }
+        player = null
+        playingFile = null
+    }
+
+    fun togglePlayback(file: File) {
+        if (playingFile == file) {
+            stopPlayback()
+            return
+        }
+        stopPlayback()
+        playingFile = file
+        player = MediaPlayer().apply {
+            runCatching {
+                setDataSource(file.absolutePath)
+                setOnCompletionListener { stopPlayback() }
+                prepare()
+                start()
+            }.onFailure { stopPlayback() }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { stopPlayback() }
+    }
 
     LaunchedEffect(refreshKey) {
         recordings = CallRecorder.listRecordings(context)
@@ -95,6 +127,7 @@ fun CallRecordingsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(recordings, key = { it.absolutePath }) { file ->
+                    val isPlaying = playingFile == file
                     AukExpressiveCard {
                         AukListItem(
                             headline = file.nameWithoutExtension,
@@ -102,20 +135,28 @@ fun CallRecordingsScreen(
                             headlineMaxLines = 2,
                             supportingMaxLines = 2,
                             leadingIcon = Icons.Outlined.MicNone,
-                            onClick = { CallRecorder.play(context, file) }
+                            onClick = { togglePlayback(file) }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            IconButton(onClick = { CallRecorder.play(context, file) }) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.call_recordings_play))
+                            IconButton(onClick = { togglePlayback(file) }) {
+                                Icon(
+                                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                    contentDescription = stringResource(
+                                        if (isPlaying) R.string.call_recordings_pause else R.string.call_recordings_play
+                                    )
+                                )
                             }
                             IconButton(onClick = { CallRecorder.share(context, file, shareTitle) }) {
                                 Icon(Icons.Default.Share, contentDescription = shareTitle)
                             }
-                            IconButton(onClick = { pendingDelete = file }) {
+                            IconButton(onClick = {
+                                if (isPlaying) stopPlayback()
+                                pendingDelete = file
+                            }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.action_delete),
