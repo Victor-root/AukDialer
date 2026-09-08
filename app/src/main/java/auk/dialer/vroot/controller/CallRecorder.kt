@@ -41,6 +41,15 @@ object CallRecorder {
     @Volatile
     private var attemptId = 0
 
+    /** True from the moment start() is called until a source is confirmed, rejected
+     * for good, or the attempt is superseded. isRecording alone cannot guard against
+     * a second start() call: it is not set until a source is confirmed, which can
+     * take a couple of seconds now that each source gets checked for real signal, so
+     * a second tap in that window used to launch a second, competing attempt at the
+     * same file. */
+    @Volatile
+    private var attemptInProgress = false
+
     private val audioSources = listOf(
         MediaRecorder.AudioSource.VOICE_CALL,
         MediaRecorder.AudioSource.VOICE_COMMUNICATION,
@@ -92,8 +101,9 @@ object CallRecorder {
     }
 
     fun start(context: Context, label: String) {
-        if (_isRecording.value) return
+        if (_isRecording.value || attemptInProgress) return
         if (!hasPermission(context)) return
+        attemptInProgress = true
 
         val safeLabel = label
             .replace(Regex("[^\\p{L}\\p{N}+_-]"), "_")
@@ -136,6 +146,7 @@ object CallRecorder {
 
                     recorder = instance
                     currentFile = file
+                    attemptInProgress = false
                     _isRecording.value = true
                     return@launch
                 } catch (e: Exception) {
@@ -145,12 +156,16 @@ object CallRecorder {
                     if (file.exists()) file.delete()
                 }
             }
-            if (BuildConfig.DEBUG && attemptId == thisAttempt) Log.d(TAG, "no source produced a signal")
+            if (attemptId == thisAttempt) {
+                attemptInProgress = false
+                if (BuildConfig.DEBUG) Log.d(TAG, "no source produced a signal")
+            }
         }
     }
 
     fun stop(): File? {
         attemptId++
+        attemptInProgress = false
         val instance = recorder ?: run {
             _isRecording.value = false
             return null
