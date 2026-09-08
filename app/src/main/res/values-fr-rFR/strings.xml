@@ -239,6 +239,8 @@
     <string name="settings_sound_vibration_supporting">Sonneries et tonalités du clavier</string>
     <string name="settings_call_settings_headline">Paramètres d’appel</string>
     <string name="settings_call_settings_supporting">Gérer les cartes SIM, la numérotation et le rappel automatique</string>
+    <string name="settings_default_dialer_headline">Définir comme application téléphone par défaut</string>
+    <string name="settings_default_dialer_supporting">AukDialer ne gère pas actuellement vos appels</string>
     <string name="settings_blocked_numbers_headline">Numéros bloqués</string>
     <string name="settings_blocked_numbers_supporting">Gérer les appels bloqués et le spam</string>
     <string name="settings_backup_restore_headline">Sauvegarde et restauration</string>

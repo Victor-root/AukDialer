@@ -254,6 +254,8 @@
     <string name="settings_sound_vibration_supporting">Ringtones and dialpad tones</string>
     <string name="settings_call_settings_headline">Call Settings</string>
     <string name="settings_call_settings_supporting">Manage SIMs, dialing, and redial</string>
+    <string name="settings_default_dialer_headline">Set as default phone app</string>
+    <string name="settings_default_dialer_supporting">AukDialer is not currently handling your calls</string>
     <string name="settings_blocked_numbers_headline">Blocked Numbers</string>
     <string name="settings_blocked_numbers_supporting">Manage blocked calls and spam</string>
     <string name="settings_backup_restore_headline">Backup &amp; Restore</string>

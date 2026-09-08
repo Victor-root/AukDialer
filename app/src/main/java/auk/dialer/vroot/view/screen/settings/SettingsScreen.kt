@@ -1,5 +1,8 @@
 package auk.dialer.vroot.view.screen.settings
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,6 +21,8 @@ import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.DebugCallSimulator
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.controller.util.getDefaultDialerIntent
+import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
 import org.koin.compose.koinInject
@@ -38,6 +43,14 @@ fun SettingsScreen(
     val prefs = koinInject<PreferenceManager>()
     var debugCallNumber by remember {
         mutableStateOf(prefs.getString(PreferenceManager.KEY_DEBUG_CALL_NUMBER, "") ?: "")
+    }
+    var isDefaultDialer by remember { mutableStateOf(isAlreadyDefaultDialer(context)) }
+    val defaultDialerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            isDefaultDialer = isAlreadyDefaultDialer(context)
+        }
     }
 
     Scaffold(
@@ -81,6 +94,14 @@ fun SettingsScreen(
 
             item {
                 AukExpressiveCard {
+                    if (!isDefaultDialer) {
+                        AukListItem(
+                            headline = stringResource(R.string.settings_default_dialer_headline),
+                            supporting = stringResource(R.string.settings_default_dialer_supporting),
+                            leadingIcon = Icons.Outlined.Call,
+                            onClick = { defaultDialerLauncher.launch(getDefaultDialerIntent(context)) }
+                        )
+                    }
                     AukListItem(
                         headline = stringResource(R.string.settings_call_settings_headline),
                         supporting = stringResource(R.string.settings_call_settings_supporting),
