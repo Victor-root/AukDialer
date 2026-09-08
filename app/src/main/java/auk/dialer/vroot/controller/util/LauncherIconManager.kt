@@ -65,11 +65,8 @@ class LauncherIconManager(
      * target, then disable each of the other nineteen in turn), and every one
      * of them fires its own broadcast. Closing on the first of those, before
      * the rest of the loop has run, could leave an old alias still enabled
-     * alongside the new one; both are then live at once, and anything that
-     * resolves the launch component independently of whatever the home screen
-     * icon happens to redraw with (the splash screen's own theme lookup, in
-     * particular) can keep landing on the old colour. So closing waits on the
-     * loop actually finishing, not just on hearing from it once.
+     * alongside the new one, both live at once. So closing waits on the loop
+     * actually finishing, not just on hearing from it once.
      *
      * The caller must close with finishAffinity(). The task was started from an
      * alias that is now disabled, so its base intent no longer resolves and the
