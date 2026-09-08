@@ -106,7 +106,6 @@
         <activity-alias
             android:name=".LauncherAlias_Violet"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Violet"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_violet"
@@ -120,7 +119,6 @@
         <activity-alias
             android:name=".LauncherAlias_Red"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Red"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_red"
@@ -134,7 +132,6 @@
         <activity-alias
             android:name=".LauncherAlias_Pink"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Pink"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_pink"
@@ -148,7 +145,6 @@
         <activity-alias
             android:name=".LauncherAlias_Purple"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Purple"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_purple"
@@ -162,7 +158,6 @@
         <activity-alias
             android:name=".LauncherAlias_DeepPurple"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.DeepPurple"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_deep_purple"
@@ -176,7 +171,6 @@
         <activity-alias
             android:name=".LauncherAlias_Indigo"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Indigo"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_indigo"
@@ -190,7 +184,6 @@
         <activity-alias
             android:name=".LauncherAlias_Blue"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Blue"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_blue"
@@ -204,7 +197,6 @@
         <activity-alias
             android:name=".LauncherAlias_LightBlue"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.LightBlue"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_light_blue"
@@ -218,7 +210,6 @@
         <activity-alias
             android:name=".LauncherAlias_Cyan"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Cyan"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_cyan"
@@ -232,7 +223,6 @@
         <activity-alias
             android:name=".LauncherAlias_Teal"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Teal"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_teal"
@@ -246,7 +236,6 @@
         <activity-alias
             android:name=".LauncherAlias_Green"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Green"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_green"
@@ -260,7 +249,6 @@
         <activity-alias
             android:name=".LauncherAlias_LightGreen"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.LightGreen"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_light_green"
@@ -274,7 +262,6 @@
         <activity-alias
             android:name=".LauncherAlias_Lime"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Lime"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_lime"
@@ -288,7 +275,6 @@
         <activity-alias
             android:name=".LauncherAlias_Yellow"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Yellow"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_yellow"
@@ -302,7 +288,6 @@
         <activity-alias
             android:name=".LauncherAlias_Amber"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Amber"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_amber"
@@ -316,7 +301,6 @@
         <activity-alias
             android:name=".LauncherAlias_Orange"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Orange"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_orange"
@@ -330,7 +314,6 @@
         <activity-alias
             android:name=".LauncherAlias_DeepOrange"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.DeepOrange"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_deep_orange"
@@ -344,7 +327,6 @@
         <activity-alias
             android:name=".LauncherAlias_Brown"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Brown"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_brown"
@@ -358,7 +340,6 @@
         <activity-alias
             android:name=".LauncherAlias_Gray"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.Gray"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_gray"
@@ -372,7 +353,6 @@
         <activity-alias
             android:name=".LauncherAlias_BlueGray"
             android:targetActivity=".MainActivity"
-            android:theme="@style/Theme.App.Starting.BlueGray"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alias_blue_gray"
