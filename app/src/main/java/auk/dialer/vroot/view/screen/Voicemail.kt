@@ -5,15 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MarkEmailRead
 import androidx.compose.material.icons.outlined.MarkEmailUnread
 import androidx.compose.material.icons.outlined.Voicemail
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -24,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.VoicemailViewModel
@@ -36,7 +30,8 @@ import auk.dialer.vroot.controller.util.getDefaultDialerIntent
 import auk.dialer.vroot.debug.VoicemailDebugMenu
 import auk.dialer.vroot.modal.data.Voicemail
 import auk.dialer.vroot.modal.data.VoicemailStatus
-import auk.dialer.vroot.view.components.AukAvatar
+import auk.dialer.vroot.view.components.AudioMessageRow
+import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukDivider
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
@@ -260,153 +255,43 @@ private fun VoicemailRow(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    var showMenu by remember { mutableStateOf(false) }
-
     val displayName = voicemail.contactName
         ?: voicemail.number?.takeIf { it.isNotBlank() }?.let { formatPhoneNumber(it) }
         ?: stringResource(R.string.label_unknown)
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AukAvatar(
-                name = displayName,
-                photoUri = voicemail.photoUri,
-                icon = if (voicemail.contactName == null) Icons.Outlined.Voicemail else null,
-                modifier = Modifier.size(48.dp)
+    key(voicemail.id) {
+        AudioMessageRow(
+            title = displayName,
+            subtitle = buildRowSubtitle(context, voicemail),
+            avatarName = displayName,
+            photoUri = voicemail.photoUri,
+            avatarIcon = if (voicemail.contactName == null) Icons.Outlined.Voicemail else null,
+            emphasized = !voicemail.isRead,
+            canPlay = voicemail.hasContent,
+            isCurrent = isCurrent,
+            isPlaying = isPlaying,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            isSpeakerOn = isSpeakerOn,
+            onToggle = onToggle,
+            onSeek = onSeek,
+            onToggleSpeaker = onToggleSpeaker,
+            actions = listOf(
+                AudioRowAction(
+                    label = stringResource(
+                        if (voicemail.isRead) R.string.voicemail_mark_unread else R.string.voicemail_mark_read
+                    ),
+                    icon = if (voicemail.isRead) Icons.Outlined.MarkEmailUnread else Icons.Outlined.MarkEmailRead,
+                    onClick = onToggleRead
+                ),
+                AudioRowAction(
+                    label = stringResource(R.string.action_delete),
+                    icon = Icons.Outlined.Delete,
+                    onClick = onDelete
+                )
             )
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (voicemail.isRead) FontWeight.Normal else FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = buildRowSubtitle(context, voicemail),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            if (voicemail.hasContent) {
-                IconButton(onClick = onToggle) {
-                    Icon(
-                        // Rounded variants: same glyphs with softened corners.
-                        imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = stringResource(
-                            if (isPlaying) R.string.voicemail_pause else R.string.voicemail_play
-                        ),
-                        tint = MaterialTheme.colorScheme.primary,
-                        // A triangle and two bars cover less of their box than
-                        // the overflow dots, so at equal size they read smaller.
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
-
-            Box {
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.voicemail_more_options)
-                    )
-                }
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(
-                                    if (voicemail.isRead) R.string.voicemail_mark_unread
-                                    else R.string.voicemail_mark_read
-                                )
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                if (voicemail.isRead) Icons.Outlined.MarkEmailUnread
-                                else Icons.Outlined.MarkEmailRead,
-                                contentDescription = null
-                            )
-                        },
-                        onClick = {
-                            showMenu = false
-                            onToggleRead()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_delete)) },
-                        leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
-                        onClick = {
-                            showMenu = false
-                            onDelete()
-                        }
-                    )
-                }
-            }
-        }
-
-        if (isCurrent && durationMs > 0) {
-            // While dragging, follow the finger rather than the player: the
-            // player only reports the new position once the seek lands, which
-            // otherwise makes the handle snap back under the finger.
-            var scrubPositionMs by remember(voicemail.id) { mutableStateOf<Float?>(null) }
-            val shownPositionMs = scrubPositionMs?.toInt() ?: positionMs.coerceIn(0, durationMs)
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 2.dp)
-            ) {
-                Text(
-                    text = formatPlaybackTime(shownPositionMs),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = shownPositionMs.toFloat(),
-                    onValueChange = { scrubPositionMs = it },
-                    onValueChangeFinished = {
-                        scrubPositionMs?.let { onSeek(it.toInt()) }
-                        scrubPositionMs = null
-                    },
-                    valueRange = 0f..durationMs.toFloat(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp)
-                )
-                Text(
-                    text = formatPlaybackTime(durationMs),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                IconButton(onClick = onToggleSpeaker) {
-                    Icon(
-                        imageVector = if (isSpeakerOn) {
-                            Icons.AutoMirrored.Filled.VolumeUp
-                        } else {
-                            Icons.Default.Phone
-                        },
-                        contentDescription = stringResource(
-                            if (isSpeakerOn) R.string.playback_route_speaker
-                            else R.string.playback_route_earpiece
-                        ),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
+        )
     }
-}
-
-/** Playback clock as m:ss, independent of the locale-aware list duration label. */
-private fun formatPlaybackTime(millis: Int): String {
-    val totalSeconds = (millis / 1000).coerceAtLeast(0)
-    return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
 }
 
 /**

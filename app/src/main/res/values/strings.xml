@@ -650,13 +650,13 @@
 
     <!-- Visual voicemail -->
     <string name="voicemail_title">Voicemail</string>
-    <string name="voicemail_play">Play</string>
-    <string name="voicemail_pause">Pause</string>
+    <string name="playback_play">Play</string>
+    <string name="playback_pause">Pause</string>
     <string name="voicemail_sync_now">Sync now</string>
     <string name="voicemail_sync_no_new">No new voicemails</string>
     <string name="playback_route_speaker">Playing on speaker, switch to earpiece</string>
     <string name="playback_route_earpiece">Playing on earpiece, switch to speaker</string>
-    <string name="voicemail_more_options">More options</string>
+    <string name="playback_more_options">More options</string>
     <string name="voicemail_mark_read">Mark as read</string>
     <string name="voicemail_mark_unread">Mark as unread</string>
     <string name="voicemail_empty_title">No voicemails</string>
