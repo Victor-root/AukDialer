@@ -42,6 +42,7 @@ import auk.dialer.vroot.view.components.AZListScroll
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.AukAccentHeader
 import auk.dialer.vroot.view.components.AukDialog
+import auk.dialer.vroot.view.components.ConfirmDeleteContactsDialog
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukFilterChip
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
@@ -80,6 +81,17 @@ fun ContactScreenContent(
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
 
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
+    var pendingDeletion by remember { mutableStateOf<List<String>>(emptyList()) }
+    if (pendingDeletion.isNotEmpty()) {
+        ConfirmDeleteContactsDialog(
+            count = pendingDeletion.size,
+            onDismissRequest = { pendingDeletion = emptyList() },
+            onConfirm = {
+                contactsVM.deleteContacts(pendingDeletion)
+                selectedIds = selectedIds - pendingDeletion.toSet()
+            }
+        )
+    }
 
     BackHandler(enabled = selectedIds.isNotEmpty()) {
         selectedIds = emptySet()
@@ -97,10 +109,7 @@ fun ContactScreenContent(
         BatchActionBar(
             selectedCount = selectedIds.size,
             onClear = { selectedIds = emptySet() },
-            onDelete = {
-                contactsVM.deleteContacts(selectedIds.toList())
-                selectedIds = emptySet()
-            },
+            onDelete = { pendingDeletion = selectedIds.toList() },
             onMove = { account ->
                 contactsVM.moveContacts(selectedIds.toList(), account)
                 selectedIds = emptySet()

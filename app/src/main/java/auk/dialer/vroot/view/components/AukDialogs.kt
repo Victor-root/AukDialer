@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -66,6 +67,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.paneTitle
@@ -406,6 +408,24 @@ fun AukConfirmationDialog(
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+/** Asks before deleting [count] contacts: there is no undo, least of all for private ones. */
+@Composable
+fun ConfirmDeleteContactsDialog(
+    count: Int,
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AukConfirmationDialog(
+        onDismissRequest = onDismissRequest,
+        onConfirm = onConfirm,
+        title = pluralStringResource(R.plurals.contacts_delete_dialog_title, count, count),
+        message = pluralStringResource(R.plurals.contacts_delete_dialog_message, count),
+        confirmLabel = stringResource(R.string.action_delete),
+        icon = Icons.Default.Delete,
+        isDestructive = true
+    )
 }
 
 @Composable

@@ -31,6 +31,7 @@ import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.view.components.AukAvatar
 import auk.dialer.vroot.view.components.AukDialog
+import auk.dialer.vroot.view.components.ConfirmDeleteContactsDialog
 import auk.dialer.vroot.view.components.AukSelectionDialog
 import auk.dialer.vroot.view.components.AukDropdownMenu
 import auk.dialer.vroot.view.components.AukDropdownMenuItem
@@ -66,6 +67,17 @@ fun PrivateContactsScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedContactIds by remember { mutableStateOf(setOf<String>()) }
+    var pendingDeletion by remember { mutableStateOf<List<String>>(emptyList()) }
+    if (pendingDeletion.isNotEmpty()) {
+        ConfirmDeleteContactsDialog(
+            count = pendingDeletion.size,
+            onDismissRequest = { pendingDeletion = emptyList() },
+            onConfirm = {
+                viewModel.deleteContacts(pendingDeletion)
+                selectedContactIds = selectedContactIds - pendingDeletion.toSet()
+            }
+        )
+    }
     var showMoveAccountDialog by remember { mutableStateOf(false) }
     var targetContactsToMove by remember { mutableStateOf<List<Contact>>(emptyList()) }
 
@@ -139,10 +151,7 @@ fun PrivateContactsScreen(
                     },
                     actions = {
                         IconButton(
-                            onClick = {
-                                viewModel.deleteContacts(selectedContactIds.toList())
-                                selectedContactIds = emptySet()
-                            }
+                            onClick = { pendingDeletion = selectedContactIds.toList() }
                         ) {
                             Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.action_delete), tint = MaterialTheme.colorScheme.error)
                         }
@@ -382,7 +391,7 @@ fun PrivateContactsScreen(
                                 showMoveAccountDialog = true
                             },
                             onEdit = { navigator.navigate(ContactEditScreenDestination(contactId = contact.id)) },
-                            onDelete = { viewModel.deleteContact(contact.id) }
+                            onDelete = { pendingDeletion = listOf(contact.id) }
                         )
                     }
                 }
