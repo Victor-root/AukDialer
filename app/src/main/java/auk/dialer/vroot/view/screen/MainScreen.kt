@@ -40,6 +40,8 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 
 @Destination<RootGraph>(start = true, style = NoTransitions::class)
 @Composable
@@ -89,6 +91,9 @@ fun MainScreen(
     // Edge to edge lets the header leave on scroll so the content reaches behind the status bar.
     // With it off the header stays put, which is what keeps the status bar accent coloured.
     val edgeToEdge = LocalEdgeToEdge.current
+    if (BuildConfig.DEBUG_TOOLS) {
+        LaunchedEffect(edgeToEdge) { Log.d("AukEdgeToEdge", "main screen: $edgeToEdge") }
+    }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     // Switching tab brings the header back: a short list has nothing left to scroll up, and would

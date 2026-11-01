@@ -2,6 +2,8 @@ package auk.dialer.vroot.controller.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,7 @@ class PreferenceManager(context: Context) {
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == KEY_EDGE_TO_EDGE) {
             _edgeToEdge.value = getBoolean(KEY_EDGE_TO_EDGE, false)
+            if (BuildConfig.DEBUG_TOOLS) Log.d("AukEdgeToEdge", "preference changed: ${_edgeToEdge.value}")
         }
         _settingsChanged.value += 1
     }

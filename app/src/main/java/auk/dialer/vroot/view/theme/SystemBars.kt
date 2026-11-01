@@ -124,6 +124,9 @@ internal fun AukSystemBars(
         ?: if (plainStatusBar.value) backgroundIsDark else accentIsDark
     val isNavigationBarDark = if (edgeToEdge) darkTheme else accentIsDark
     DisposableEffect(activity, isStatusBarDark, isNavigationBarDark) {
+        if (BuildConfig.DEBUG_TOOLS) {
+            Log.d("AukEdgeToEdge", "system bars: edgeToEdge=$edgeToEdge statusDark=$isStatusBarDark navDark=$isNavigationBarDark")
+        }
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) {
                 isStatusBarDark
