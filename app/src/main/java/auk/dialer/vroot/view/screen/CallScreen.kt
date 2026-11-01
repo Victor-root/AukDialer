@@ -99,7 +99,7 @@ fun ExpressiveCallScreen(
     val view = LocalView.current
     val context = LocalContext.current
 
-    if (BuildConfig.DEBUG) {
+    if (BuildConfig.DEBUG_TOOLS) {
         val insetsDensity = LocalDensity.current
         val statusBarTopPx = WindowInsets.statusBars.getTop(insetsDensity)
         val cutoutTopPx = WindowInsets.displayCutout.getTop(insetsDensity)
@@ -360,7 +360,7 @@ fun ExpressiveCallScreen(
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = if (BuildConfig.DEBUG) {
+                    modifier = if (BuildConfig.DEBUG_TOOLS) {
                         Modifier.onGloballyPositioned {
                             Log.d("AukCallDebug", "compactNameText: y=${it.positionInRoot().y} height=${it.size.height}")
                         }
@@ -644,7 +644,7 @@ fun ExpressiveCallScreen(
                     .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
                     .then(
-                        if (BuildConfig.DEBUG) {
+                        if (BuildConfig.DEBUG_TOOLS) {
                             Modifier.onGloballyPositioned {
                                 Log.d("AukCallDebug", "outerColumn: y=${it.positionInRoot().y} height=${it.size.height} width=${it.size.width}")
                             }
@@ -664,7 +664,7 @@ fun ExpressiveCallScreen(
                     modifier = Modifier
                         .weight(1f)
                         .then(
-                            if (BuildConfig.DEBUG) {
+                            if (BuildConfig.DEBUG_TOOLS) {
                                 Modifier.onGloballyPositioned {
                                     Log.d("AukCallDebug", "heroBox: y=${it.positionInRoot().y} height=${it.size.height} showKeypad=$showKeypad")
                                 }

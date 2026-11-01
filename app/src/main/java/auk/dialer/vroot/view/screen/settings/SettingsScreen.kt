@@ -151,7 +151,7 @@ fun SettingsScreen(
                 }
             }
 
-            if (BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG_TOOLS) {
                 item {
                     AukExpressiveCard {
                         OutlinedTextField(

@@ -440,7 +440,7 @@ class CallService : InCallService() {
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG_TOOLS) {
             Log.d(DEBUG_TAG, "onCallAdded: state=${call.details.state} direction=${call.details.callDirection} account=${call.details.accountHandle}")
         }
 
@@ -450,7 +450,7 @@ class CallService : InCallService() {
         val isSelfManaged = call.details.hasProperty(Call.Details.PROPERTY_SELF_MANAGED)
         val isOwnDebugAccount = call.details.accountHandle?.componentName == ComponentName(this, DebugCallConnectionService::class.java)
         if (isSelfManaged && !isOwnDebugAccount) {
-            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: ignoring another app's self-managed call (${call.details.accountHandle})")
+            if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: ignoring another app's self-managed call (${call.details.accountHandle})")
             return
         }
 
@@ -460,7 +460,7 @@ class CallService : InCallService() {
 
         val number = call.details.handle?.schemeSpecificPart ?: ""
         if (isNumberBlocked(number)) {
-            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
+            if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
             handleBlockedCall(call, number)
             return
         }
@@ -473,9 +473,9 @@ class CallService : InCallService() {
         }
         try {
             startActivity(intent)
-            if (BuildConfig.DEBUG) Log.d(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) succeeded")
+            if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) succeeded")
         } catch (e: Exception) {
-            if (BuildConfig.DEBUG) Log.e(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) failed", e)
+            if (BuildConfig.DEBUG_TOOLS) Log.e(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) failed", e)
         }
     }
 

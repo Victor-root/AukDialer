@@ -69,8 +69,14 @@ android {
             // not, and it can no longer be upgraded by a properly signed build.
             signingConfig = hasReleaseKey ? signingConfigs.getByName('release') : null
             debuggable = false
+            buildConfigField "boolean", "DEBUG_TOOLS", "false"
         }
         debug {
+            // Built like release (R8, resource shrinking, not debuggable) so it
+            // runs as smoothly. Not being debuggable turns BuildConfig.DEBUG off,
+            // so the debug-only tools and logs are gated by DEBUG_TOOLS instead.
+            initWith buildTypes.getByName('release')
+            buildConfigField "boolean", "DEBUG_TOOLS", "true"
             // Same key as release, so Run in Android Studio installs over an
             // existing release build instead of demanding an uninstall.
             signingConfig = hasReleaseKey ? signingConfigs.getByName('release') : signingConfigs.getByName('debug')
@@ -119,18 +125,19 @@ base {
     archivesName = "AukDialer-${android.defaultConfig.versionName}"
 }
 
-// The release build otherwise ships an ART baseline profile, and Android Studio
+// Non-debuggable builds otherwise ship an ART baseline profile, and Android Studio
 // installs it alongside the APK as a separate .dm file. That extra install step
 // is refused on some devices, and the whole deployment fails with
 // INSTALL_BASELINE_PROFILE_FAILED even though the APK itself is fine, which
-// makes Run unusable on the release variant.
+// makes Run unusable on the release and debug variants.
 //
 // AGP offers no way to keep the profile inside the APK while skipping the .dm,
 // so the profile goes. What it buys is a faster first launch after an install;
 // ART rebuilds an equivalent profile from real usage within a few launches
 // anyway, and this app is not distributed through a store that would use it.
 tasks.configureEach { task ->
-    if (task.name in ['compileReleaseArtProfile', 'expandReleaseArtProfileWildcards']) {
+    if (task.name in ['compileReleaseArtProfile', 'expandReleaseArtProfileWildcards',
+                      'compileDebugArtProfile', 'expandDebugArtProfileWildcards']) {
         task.enabled = false
     }
 }

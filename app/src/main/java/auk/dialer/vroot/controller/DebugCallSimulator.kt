@@ -11,7 +11,7 @@ import android.util.Log
 import auk.dialer.vroot.BuildConfig
 
 /**
- * Backs the debug-only "Simulate an incoming call" Settings button. Guarded by BuildConfig.DEBUG so
+ * Backs the debug-only "Simulate an incoming call" Settings button. Guarded by BuildConfig.DEBUG_TOOLS so
  * it never registers a test call line or reaches DebugCallConnectionService outside a debug build.
  */
 object DebugCallSimulator {
@@ -20,8 +20,8 @@ object DebugCallSimulator {
     private const val TEST_NUMBER = "0600000000"
 
     fun simulateIncomingCall(context: Context, number: String = TEST_NUMBER) {
-        Log.d(TAG, "simulateIncomingCall: called, BuildConfig.DEBUG=${BuildConfig.DEBUG}")
-        if (!BuildConfig.DEBUG) return
+        Log.d(TAG, "simulateIncomingCall: called, BuildConfig.DEBUG_TOOLS=${BuildConfig.DEBUG_TOOLS}")
+        if (!BuildConfig.DEBUG_TOOLS) return
 
         val callerAddress = number.ifBlank { TEST_NUMBER }
         val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager

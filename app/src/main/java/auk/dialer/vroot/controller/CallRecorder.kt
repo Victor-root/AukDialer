@@ -81,7 +81,7 @@ object CallRecorder {
             delay(SILENCE_CHECK_POLL_MS)
             val level = runCatching { instance.maxAmplitude }.getOrDefault(0)
             if (level > peak) peak = level
-            if (BuildConfig.DEBUG) Log.d(TAG, "amplitude sample=$level")
+            if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "amplitude sample=$level")
         }
         return peak
     }
@@ -138,7 +138,7 @@ object CallRecorder {
                     } else {
                         peakAmplitude(instance)
                     }
-                    if (BuildConfig.DEBUG) {
+                    if (BuildConfig.DEBUG_TOOLS) {
                         Log.d(TAG, "source=${sourceName(source)} peak=$peak threshold=$SILENCE_AMPLITUDE_THRESHOLD")
                     }
                     if (peak <= SILENCE_AMPLITUDE_THRESHOLD) error("no signal from ${sourceName(source)}")
@@ -150,7 +150,7 @@ object CallRecorder {
                     _isRecording.value = true
                     return@launch
                 } catch (e: Exception) {
-                    if (BuildConfig.DEBUG) Log.d(TAG, "source=${sourceName(source)} rejected: ${e.message}")
+                    if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "source=${sourceName(source)} rejected: ${e.message}")
                     try { instance.reset() } catch (ignored: Exception) {}
                     try { instance.release() } catch (ignored: Exception) {}
                     if (file.exists()) file.delete()
@@ -158,7 +158,7 @@ object CallRecorder {
             }
             if (attemptId == thisAttempt) {
                 attemptInProgress = false
-                if (BuildConfig.DEBUG) Log.d(TAG, "no source produced a signal")
+                if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "no source produced a signal")
             }
         }
     }

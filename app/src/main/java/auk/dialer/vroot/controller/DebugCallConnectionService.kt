@@ -19,7 +19,7 @@ import auk.dialer.vroot.BuildConfig
 class DebugCallConnectionService : ConnectionService() {
 
     private fun d(message: String) {
-        if (BuildConfig.DEBUG) Log.d(TAG, message)
+        if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, message)
     }
 
     override fun onCreateIncomingConnection(

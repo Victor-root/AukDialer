@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
         // our side. This checks whether the OS actually starts the activity
         // through that alias, to tell apart a wrong launch from the OS simply
         // not honouring the alias's own splash theme.
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG_TOOLS) {
             Log.d("AukIconDebug", "launched via component=${intent?.component}")
         }
 
