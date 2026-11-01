@@ -1,13 +1,16 @@
 package auk.dialer.vroot.view.screen.settings
 
-import android.media.MediaPlayer
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.MicNone
@@ -22,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallRecorder
+import auk.dialer.vroot.controller.util.SpeechPlayer
 import auk.dialer.vroot.view.components.AukConfirmationDialog
 import auk.dialer.vroot.view.components.AukDivider
 import auk.dialer.vroot.view.components.AukExpressiveCard
@@ -49,34 +53,36 @@ fun CallRecordingsScreen(
     var pendingDelete by remember { mutableStateOf<File?>(null) }
     val shareTitle = stringResource(R.string.call_recordings_share)
 
-    var playingFile by remember { mutableStateOf<File?>(null) }
-    var player by remember { mutableStateOf<MediaPlayer?>(null) }
-
-    fun stopPlayback() {
-        player?.apply { runCatching { stop() }; release() }
-        player = null
-        playingFile = null
+    // Same player as voicemails: loudspeaker or earpiece, with the screen off against the ear.
+    var playingPath by remember { mutableStateOf<String?>(null) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var isSpeakerOn by remember { mutableStateOf(true) }
+    val playbackFailedText = stringResource(R.string.call_recordings_playback_failed)
+    val player = remember {
+        SpeechPlayer<String>(
+            context = context.applicationContext,
+            onUpdate = { path, playing, _, _ ->
+                playingPath = path
+                isPlaying = playing
+            },
+            onError = { Toast.makeText(context, playbackFailedText, Toast.LENGTH_SHORT).show() },
+            onAudioUnavailable = { Toast.makeText(context, playbackFailedText, Toast.LENGTH_SHORT).show() },
+        )
     }
 
-    fun togglePlayback(file: File) {
-        if (playingFile == file) {
-            stopPlayback()
-            return
-        }
-        stopPlayback()
-        playingFile = file
-        player = MediaPlayer().apply {
-            runCatching {
-                setDataSource(file.absolutePath)
-                setOnCompletionListener { stopPlayback() }
-                prepare()
-                start()
-            }.onFailure { stopPlayback() }
-        }
-    }
+    fun togglePlayback(file: File) = player.toggle(file.absolutePath, Uri.fromFile(file))
 
-    DisposableEffect(Unit) {
-        onDispose { stopPlayback() }
+    // Playback stops with the list out of sight: nothing else could stop it.
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) player.release()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            player.release()
+        }
     }
 
     LaunchedEffect(refreshKey) {
@@ -129,7 +135,8 @@ fun CallRecordingsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(recordings, key = { it.absolutePath }) { file ->
-                    val isPlaying = playingFile == file
+                    val isCurrent = playingPath == file.absolutePath
+                    val isFilePlaying = isCurrent && isPlaying
                     AukExpressiveCard {
                         AukListItem(
                             headline = file.nameWithoutExtension,
@@ -144,11 +151,25 @@ fun CallRecordingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
+                            if (isCurrent) {
+                                IconButton(onClick = {
+                                    isSpeakerOn = !isSpeakerOn
+                                    player.setSpeakerOn(isSpeakerOn)
+                                }) {
+                                    Icon(
+                                        if (isSpeakerOn) Icons.AutoMirrored.Filled.VolumeUp else Icons.Default.Phone,
+                                        contentDescription = stringResource(
+                                            if (isSpeakerOn) R.string.playback_route_speaker
+                                            else R.string.playback_route_earpiece
+                                        )
+                                    )
+                                }
+                            }
                             IconButton(onClick = { togglePlayback(file) }) {
                                 Icon(
-                                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                    if (isFilePlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                                     contentDescription = stringResource(
-                                        if (isPlaying) R.string.call_recordings_pause else R.string.call_recordings_play
+                                        if (isFilePlaying) R.string.call_recordings_pause else R.string.call_recordings_play
                                     )
                                 )
                             }
@@ -156,7 +177,7 @@ fun CallRecordingsScreen(
                                 Icon(Icons.Default.Share, contentDescription = shareTitle)
                             }
                             IconButton(onClick = {
-                                if (isPlaying) stopPlayback()
+                                if (isCurrent) player.release()
                                 pendingDelete = file
                             }) {
                                 Icon(
