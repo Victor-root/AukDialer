@@ -349,55 +349,6 @@ fun getDefaultDialerIntent(context: Context): Intent {
     }
 }
 
-data class DeviceImeiInfo(
-    val imei1: String? = null,
-    val imei2: String? = null,
-    val meid: String? = null,
-    val serial: String? = null
-)
-
-/**
- * Reads the hardware identifiers behind the *#06# code.
- *
- * Every call here is deprecated and, since Android 10, reserved for system
- * apps, which is why each one is wrapped: they throw for an ordinary app and
- * the field simply stays empty. No public replacement exists, so the
- * deprecation is suppressed for the whole function rather than per call.
- */
-@Suppress("DEPRECATION")
-fun getDeviceImeiInfo(context: Context): DeviceImeiInfo {
-    val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    var imei1: String? = null
-    var imei2: String? = null
-    var meid: String? = null
-    var serial: String? = null
-
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imei1 = try { tm.getImei(0) } catch (e: Exception) { null }
-                imei2 = try { tm.getImei(1) } catch (e: Exception) { null }
-                meid = try { tm.getMeid() } catch (e: Exception) { null }
-            }
-            if (imei1.isNullOrEmpty()) {
-                imei1 = try { tm.deviceId } catch (e: Exception) { null }
-            }
-            serial = try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    Build.getSerial()
-                } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    Build.SERIAL
-                } else null
-            } catch (e: Exception) { null }
-        } catch (e: SecurityException) {
-            e.printStackTrace()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-    return DeviceImeiInfo(imei1 = imei1, imei2 = imei2, meid = meid, serial = serial)
-}
-
 fun processSecretCode(context: Context, fullCode: String): Boolean {
     val cleanNumber = fullCode.replace(" ", "")
     var code: String? = null

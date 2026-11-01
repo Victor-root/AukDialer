@@ -12,6 +12,7 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.os.ParcelFileDescriptor
 import android.os.Process
+import android.telephony.TelephonyManager
 import android.util.Log
 import auk.dialer.vroot.BuildConfig
 import java.nio.ByteOrder
@@ -21,7 +22,7 @@ import kotlin.math.abs
 /**
  * Runs in the Shizuku user service process, as the shell (or root) user, what the app is not
  * allowed to do itself. Records calls: unlike the app, that user holds CAPTURE_AUDIO_OUTPUT,
- * which the VOICE_CALL sources require.
+ * which the VOICE_CALL sources require. Reads the IMEI, reserved to READ_PRIVILEGED_PHONE_STATE.
  *
  * Shizuku creates it by reflection through the Context constructor, and nothing of the app process
  * (Koin, preferences) exists here.
@@ -62,13 +63,29 @@ class PrivilegedService(context: Context) : IPrivilegedService.Stub() {
         }
     }
 
+    // Read through a context of the caller's own package: telephony checks that the package it is
+    // asked for belongs to the calling user, and the app's own would not. Root has no package.
+    @SuppressLint("MissingPermission", "HardwareIds")
+    override fun deviceImeis(): Array<String> {
+        val callerPackage = callerContext.callerPackage ?: return emptyArray()
+        return runCatching {
+            val telephony = callerContext.createPackageContext(callerPackage, 0)
+                .getSystemService(TelephonyManager::class.java)
+            (0 until telephony.activeModemCount).mapNotNull { slot ->
+                runCatching { telephony.getImei(slot) }.getOrNull()?.takeIf { it.isNotBlank() }
+            }.toTypedArray()
+        }.onFailure {
+            if (BuildConfig.DEBUG_TOOLS) Log.d("AukPrivilegedService", "IMEI read refused for $callerPackage", it)
+        }.getOrDefault(emptyArray())
+    }
+
     /**
      * The audio stack checks the recording permissions against the caller's attribution, which has
      * to name this process's own user and a package of it rather than the app it was loaded from.
      */
     private class CallerContext(base: Context) : ContextWrapper(base) {
         private val uid = Process.myUid()
-        private val callerPackage = runCatching {
+        val callerPackage = runCatching {
             base.packageManager.getPackagesForUid(uid)?.firstOrNull()
         }.getOrNull()
 

@@ -5,7 +5,10 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -61,6 +64,7 @@ import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
 import auk.dialer.vroot.controller.util.formatPhoneNumber
+import auk.dialer.vroot.controller.ShizukuBridge
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.view.screen.transitions.SlideUpTransitions
 import auk.dialer.vroot.view.theme.callColors
@@ -71,6 +75,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScr
 import com.ramcosta.composedestinations.generated.destinations.ContactEditScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
@@ -144,13 +149,44 @@ fun DialPadScreen(
         }
     }
 
+    val scope = rememberCoroutineScope()
+    var shownImeis by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // The IMEI is reserved to system apps: read through Shizuku when it runs, otherwise shown by
+    // the system's own device info screen.
+    fun showImei() {
+        scope.launch {
+            val imeis = ShizukuBridge.service()
+                ?.let { service -> runCatching { service.deviceImeis().toList() }.getOrNull() }
+                .orEmpty()
+            if (imeis.isNotEmpty()) {
+                shownImeis = imeis
+            } else {
+                runCatching {
+                    context.startActivity(
+                        Intent(Settings.ACTION_DEVICE_INFO_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+            }
+        }
+    }
+
+    /** Runs a code the dialpad handles itself. False when nothing took it. */
+    fun handleSecretCode(code: String): Boolean = if (code == IMEI_CODE) {
+        showImei()
+        true
+    } else {
+        auk.dialer.vroot.controller.util.processSecretCode(context, code)
+    }
+
+    if (shownImeis.isNotEmpty()) {
+        ImeiDialog(imeis = shownImeis, onDismissRequest = { shownImeis = emptyList() })
+    }
+
     LaunchedEffect(number) {
         val cleanNumber = number.replace(" ", "")
-        if (isKnownSecretCode(cleanNumber)) {
-            val handled = auk.dialer.vroot.controller.util.processSecretCode(context, cleanNumber)
-            if (handled) {
-                textFieldValue = TextFieldValue("")
-            }
+        if (isKnownSecretCode(cleanNumber) && handleSecretCode(cleanNumber)) {
+            textFieldValue = TextFieldValue("")
         }
     }
 
@@ -179,8 +215,7 @@ fun DialPadScreen(
         // The same codes as those caught while typing. Network codes such as ##21# (cancel call
         // forwarding) are not among them: they have to reach the carrier as a call.
         if (isKnownSecretCode(cleanNumber)) {
-            val handled = auk.dialer.vroot.controller.util.processSecretCode(context, cleanNumber)
-            if (handled) {
+            if (handleSecretCode(cleanNumber)) {
                 textFieldValue = TextFieldValue("")
             } else {
                 val contact = allContacts.find { it.id == contactId }
@@ -767,5 +802,35 @@ private fun playDtmf(key: String, toneGenerator: ToneGenerator) {
     }
     if (toneType != -1) {
         toneGenerator.startTone(toneType, 120)
+    }
+}
+
+private const val IMEI_CODE = "*#06#"
+
+/** The IMEI of each SIM slot, each one copied on tap. */
+@Composable
+private fun ImeiDialog(imeis: List<String>, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
+    val copyToClipboard = rememberClipboardCopy()
+    val copiedLabel = stringResource(R.string.imei_copied)
+    AukDialog(
+        onDismissRequest = onDismissRequest,
+        title = stringResource(R.string.imei_dialog_title),
+        icon = Icons.Default.PhoneAndroid,
+        confirmAction = AukDialogAction(stringResource(R.string.action_close), onDismissRequest)
+    ) {
+        imeis.forEachIndexed { index, imei ->
+            AukListItem(
+                headline = imei,
+                supporting = stringResource(R.string.imei_label, index + 1),
+                onClick = {
+                    copyToClipboard(imei)
+                    // From Android 13 the system confirms every copy itself.
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        Toast.makeText(context, copiedLabel, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
     }
 }

@@ -564,8 +564,5 @@
     <!-- IMEI / Secret codes -->
     <string name="imei_dialog_title">Информация об устройстве (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
-    <string name="meid_label">MEID</string>
-    <string name="serial_label">Серийный номер</string>
     <string name="imei_copied">Скопировано в буфер обмена</string>
-    <string name="imei_not_available">Недоступно на этом устройстве</string>
 </resources>

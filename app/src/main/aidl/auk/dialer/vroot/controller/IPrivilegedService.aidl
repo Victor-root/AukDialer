@@ -15,4 +15,7 @@ interface IPrivilegedService {
 
     // Ends the capture. False when nothing playable was written.
     boolean stop() = 3;
+
+    // The IMEI of each modem slot that reports one, which only privileged callers may read.
+    String[] deviceImeis() = 4;
 }

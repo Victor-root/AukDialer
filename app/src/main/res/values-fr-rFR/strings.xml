@@ -574,10 +574,7 @@
     <string name="callkp_entered_empty">Aucun chiffre saisi</string>
     <string name="imei_dialog_title">Informations sur l’appareil (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
-    <string name="meid_label">MEID</string>
-    <string name="serial_label">Numéro de série</string>
     <string name="imei_copied">Copié dans le presse-papiers</string>
-    <string name="imei_not_available">Non disponible sur cet appareil</string>
     <!-- Call screen background and active controls -->
     <!-- Incoming call controls and in-call keypad -->
     <!-- IMEI / Secret codes -->

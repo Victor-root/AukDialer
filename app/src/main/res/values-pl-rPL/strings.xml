@@ -562,8 +562,5 @@
     <!-- IMEI / Secret codes -->
     <string name="imei_dialog_title">Informacje o urządzeniu (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
-    <string name="meid_label">MEID</string>
-    <string name="serial_label">Numer seryjny</string>
     <string name="imei_copied">Skopiowano do schowka</string>
-    <string name="imei_not_available">Niedostępne na tym urządzeniu</string>
 </resources>

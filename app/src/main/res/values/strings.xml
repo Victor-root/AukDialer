@@ -706,8 +706,5 @@
     <!-- IMEI / Secret codes -->
     <string name="imei_dialog_title">Device Info (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
-    <string name="meid_label">MEID</string>
-    <string name="serial_label">Serial Number</string>
     <string name="imei_copied">Copied to clipboard</string>
-    <string name="imei_not_available">Not available on this device</string>
 </resources>
