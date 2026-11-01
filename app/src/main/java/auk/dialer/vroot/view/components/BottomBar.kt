@@ -3,10 +3,12 @@ package auk.dialer.vroot.view.components
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Voicemail
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Voicemail
@@ -29,6 +31,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
+import com.ramcosta.composedestinations.generated.destinations.CallRecordingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ContactScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FavoritesScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.RecentScreenDestination
@@ -49,6 +52,7 @@ fun navigationTabLabel(tabId: Int): String = when (tabId) {
     PreferenceManager.TAB_FAVORITES -> stringResource(R.string.nav_favorites)
     PreferenceManager.TAB_CONTACTS -> stringResource(R.string.nav_contacts)
     PreferenceManager.TAB_VOICEMAIL -> stringResource(R.string.nav_voicemail)
+    PreferenceManager.TAB_RECORDINGS -> stringResource(R.string.nav_recordings)
     else -> stringResource(R.string.nav_recents)
 }
 
@@ -56,6 +60,7 @@ fun navigationTabIcon(tabId: Int): ImageVector = when (tabId) {
     PreferenceManager.TAB_FAVORITES -> Icons.Filled.Star
     PreferenceManager.TAB_CONTACTS -> Icons.Filled.Person
     PreferenceManager.TAB_VOICEMAIL -> Icons.Filled.Voicemail
+    PreferenceManager.TAB_RECORDINGS -> Icons.Filled.Mic
     else -> Icons.Filled.History
 }
 
@@ -63,6 +68,7 @@ fun navigationTabRoute(tabId: Int): String = when (tabId) {
     PreferenceManager.TAB_FAVORITES -> FavoritesScreenDestination.route
     PreferenceManager.TAB_CONTACTS -> ContactScreenDestination.route
     PreferenceManager.TAB_VOICEMAIL -> VoicemailListScreenDestination.route
+    PreferenceManager.TAB_RECORDINGS -> CallRecordingsScreenDestination.route
     else -> RecentScreenDestination.route
 }
 
@@ -70,6 +76,7 @@ private fun navigationTabUnselectedIcon(tabId: Int): ImageVector = when (tabId) 
     PreferenceManager.TAB_FAVORITES -> Icons.Outlined.Star
     PreferenceManager.TAB_CONTACTS -> Icons.Outlined.Person
     PreferenceManager.TAB_VOICEMAIL -> Icons.Outlined.Voicemail
+    PreferenceManager.TAB_RECORDINGS -> Icons.Outlined.Mic
     else -> Icons.Outlined.History
 }
 

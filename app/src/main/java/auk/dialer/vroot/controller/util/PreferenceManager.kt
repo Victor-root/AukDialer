@@ -330,7 +330,8 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
         const val TAB_FAVORITES = 1
         const val TAB_CONTACTS = 2
         const val TAB_VOICEMAIL = 3
+        const val TAB_RECORDINGS = 4
 
-        val DEFAULT_BOTTOM_NAV_ORDER = listOf(TAB_RECENTS, TAB_CONTACTS, TAB_FAVORITES, TAB_VOICEMAIL)
+        val DEFAULT_BOTTOM_NAV_ORDER = listOf(TAB_RECENTS, TAB_CONTACTS, TAB_FAVORITES, TAB_VOICEMAIL, TAB_RECORDINGS)
     }
 }

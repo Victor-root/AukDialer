@@ -55,6 +55,7 @@
     <string name="nav_contacts">Contacts</string>
     <string name="nav_recents">Recents</string>
     <string name="nav_voicemail">Voicemail</string>
+    <string name="nav_recordings">Recordings</string>
     <string name="call_type_incoming">Incoming</string>
     <string name="call_type_outgoing">Outgoing</string>
     <string name="call_type_missed">Missed</string>

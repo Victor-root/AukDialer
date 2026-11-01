@@ -170,7 +170,8 @@ fun InterfaceScreen(
         stringResource(R.string.nav_recents) to PreferenceManager.TAB_RECENTS,
         stringResource(R.string.nav_favorites) to PreferenceManager.TAB_FAVORITES,
         stringResource(R.string.nav_contacts) to PreferenceManager.TAB_CONTACTS,
-        stringResource(R.string.nav_voicemail) to PreferenceManager.TAB_VOICEMAIL
+        stringResource(R.string.nav_voicemail) to PreferenceManager.TAB_VOICEMAIL,
+        stringResource(R.string.nav_recordings) to PreferenceManager.TAB_RECORDINGS
     )
 
     Scaffold(
@@ -582,5 +583,6 @@ private fun defaultTabIcon(tab: Int): ImageVector = when (tab) {
     PreferenceManager.TAB_FAVORITES -> Icons.Outlined.Star
     PreferenceManager.TAB_CONTACTS -> Icons.Outlined.Person
     PreferenceManager.TAB_VOICEMAIL -> Icons.Outlined.Voicemail
+    PreferenceManager.TAB_RECORDINGS -> Icons.Outlined.Mic
     else -> Icons.Outlined.History
 }

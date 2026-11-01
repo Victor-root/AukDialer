@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.TopBar
+import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import auk.dialer.vroot.view.theme.aukCollapsingHeader
@@ -189,6 +190,9 @@ fun MainScreen(
                     PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
                         navigator = navigator,
                         showTopBar = false,
+                        isShown = pagerState.currentPage == page
+                    )
+                    PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
                         isShown = pagerState.currentPage == page
                     )
                 }
