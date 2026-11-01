@@ -506,7 +506,7 @@ fun CallLogFullContent(
         ) {
             if (isLoading && logs.isEmpty()) {
                 AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
-            } else if (logs.isEmpty() && (favorites.isEmpty() || selectedFilter != CallLogFilter.All)) {
+            } else if (filteredLogs.isEmpty() && (favorites.isEmpty() || selectedFilter != CallLogFilter.All)) {
                 EmptyCallLogsState()
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
