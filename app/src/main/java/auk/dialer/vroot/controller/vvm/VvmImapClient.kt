@@ -382,23 +382,19 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
      * carrier's phone menu keeps announcing messages the user already played
      * here as new.
      */
-    fun setSeenFlag(serverUid: String, seen: Boolean): FlagUpdateResult {
+    fun setSeenFlag(serverUid: Long, seen: Boolean): FlagUpdateResult {
         return runImapWriteAction(expungeOnClose = false) { inbox ->
-            val uid = serverUid.toLongOrNull()
-                ?: throw IllegalArgumentException("Server UID is not numeric: $serverUid")
-            val message = inbox.getMessageByUID(uid)
-                ?: throw IllegalStateException("No message on server with UID $uid")
+            val message = inbox.getMessageByUID(serverUid)
+                ?: throw IllegalStateException("No message on server with UID $serverUid")
             inbox.setFlags(arrayOf(message), Flags(Flags.Flag.SEEN), seen)
         }
     }
 
     /** Flags [serverUid] \Deleted and expunges on close, so it is really gone. */
-    fun deleteMessage(serverUid: String): FlagUpdateResult {
+    fun deleteMessage(serverUid: Long): FlagUpdateResult {
         return runImapWriteAction(expungeOnClose = true) { inbox ->
-            val uid = serverUid.toLongOrNull()
-                ?: throw IllegalArgumentException("Server UID is not numeric: $serverUid")
-            val message = inbox.getMessageByUID(uid)
-                ?: throw IllegalStateException("No message on server with UID $uid")
+            val message = inbox.getMessageByUID(serverUid)
+                ?: throw IllegalStateException("No message on server with UID $serverUid")
             inbox.setFlags(arrayOf(message), Flags(Flags.Flag.DELETED), true)
         }
     }

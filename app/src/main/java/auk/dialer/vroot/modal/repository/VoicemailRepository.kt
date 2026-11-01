@@ -388,9 +388,13 @@ class VoicemailRepository(
         }
     }
 
-    private data class OwnedRowMeta(val serverUid: String, val phoneAccountId: String?)
+    private data class OwnedRowMeta(val serverUid: Long, val phoneAccountId: String?)
 
-    /** Returns null for rows owned by another voicemail app: we hold no credentials for those. */
+    /**
+     * Returns null for rows owned by another voicemail app, which we hold no
+     * credentials for, and for rows with no message behind them on the server
+     * (debug injections): there is nothing to mirror, so no network to bring up.
+     */
     private fun loadOwnedRowMeta(rowId: Long): OwnedRowMeta? {
         val rowUri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, rowId)
         val projection = arrayOf(
@@ -402,8 +406,8 @@ class VoicemailRepository(
             context.contentResolver.query(rowUri, projection, null, null, null)?.use { c ->
                 if (!c.moveToNext()) return@use null
                 if (c.getString(0) != context.packageName) return@use null
-                val serverUid = c.getString(1)
-                if (serverUid.isNullOrBlank()) return@use null
+                // IMAP UIDs are numbers, which is how a row stored from the server is told apart.
+                val serverUid = c.getString(1)?.toLongOrNull() ?: return@use null
                 OwnedRowMeta(serverUid, c.getString(2))
             }
         } catch (_: Exception) {
