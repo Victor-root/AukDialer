@@ -2,6 +2,7 @@ package auk.dialer.vroot.controller
 
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -16,7 +17,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
-import auk.dialer.vroot.controller.util.VoicemailPlayer
+import auk.dialer.vroot.controller.util.SpeechPlayer
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
 import auk.dialer.vroot.modal.data.Voicemail
 import auk.dialer.vroot.modal.data.VoicemailStatus
@@ -77,7 +78,7 @@ class VoicemailViewModel(
     private val _syncFoundNothing = MutableStateFlow(false)
     val syncFoundNothing: StateFlow<Boolean> = _syncFoundNothing.asStateFlow()
 
-    private val player = VoicemailPlayer(
+    private val player = SpeechPlayer<Long>(
         context = context.applicationContext,
         onUpdate = { playingId, isPlaying, positionMs, durationMs ->
             _playback.value = PlaybackState(playingId, isPlaying, positionMs, durationMs)
@@ -201,7 +202,7 @@ class VoicemailViewModel(
     }
 
     fun togglePlayback(voicemail: Voicemail) {
-        player.toggle(voicemail.id)
+        player.toggle(voicemail.id, ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, voicemail.id))
         if (!voicemail.isRead) {
             markAsRead(voicemail.id, true)
         }

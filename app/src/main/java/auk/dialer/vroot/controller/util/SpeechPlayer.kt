@@ -1,6 +1,5 @@
 package auk.dialer.vroot.controller.util
 
-import android.content.ContentUris
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
@@ -10,47 +9,50 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.net.Uri
 import android.os.PowerManager
-import android.provider.VoicemailContract
 
 /**
- * Single-instance MediaPlayer wrapper for voicemail audio streamed from the
- * voicemail provider.
+ * Single-instance MediaPlayer wrapper for spoken audio, voicemails and call recordings, that can
+ * play on the loudspeaker or the earpiece. Each item is told apart by its [K] key.
  *
  * All interaction stays on the main thread, audio focus is requested on play and
  * abandoned on release, and every native call is guarded: vendor MediaPlayer
  * implementations throw where AOSP does not.
  */
-class VoicemailPlayer(
+class SpeechPlayer<K : Any>(
     private val context: Context,
-    private val onUpdate: (playingId: Long?, isPlaying: Boolean, positionMs: Int, durationMs: Int) -> Unit,
+    private val onUpdate: (playingId: K?, isPlaying: Boolean, positionMs: Int, durationMs: Int) -> Unit,
     private val onError: (message: String) -> Unit,
     private val onAudioUnavailable: () -> Unit,
 ) {
     private var player: MediaPlayer? = null
-    private var currentItemId: Long? = null
+    private var currentItemId: K? = null
     private var preparing = false
     private var audioFocusRequest: AudioFocusRequest? = null
     private var proximityWakeLock: PowerManager.WakeLock? = null
+    private var proximityLockArmedAt = 0L
     private var speakerOn = true
     private val handler = Handler(Looper.getMainLooper())
 
     private val progressRunnable = object : Runnable {
         override fun run() {
             notifyUpdate()
+            updateProximityLock()
             handler.postDelayed(this, PROGRESS_INTERVAL_MS)
         }
     }
 
-    fun toggle(voicemailId: Long) {
+    /** Plays [uri] as [id], or pauses and resumes it when it is the current one. */
+    fun toggle(id: K, uri: Uri) {
         try {
-            if (currentItemId == voicemailId && preparing) return
-            if (currentItemId == voicemailId && player != null) {
+            if (currentItemId == id && preparing) return
+            if (currentItemId == id && player != null) {
                 togglePlayPause()
                 return
             }
             release()
-            startNew(voicemailId)
+            startNew(id, uri)
         } catch (e: Exception) {
             release()
             onError(e.message ?: e.javaClass.simpleName)
@@ -130,8 +132,7 @@ class VoicemailPlayer(
         }
     }
 
-    private fun startNew(voicemailId: Long) {
-        val uri = ContentUris.withAppendedId(VoicemailContract.Voicemails.CONTENT_URI, voicemailId)
+    private fun startNew(id: K, uri: Uri) {
 
         // Checked up front rather than left to MediaPlayer: it swallows the
         // missing-file error internally and surfaces an unrelated one, which
@@ -201,7 +202,7 @@ class VoicemailPlayer(
             return
         }
         player = mp
-        currentItemId = voicemailId
+        currentItemId = id
         // Emit the preparing state without touching native getters: querying
         // duration or position while PREPARING raises a native error on some
         // vendor builds, which then aborts playback through onError.
@@ -209,7 +210,7 @@ class VoicemailPlayer(
     }
 
     /** True when the provider can actually hand back the recording's bytes. */
-    private fun isAudioReadable(uri: android.net.Uri): Boolean {
+    private fun isAudioReadable(uri: Uri): Boolean {
         return try {
             context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { true } ?: false
         } catch (_: Exception) {
@@ -348,9 +349,17 @@ class VoicemailPlayer(
             if (!powerManager.isWakeLockLevelSupported(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK)) return
             val lock = proximityWakeLock ?: powerManager.newWakeLock(
                 PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,
-                "AukDialer::VoicemailProximity",
-            ).also { proximityWakeLock = it }
-            if (!lock.isHeld) lock.acquire(PROXIMITY_LOCK_TIMEOUT_MS)
+                "AukDialer::SpeechProximity",
+            ).also {
+                // Re-arming its timeout then takes a single acquire, not a matching release each.
+                it.setReferenceCounted(false)
+                proximityWakeLock = it
+            }
+            val now = System.currentTimeMillis()
+            if (!lock.isHeld || now - proximityLockArmedAt > PROXIMITY_LOCK_REARM_MS) {
+                lock.acquire(PROXIMITY_LOCK_TIMEOUT_MS)
+                proximityLockArmedAt = now
+            }
         } catch (_: Exception) {
         }
     }
@@ -365,8 +374,9 @@ class VoicemailPlayer(
     companion object {
         private const val PROGRESS_INTERVAL_MS = 250L
 
-        /** Safety net: no voicemail runs this long, and a stuck lock would
-         *  leave the screen dead until the next power press. */
+        /** Safety net: a lock left held would leave the screen dead until the next power press.
+         *  Playback re-arms it well before it runs out, so a long recording keeps it. */
         private const val PROXIMITY_LOCK_TIMEOUT_MS = 10 * 60 * 1000L
+        private const val PROXIMITY_LOCK_REARM_MS = 60 * 1000L
     }
 }

@@ -392,8 +392,8 @@ private fun VoicemailRow(
                             Icons.Default.Phone
                         },
                         contentDescription = stringResource(
-                            if (isSpeakerOn) R.string.voicemail_route_speaker
-                            else R.string.voicemail_route_earpiece
+                            if (isSpeakerOn) R.string.playback_route_speaker
+                            else R.string.playback_route_earpiece
                         ),
                         tint = MaterialTheme.colorScheme.primary
                     )
