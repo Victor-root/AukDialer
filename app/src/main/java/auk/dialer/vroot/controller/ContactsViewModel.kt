@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import auk.dialer.vroot.controller.util.indexLetter
+import auk.dialer.vroot.controller.util.nameCollator
 
 class ContactsViewModel(
     private val contactsRepo: IContactsRepository,
@@ -91,10 +93,11 @@ class ContactsViewModel(
             else -> contacts.filter { it.accountName == account.name && it.accountType == account.type }
         }
         
+        val collator = nameCollator()
         if (sortOrder == 1) {
-            baseFiltered.sortedBy { it.name.split(" ").lastOrNull()?.lowercase() ?: it.name.lowercase() }
+            baseFiltered.sortedWith(compareBy(collator) { it.name.split(" ").lastOrNull() ?: it.name })
         } else {
-            baseFiltered.sortedBy { it.name.lowercase() }
+            baseFiltered.sortedWith(compareBy(collator) { it.name })
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -105,8 +108,7 @@ class ContactsViewModel(
             } else {
                 it.name
             }
-            val firstChar = nameToUse.firstOrNull()?.uppercaseChar() ?: '#'
-            if (firstChar.isLetter()) firstChar else '#'
+            indexLetter(nameToUse)
         }.toMutableMap()
 
         val finalMap = linkedMapOf<Char, List<Contact>>()

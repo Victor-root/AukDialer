@@ -30,6 +30,7 @@ import auk.dialer.vroot.controller.util.formatPhoneNumber
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import auk.dialer.vroot.controller.util.indexLetter
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -58,10 +59,7 @@ fun AZListScroll(
     val finalGrouped = remember(contacts, grouped) {
         if (grouped != null) return@remember grouped
         
-        val mainGroups = contacts.groupBy {
-            val firstChar = it.name.firstOrNull()?.uppercaseChar() ?: '#'
-            if (firstChar.isLetter()) firstChar else '#'
-        }.toMutableMap()
+        val mainGroups = contacts.groupBy { indexLetter(it.name) }.toMutableMap()
 
         val finalMap = linkedMapOf<Char, List<Contact>>()
 

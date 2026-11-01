@@ -17,6 +17,8 @@ import android.text.format.DateUtils
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import auk.dialer.vroot.R
+import java.text.Collator
+import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -100,6 +102,31 @@ private fun toNationalFrenchNumber(number: String): String {
         stripped.startsWith("0033") -> "0" + stripped.removePrefix("0033")
         else -> number
     }
+}
+
+private val DIACRITICS = "\\p{Mn}+".toRegex()
+
+/** The text without its accents, so "Hélène" is found by "helene" and maps to the right keys. */
+fun String.withoutAccents(): String = Normalizer.normalize(this, Normalizer.Form.NFD).replace(DIACRITICS, "")
+
+/** The letter a name is filed under in the contact list: its first letter without accent, or '#'. */
+fun indexLetter(name: String): Char {
+    val first = name.withoutAccents().firstOrNull()?.uppercaseChar() ?: return '#'
+    return if (first.isLetter()) first else '#'
+}
+
+/** Orders names the way the user's language does, accented letters with their base letter. */
+fun nameCollator(): Collator = Collator.getInstance(Locale.getDefault())
+
+/**
+ * Whether [number] contains the digits typed in [query], whatever punctuation either carries and
+ * whether the number was saved in international (+33) or national (0) form.
+ */
+fun numberMatchesQuery(number: String, query: String): Boolean {
+    val queryDigits = query.filter { it.isDigit() }
+    if (queryDigits.isEmpty()) return false
+    return number.filter { it.isDigit() }.contains(queryDigits) ||
+        toNationalFrenchNumber(number).filter { it.isDigit() }.contains(queryDigits)
 }
 
 fun normalizePhoneNumber(number: String): String {

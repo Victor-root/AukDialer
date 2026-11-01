@@ -46,6 +46,9 @@ import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
+import auk.dialer.vroot.controller.util.nameCollator
+import auk.dialer.vroot.controller.util.numberMatchesQuery
+import auk.dialer.vroot.controller.util.withoutAccents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -85,11 +88,11 @@ fun ContactSelectionScreen(
         }
         if (searchQuery.isNotBlank()) {
             list = list.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.phoneNumbers.any { num -> num.contains(searchQuery) }
+                it.name.withoutAccents().contains(searchQuery.withoutAccents(), ignoreCase = true) ||
+                it.phoneNumbers.any { num -> numberMatchesQuery(num, searchQuery) }
             }
         }
-        list.sortedBy { it.name.lowercase() }
+        list.sortedWith(compareBy(nameCollator()) { it.name })
     }
 
     val groupedContacts = remember(filteredContacts) {

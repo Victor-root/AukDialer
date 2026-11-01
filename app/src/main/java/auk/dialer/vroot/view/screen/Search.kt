@@ -43,6 +43,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.controller.util.numberMatchesQuery
+import auk.dialer.vroot.controller.util.withoutAccents
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination<RootGraph>
@@ -135,13 +137,15 @@ fun ContactSearchContent(
 
     val filteredContacts = remember(query, contacts) {
         if (query.isBlank()) emptyList()
-        else contacts.filter {
-            val cleanQuery = query.replace(" ", "")
-            val matchesName = it.name.contains(query, ignoreCase = true)
-            val matchesNickname = it.nickname?.contains(query, ignoreCase = true) ?: false
-            val matchesNumber = it.phoneNumbers.any { number -> number.replace(" ", "").contains(cleanQuery) }
-            matchesName || matchesNickname || matchesNumber
-        }.take(50)
+        else {
+            val plainQuery = query.withoutAccents()
+            contacts.filter {
+                val matchesName = it.name.withoutAccents().contains(plainQuery, ignoreCase = true)
+                val matchesNickname = it.nickname?.withoutAccents()?.contains(plainQuery, ignoreCase = true) ?: false
+                val matchesNumber = it.phoneNumbers.any { number -> numberMatchesQuery(number, query) }
+                matchesName || matchesNickname || matchesNumber
+            }.take(50)
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

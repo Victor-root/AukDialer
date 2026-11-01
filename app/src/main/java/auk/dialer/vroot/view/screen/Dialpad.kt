@@ -74,6 +74,8 @@ import kotlinx.coroutines.awaitCancellation
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.controller.util.numberMatchesQuery
+import auk.dialer.vroot.controller.util.withoutAccents
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
     ExperimentalComposeUiApi::class
@@ -161,7 +163,7 @@ fun DialPadScreen(
                 val cleanQuery = number.replace(" ", "")
                 allContacts.asSequence()
                     .filter { contact ->
-                        val matchesNumber = contact.phoneNumbers.any { it.replace(" ", "").contains(cleanQuery) }
+                        val matchesNumber = contact.phoneNumbers.any { numberMatchesQuery(it, cleanQuery) }
                         val matchesName = t9Enabled && T9Matcher.isMatch(contact.name, cleanQuery)
                         val matchesNickname = t9Enabled && contact.nickname?.let { T9Matcher.isMatch(it, cleanQuery) } ?: false
                         matchesNumber || matchesName || matchesNickname
@@ -686,13 +688,16 @@ fun DialPadKey(
 }
 
 object T9Matcher {
-    fun isMatch(contactName: String, query: String): Boolean {
+    private fun isSeparator(c: Char) = c == ' ' || c == '-' || c == '.' || c == '_' || c == '\''
+
+    fun isMatch(name: String, query: String): Boolean {
         if (query.isEmpty()) return false
+        // Accented letters sit on the keys of their base letter: É is on 3 like E.
+        val contactName = name.withoutAccents()
 
         val startIndices = mutableListOf(0)
         for (i in 0 until contactName.length - 1) {
-            val c = contactName[i]
-            if (c == ' ' || c == '-' || c == '.' || c == '_') {
+            if (isSeparator(contactName[i])) {
                 startIndices.add(i + 1)
             }
         }
@@ -703,7 +708,7 @@ object T9Matcher {
 
             while (qIdx < query.length && nIdx < contactName.length) {
                 val nC = contactName[nIdx]
-                if (nC == ' ' || nC == '-' || nC == '.' || nC == '_') {
+                if (isSeparator(nC)) {
                     nIdx++
                     continue
                 }
