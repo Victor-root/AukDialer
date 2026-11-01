@@ -174,9 +174,9 @@ fun DialPadScreen(
 
     val performCall = { targetNumber: String, contactId: String? ->
         val cleanNumber = targetNumber.replace(" ", "")
-        if (cleanNumber == "*#06#" ||
-            (cleanNumber.startsWith("*#*#") && cleanNumber.endsWith("#*#*") && cleanNumber.length >= 9) ||
-            (cleanNumber.startsWith("##") && cleanNumber.endsWith("#") && cleanNumber.length >= 4)) {
+        // The same codes as those caught while typing. Network codes such as ##21# (cancel call
+        // forwarding) are not among them: they have to reach the carrier as a call.
+        if (isKnownSecretCode(cleanNumber)) {
             val handled = auk.dialer.vroot.controller.util.processSecretCode(context, cleanNumber)
             if (handled) {
                 textFieldValue = TextFieldValue("")
@@ -431,14 +431,15 @@ fun DialPadScreen(
                                         context = context,
                                         onClick = onDigitClick,
                                         onLongClick = { digit ->
-                                            if (speedDialEnabled && number.isEmpty()) {
+                                            // 0 has no speed dial slot (they run from 2 to 9): it always types +.
+                                            if (digit == "0") {
+                                                onDigitClick("+")
+                                            } else if (speedDialEnabled && number.isEmpty()) {
                                                 val mapping = prefs.getString("speed_dial_$digit", null)
                                                 val speedNumber = mapping?.split("|")?.getOrNull(1)
                                                 if (speedNumber != null) {
                                                     callLauncher.dial(speedNumber, null)
                                                 }
-                                            } else if (digit == "0") {
-                                                onDigitClick("+")
                                             }
                                         }
                                     )
