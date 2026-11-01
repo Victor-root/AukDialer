@@ -33,7 +33,7 @@ class BackupViewModel(
     fun exportContacts(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val contacts = contactsRepo.getContacts()
+                val contacts = contactsRepo.getDeviceContactsWithDetails()
                 val vCard = buildString {
                     contacts.forEach { contact ->
                         append("BEGIN:VCARD\n")

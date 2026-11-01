@@ -7,6 +7,12 @@ import auk.dialer.vroot.modal.data.Contact
 interface IContactsRepository {
     fun getContacts(includePrivate: Boolean = true): List<Contact>
     fun getContactById(contactId: String): Contact?
+
+    /**
+     * Every contact in the device address book with all its numbers and emails, including those
+     * with no number. Private contacts are not part of it: they have their own export.
+     */
+    fun getDeviceContactsWithDetails(): List<Contact>
     fun getContactByNumber(number: String): Contact?
     fun toggleFavorite(contactId: String, isFavorite: Boolean)
     fun saveContact(contact: Contact)

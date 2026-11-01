@@ -168,6 +168,24 @@ class ContactsRepository(
         return numbers
     }
 
+    override fun getDeviceContactsWithDetails(): List<Contact> {
+        val ids = mutableListOf<String>()
+        try {
+            contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                arrayOf(ContactsContract.Contacts._ID),
+                null,
+                null,
+                "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC"
+            )?.use { cursor ->
+                while (cursor.moveToNext()) cursor.getString(0)?.let(ids::add)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ids.mapNotNull { getContactById(it) }
+    }
+
     override fun getContactById(contactId: String): Contact? {
         if (contactId.startsWith("p")) {
             val id = contactId.substring(1).toLongOrNull() ?: return null
