@@ -43,7 +43,11 @@ class CallService : InCallService() {
     private val preferenceManager: PreferenceManager by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var redialCount = 0
+    // The number being redialled: its new calls are attempts of the same series, not a fresh start.
+    private var redialNumber: String? = null
     private val callStartTimes = mutableMapOf<Call, Long>()
+    // Calls that have connected once: resuming one from hold is not a new answer.
+    private val connectedCalls = mutableSetOf<Call>()
 
     // Runs while the call screen is being opened for a new call, until it shows or a timeout
     // passes. The ringing notification stays quiet meanwhile rather than peeking over a screen
@@ -216,8 +220,9 @@ class CallService : InCallService() {
             super.onStateChanged(call, state)
             updateCallState()
             
-            if (state == Call.STATE_ACTIVE) {
+            if (state == Call.STATE_ACTIVE && connectedCalls.add(call)) {
                 redialCount = 0
+                redialNumber = null
                 startAutoRecordingIfEnabled(call)
             }
 
@@ -255,8 +260,8 @@ class CallService : InCallService() {
     private fun handleDisconnect(call: Call, cause: DisconnectCause?) {
         val number = call.details.handle?.schemeSpecificPart ?: ""
 
-        if (CallRecorder.isRecording.value &&
-            (getCalls()?.none { it != call && it.details.state == Call.STATE_ACTIVE } != false)) {
+        // Also cancels a recording still starting: it would otherwise carry on after the call.
+        if (getCalls()?.none { it != call && it.details.state == Call.STATE_ACTIVE } != false) {
             CallRecorder.stop()
         }
 
@@ -268,6 +273,7 @@ class CallService : InCallService() {
             
             if (redialCount < maxAttempts) {
                 redialCount++
+                redialNumber = number
                 serviceScope.launch {
                     delay(delayMs)
                     val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")).apply {
@@ -275,6 +281,10 @@ class CallService : InCallService() {
                     }
                     startActivity(intent)
                 }
+            } else {
+                // Series over: a later call to that number starts a new one.
+                redialCount = 0
+                redialNumber = null
             }
         }
 
@@ -465,10 +475,13 @@ class CallService : InCallService() {
         }
 
         instance = this
-        redialCount = 0
         call.registerCallback(callCallback)
 
         val number = call.details.handle?.schemeSpecificPart ?: ""
+        if (number != redialNumber) {
+            redialCount = 0
+            redialNumber = null
+        }
         if (isNumberBlocked(number)) {
             if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
             handleBlockedCall(call, number)
@@ -506,10 +519,11 @@ class CallService : InCallService() {
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
         call.unregisterCallback(callCallback)
+        connectedCalls.remove(call)
         updateCallState()
         val calls = getCalls() ?: emptyList()
         if (calls.isEmpty()) {
-            if (CallRecorder.isRecording.value) CallRecorder.stop()
+            CallRecorder.stop()
             removeForeground()
             cancelNotification()
         } else {
@@ -684,7 +698,7 @@ class CallService : InCallService() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (CallRecorder.isRecording.value) CallRecorder.stop()
+        CallRecorder.stop()
         if (instance == this) instance = null
         serviceScope.cancel()
     }
