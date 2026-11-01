@@ -62,7 +62,9 @@ fun VoicemailListScreen(navigator: DestinationsNavigator) {
 @Composable
 fun VoicemailScreenContent(
     navigator: DestinationsNavigator,
-    showTopBar: Boolean = true
+    showTopBar: Boolean = true,
+    // False while another tab of the main screen is shown: the pager keeps this one composed.
+    isShown: Boolean = true
 ) {
     val context = LocalContext.current
     val viewModel: VoicemailViewModel = koinActivityViewModel()
@@ -95,15 +97,27 @@ fun VoicemailScreenContent(
     // while the phone was locked can land without that notice ever arriving,
     // leaving a stale list in front of someone who just tapped the notification.
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    // Playback stops with the list out of sight (other tab, other screen, app in the background):
+    // nothing else on screen could stop it.
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                isDefaultDialer = viewModel.isDefaultDialer()
-                if (isDefaultDialer) viewModel.fetchVoicemails()
+            when (event) {
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> {
+                    isDefaultDialer = viewModel.isDefaultDialer()
+                    if (isDefaultDialer) viewModel.fetchVoicemails()
+                }
+                androidx.lifecycle.Lifecycle.Event.ON_STOP -> viewModel.stopPlayback()
+                else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            viewModel.stopPlayback()
+        }
+    }
+    LaunchedEffect(isShown) {
+        if (!isShown) viewModel.stopPlayback()
     }
 
     LaunchedEffect(message) {

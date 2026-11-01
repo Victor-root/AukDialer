@@ -73,7 +73,8 @@ class VoicemailPlayer(
      */
     fun setSpeakerOn(enabled: Boolean) {
         speakerOn = enabled
-        applyAudioRoute()
+        // Outside playback the route is applied when playback resumes.
+        if (isPlaying()) applyAudioRoute()
         updateProximityLock()
     }
 
@@ -93,9 +94,17 @@ class VoicemailPlayer(
         currentItemId = null
         preparing = false
         releaseProximityLock()
+        releaseAudioSession()
+        notifyUpdate()
+    }
+
+    /**
+     * Hands the audio back whenever playback stops: other apps' music resumes, and the phone
+     * leaves the call mode the earpiece needs, which otherwise keeps the volume keys on call volume.
+     */
+    private fun releaseAudioSession() {
         restoreAudioMode()
         abandonFocus()
-        notifyUpdate()
     }
 
     private fun togglePlayPause() {
@@ -105,8 +114,11 @@ class VoicemailPlayer(
                 mp.pause()
                 stopProgressTimer()
                 updateProximityLock()
+                releaseAudioSession()
                 notifyUpdate()
             } else if (requestFocus()) {
+                enterCommunicationMode()
+                applyAudioRoute()
                 mp.start()
                 startProgressTimer()
                 updateProximityLock()
@@ -164,6 +176,7 @@ class VoicemailPlayer(
             } catch (_: Exception) {
             }
             releaseProximityLock()
+            releaseAudioSession()
             notifyUpdate()
         }
         mp.setOnErrorListener { _, what, extra ->
@@ -245,6 +258,7 @@ class VoicemailPlayer(
                 runCatching { player?.pause() }
                 stopProgressTimer()
                 releaseProximityLock()
+                releaseAudioSession()
                 notifyUpdate()
             }
         }
@@ -318,13 +332,14 @@ class VoicemailPlayer(
         }
     }
 
+    private fun isPlaying(): Boolean = try {
+        player?.isPlaying == true
+    } catch (_: Exception) {
+        false
+    }
+
     private fun updateProximityLock() {
-        val playing = try {
-            player?.isPlaying == true
-        } catch (_: Exception) {
-            false
-        }
-        if (!speakerOn && playing) acquireProximityLock() else releaseProximityLock()
+        if (!speakerOn && isPlaying()) acquireProximityLock() else releaseProximityLock()
     }
 
     private fun acquireProximityLock() {

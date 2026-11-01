@@ -203,6 +203,9 @@ class VoicemailViewModel(
 
     fun seekTo(positionMs: Int) = player.seekTo(positionMs)
 
+    /** Ends playback, for when the list is no longer in front of the user. */
+    fun stopPlayback() = player.release()
+
     fun toggleSpeaker() {
         val enabled = !_isSpeakerOn.value
         _isSpeakerOn.value = enabled

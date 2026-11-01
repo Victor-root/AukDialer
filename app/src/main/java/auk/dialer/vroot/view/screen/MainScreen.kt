@@ -188,7 +188,8 @@ fun MainScreen(
                     )
                     PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
                         navigator = navigator,
-                        showTopBar = false
+                        showTopBar = false,
+                        isShown = pagerState.currentPage == page
                     )
                 }
             }
