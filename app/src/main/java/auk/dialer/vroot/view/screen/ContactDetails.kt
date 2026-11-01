@@ -61,6 +61,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @Composable
 private fun CallBackgroundRow(
@@ -491,14 +493,14 @@ fun ContactDetailsScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(modifier = Modifier.padding(innerPadding.aukExceptBottom()).fillMaxSize()) {
             if (isFullLoading) {
                 AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
             } else {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = aukScrollContentPadding(16.dp, innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {

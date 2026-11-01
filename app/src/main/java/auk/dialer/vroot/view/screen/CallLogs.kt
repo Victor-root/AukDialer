@@ -43,6 +43,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -162,7 +164,7 @@ fun CallLogFullScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(modifier = Modifier.padding(innerPadding.aukExceptBottom()).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 AukAccentFilterBar {
                     items(CallLogFilter.entries) { filter ->
@@ -209,7 +211,7 @@ fun CallLogFullScreen(
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
+                            contentPadding = aukScrollContentPadding(16.dp, innerPadding),
                             verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
                             groupedLogs.forEach { (header, logsInGroup) ->

@@ -36,6 +36,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import androidx.compose.ui.graphics.Color
 import org.koin.compose.koinInject
+import auk.dialer.vroot.view.theme.aukExceptBottom
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -64,8 +65,9 @@ fun AboutScreen(navigator: DestinationsNavigator) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(padding.aukExceptBottom())
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = padding.calculateBottomPadding())
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)

@@ -24,6 +24,8 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -60,8 +62,8 @@ fun ContactVisibilityScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(16.dp),
+                .padding(padding.aukExceptBottom()),
+            contentPadding = aukScrollContentPadding(16.dp, padding),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {

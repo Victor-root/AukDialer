@@ -44,6 +44,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -239,9 +241,9 @@ fun ContactEditScreen(
 
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(innerPadding.aukExceptBottom())
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = aukScrollContentPadding(16.dp, innerPadding),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {

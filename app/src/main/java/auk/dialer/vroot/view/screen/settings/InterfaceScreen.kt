@@ -50,6 +50,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.math.roundToInt
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 private val RoundnessRange = 1f..32f
 private const val RoundnessSteps = 7
@@ -189,11 +191,11 @@ fun InterfaceScreen(
             )
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Box(modifier = Modifier.padding(padding.aukExceptBottom()).fillMaxSize()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = aukScrollContentPadding(16.dp, padding),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 item {

@@ -31,6 +31,8 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.*
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -70,9 +72,9 @@ fun SettingsScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(padding.aukExceptBottom())
                 .imePadding(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = aukScrollContentPadding(16.dp, padding),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {

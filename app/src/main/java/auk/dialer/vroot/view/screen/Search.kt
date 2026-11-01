@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -41,6 +42,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukExceptBottom
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination<RootGraph>
@@ -75,12 +77,13 @@ fun SearchScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(modifier = Modifier.padding(innerPadding.aukExceptBottom()).fillMaxSize()) {
             ContactSearchContent(
                 navigator = navigator,
                 isGranted = permState.status == PermissionStatus.Granted,
                 onRequestPermission = { permState.launchPermissionRequest() },
-                listState = listState
+                listState = listState,
+                bottomPadding = innerPadding.calculateBottomPadding()
             )
         }
     }
@@ -92,7 +95,8 @@ fun ContactSearchContent(
     navigator: DestinationsNavigator,
     isGranted: Boolean,
     onRequestPermission: () -> Unit,
-    listState: androidx.compose.foundation.lazy.LazyListState
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    bottomPadding: Dp
 ) {
     if (!isGranted) {
         // No search field here, so nothing paints the accent behind the status bar.
@@ -249,7 +253,7 @@ fun ContactSearchContent(
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 100.dp)
+                            contentPadding = PaddingValues(bottom = 100.dp + bottomPadding)
                         ) {
                             item {
                                 AukSectionHeader(title = stringResource(R.string.search_results_header), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))

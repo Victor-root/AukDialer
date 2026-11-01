@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
+import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -122,8 +124,8 @@ fun CallRecordingsScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier.fillMaxSize().padding(padding.aukExceptBottom()),
+                contentPadding = aukScrollContentPadding(16.dp, padding),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(recordings, key = { it.absolutePath }) { file ->
