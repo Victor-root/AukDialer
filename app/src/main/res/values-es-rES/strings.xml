@@ -458,4 +458,16 @@
     <!-- Call screen background and active controls -->
     <!-- Incoming call controls and in-call keypad -->
     <!-- IMEI / Secret codes -->
+
+    <!-- Call recording and call waiting -->
+    <string name="action_record">Grabar</string>
+    <string name="action_stop_recording">Detener</string>
+    <string name="call_recording_in_progress">Grabando</string>
+    <string name="call_waiting_answer_hold">Contestar y retener</string>
+    <string name="call_waiting_end_and_answer">Colgar y contestar</string>
+
+    <!-- In-call keypad accessibility -->
+    <string name="callkp_digit_desc">Marcar %1$s</string>
+    <string name="callkp_entered_desc">Dígitos introducidos: %1$s</string>
+    <string name="callkp_entered_empty">Ningún dígito introducido</string>
 </resources>
