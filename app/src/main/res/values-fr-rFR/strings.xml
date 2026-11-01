@@ -547,6 +547,7 @@
     <string name="voicemail_status_unreachable_description">AukDialer n’a pas pu joindre la boîte vocale de votre opérateur. Vérifiez votre connexion, et essayez en données mobiles si vous êtes en Wi‑Fi.</string>
     <string name="voicemail_status_open_settings">Réglages de messagerie vocale</string>
     <string name="voicemail_audio_unavailable">Cet enregistrement n’est plus disponible.</string>
+    <string name="voicemail_playback_failed">Ce message vocal n’a pas pu être lu.</string>
     <string name="voicemail_needs_default_dialer_title">Messagerie vocale visuelle indisponible</string>
     <string name="voicemail_needs_default_dialer_description">AukDialer doit être votre application de téléphone par défaut pour recevoir les messages vocaux de votre opérateur.</string>
     <string name="notif_channel_voicemail">Messagerie vocale</string>
@@ -594,6 +595,7 @@
     <string name="action_unblock_number">Débloquer le numéro</string>
     <string name="blocked_list_title">Numéros bloqués</string>
     <string name="blocked_list_empty">Vous n’avez encore bloqué aucun numéro.</string>
+    <string name="blocked_list_no_match">Aucun numéro bloqué ne correspond</string>
     <string name="blocked_list_item_supporting">Les appels de ce numéro sont bloqués</string>
     <string name="blocked_add_number">Bloquer un numéro</string>
     <string name="blocked_add_number_hint">Numéro de téléphone</string>

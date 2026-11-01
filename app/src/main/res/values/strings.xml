@@ -577,6 +577,7 @@
     <string name="action_unblock_number">Unblock number</string>
     <string name="blocked_list_title">Blocked numbers</string>
     <string name="blocked_list_empty">You have not blocked any numbers yet.</string>
+    <string name="blocked_list_no_match">No matching blocked numbers</string>
     <string name="blocked_list_item_supporting">Calls from this number are blocked</string>
     <string name="blocked_add_number">Block a number</string>
     <string name="blocked_add_number_hint">Phone number</string>
@@ -673,6 +674,7 @@
     <string name="voicemail_status_unreachable_description">AukDialer could not reach your carrier\'s mailbox. Check your connection, and try mobile data if you are on Wi‑Fi.</string>
     <string name="voicemail_status_open_settings">Voicemail settings</string>
     <string name="voicemail_audio_unavailable">This recording is no longer available.</string>
+    <string name="voicemail_playback_failed">This voicemail could not be played.</string>
     <string name="voicemail_needs_default_dialer_title">Visual voicemail unavailable</string>
     <string name="voicemail_needs_default_dialer_description">AukDialer must be your default phone app to receive voicemails from your carrier.</string>
     <string name="notif_channel_voicemail">Voicemail</string>

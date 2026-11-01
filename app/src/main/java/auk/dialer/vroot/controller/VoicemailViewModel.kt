@@ -10,9 +10,12 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.VoicemailContract
 import android.telephony.CarrierConfigManager
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import auk.dialer.vroot.BuildConfig
+import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.VoicemailPlayer
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
 import auk.dialer.vroot.modal.data.Voicemail
@@ -79,7 +82,10 @@ class VoicemailViewModel(
         onUpdate = { playingId, isPlaying, positionMs, durationMs ->
             _playback.value = PlaybackState(playingId, isPlaying, positionMs, durationMs)
         },
-        onError = { _message.value = it },
+        onError = { detail ->
+            if (BuildConfig.DEBUG_TOOLS) Log.d("VvmPlayer", "playback failed: $detail")
+            _message.value = context.getString(R.string.voicemail_playback_failed)
+        },
         onAudioUnavailable = { _audioUnavailable.value = true },
     )
 

@@ -403,7 +403,7 @@ fun PrivateContactsScreen(
 
     if (showMoveAccountDialog && targetContactsToMove.isNotEmpty()) {
         val publicLabel = stringResource(R.string.contact_move_to_public_storage)
-        val publicDesc = "Move to public device contacts database"
+        val publicDesc = stringResource(R.string.contact_visible_to_other_apps)
         val storageOptions = remember(availableAccounts, publicLabel) {
             listOf("public" to Pair(publicLabel, publicDesc)) +
             availableAccounts.map { acc -> acc.name to Pair(acc.name, acc.type) }

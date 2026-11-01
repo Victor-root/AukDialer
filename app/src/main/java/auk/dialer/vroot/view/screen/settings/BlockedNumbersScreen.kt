@@ -227,7 +227,7 @@ fun BlockedNumbersScreen(
                             }
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                text = if (searchQuery.isBlank()) stringResource(R.string.blocked_list_empty) else "No matching blocked numbers",
+                                text = if (searchQuery.isBlank()) stringResource(R.string.blocked_list_empty) else stringResource(R.string.blocked_list_no_match),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
