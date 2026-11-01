@@ -52,8 +52,6 @@ import kotlin.math.roundToInt
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
-import android.util.Log
-import auk.dialer.vroot.BuildConfig
 
 private val RoundnessRange = 1f..32f
 private const val RoundnessSteps = 7
@@ -293,7 +291,6 @@ fun InterfaceScreen(
                             leadingIcon = Icons.Outlined.Fullscreen,
                             checked = edgeToEdge,
                             onCheckedChange = {
-                                if (BuildConfig.DEBUG_TOOLS) Log.d("AukEdgeToEdge", "switch toggled: $it")
                                 edgeToEdge = it
                                 prefs.setBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, it)
                             }

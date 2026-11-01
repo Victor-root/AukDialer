@@ -2,7 +2,6 @@ package auk.dialer.vroot.view.theme
 
 import android.content.ContextWrapper
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -45,7 +44,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import auk.dialer.vroot.BuildConfig
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import android.graphics.Color as AndroidColor
@@ -124,9 +122,6 @@ internal fun AukSystemBars(
         ?: if (plainStatusBar.value) backgroundIsDark else accentIsDark
     val isNavigationBarDark = if (edgeToEdge) darkTheme else accentIsDark
     DisposableEffect(activity, isStatusBarDark, isNavigationBarDark) {
-        if (BuildConfig.DEBUG_TOOLS) {
-            Log.d("AukEdgeToEdge", "system bars: edgeToEdge=$edgeToEdge statusDark=$isStatusBarDark navDark=$isNavigationBarDark")
-        }
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) {
                 isStatusBarDark
@@ -238,9 +233,6 @@ fun rememberStatusBarSampler(scrollBehavior: TopAppBarScrollBehavior, enabled: B
                 if (version != sampledVersion && sampler.layer.size != IntSize.Zero) {
                     sampledVersion = version
                     val luminance = sampler.layer.toImageBitmap().averageLuminance(backgroundLuminance)
-                    if (BuildConfig.DEBUG_TOOLS) {
-                        Log.d("AukStatusBar", "content luminance behind the status bar: $luminance")
-                    }
                     val isDark = when {
                         luminance < DARK_LUMINANCE_MAX -> true
                         luminance > LIGHT_LUMINANCE_MIN -> false

@@ -2,7 +2,6 @@ package auk.dialer.vroot.view.theme
 
 import android.app.WallpaperManager
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -18,7 +17,6 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.controller.util.PreferenceManager
 import org.koin.compose.koinInject
 import kotlin.math.abs
@@ -101,9 +98,6 @@ fun AukTheme(
         prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, AukShapeDefaults.DefaultRoundness)
     }
     val edgeToEdge by prefs.edgeToEdge.collectAsState()
-    if (BuildConfig.DEBUG_TOOLS) {
-        LaunchedEffect(edgeToEdge) { Log.d("AukEdgeToEdge", "applied: $edgeToEdge") }
-    }
 
     val colorScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt) {
         val base = when {
