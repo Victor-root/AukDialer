@@ -57,18 +57,23 @@ class VvmSyncEngine(private val context: Context) {
         }
 
         val knownUids = writer.knownServerUids(phoneAccountId)
+        if (BuildConfig.DEBUG_TOOLS) {
+            Log.d(LOG_TAG, "Sync subId=$subscriptionId account=$phoneAccountId knownUids=${knownUids.size}")
+        }
         val result = onCarrierNetwork(subscriptionId) {
             VvmImapClient(credentials).syncNewMessages(
                 isAlreadyKnown = { uid -> uid in knownUids },
                 onNewMessage = { fetched ->
-                    when (writer.writeFetchedMessage(phoneAccountId, fetched)) {
-                        is VvmVoicemailWriter.WriteResult.Success -> true
-                        is VvmVoicemailWriter.WriteResult.Failed -> false
+                    val written = writer.writeFetchedMessage(phoneAccountId, fetched)
+                    if (BuildConfig.DEBUG_TOOLS) {
+                        Log.d(LOG_TAG, "uid=${fetched.serverUid} audio=${fetched.audioBytes?.size ?: 0}B write=$written")
                     }
+                    written is VvmVoicemailWriter.WriteResult.Success
                 },
             )
         }
 
+        if (BuildConfig.DEBUG_TOOLS) Log.d(LOG_TAG, "Sync subId=$subscriptionId result=$result")
         return when (result) {
             is VvmImapClient.SyncResult.Success -> SubscriptionSyncOutcome(
                 subscriptionId = subscriptionId,
