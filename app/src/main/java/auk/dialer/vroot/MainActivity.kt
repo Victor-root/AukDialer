@@ -6,7 +6,6 @@ import android.provider.ContactsContract
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -26,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import auk.dialer.vroot.controller.util.PreferenceManager
@@ -61,13 +59,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         intentState = intent
-        enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        // enableEdgeToEdge turns navigation bar contrast enforcement back on, whatever the theme
-        // says, and the system then lays a translucent scrim over three button navigation. That
-        // darkened the accent band the theme paints there, so the navigation bar came out a
-        // different red from the header. The bars are coloured in Compose, so opt out of it.
-        window.isNavigationBarContrastEnforced = false
 
         if (GlobalContext.getOrNull() == null) {
             startKoin {

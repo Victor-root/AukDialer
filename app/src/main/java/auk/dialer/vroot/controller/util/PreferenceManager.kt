@@ -16,7 +16,15 @@ class PreferenceManager(context: Context) {
     private val _settingsChanged = MutableStateFlow(0)
     val settingsChanged: StateFlow<Int> = _settingsChanged.asStateFlow()
 
-    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+    // Edge to edge changes how every screen meets the system bars, so the theme follows it as a
+    // value of its own, kept in step with whatever writes it (the setting, a restored backup).
+    private val _edgeToEdge = MutableStateFlow(getBoolean(KEY_EDGE_TO_EDGE, false))
+    val edgeToEdge: StateFlow<Boolean> = _edgeToEdge.asStateFlow()
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == KEY_EDGE_TO_EDGE) {
+            _edgeToEdge.value = getBoolean(KEY_EDGE_TO_EDGE, false)
+        }
         _settingsChanged.value += 1
     }
 

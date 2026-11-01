@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.theme
 
 import android.app.WallpaperManager
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -9,9 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
@@ -19,27 +18,24 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.controller.util.PreferenceManager
 import org.koin.compose.koinInject
 import kotlin.math.abs
 
 const val KEY_CUSTOM_PRIMARY_COLOR: String = "custom_primary_color"
 const val CUSTOM_PRIMARY_COLOR_UNSET: Int = -1
-
-private const val StatusBarScrimLightAlpha = 0.14f
-private const val StatusBarScrimDarkAlpha = 0.10f
 
 // A hue gap this wide between the platform's dynamic scheme and the wallpaper's own
 // dominant colour is past what harmonisation/tone mapping would ever produce from the
@@ -104,8 +100,9 @@ fun AukTheme(
     val cardRoundness = remember(settingsVersion) {
         prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, AukShapeDefaults.DefaultRoundness)
     }
-    val edgeToEdge = remember(settingsVersion) {
-        prefs.getBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, false)
+    val edgeToEdge by prefs.edgeToEdge.collectAsState()
+    if (BuildConfig.DEBUG_TOOLS) {
+        LaunchedEffect(edgeToEdge) { Log.d("AukEdgeToEdge", "applied: $edgeToEdge") }
     }
 
     val colorScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt) {
@@ -128,7 +125,7 @@ fun AukTheme(
     val barColor = if (darkTheme) colorScheme.inversePrimary else colorScheme.primary
     val onBarColor = if (barColor.luminance() > 0.5f) Color.Black else Color.White
 
-    val statusBarScrimAlpha = remember { mutableFloatStateOf(0f) }
+    val statusBarBackground = remember { mutableStateOf<Color?>(null) }
     val plainStatusBar = remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
@@ -137,7 +134,7 @@ fun AukTheme(
         LocalAccentBarColor provides barColor,
         LocalOnAccentBarColor provides onBarColor,
         LocalEdgeToEdge provides edgeToEdge,
-        LocalStatusBarScrimAlpha provides statusBarScrimAlpha,
+        LocalStatusBarBackground provides statusBarBackground,
         LocalPlainStatusBar provides plainStatusBar
     ) {
         MaterialExpressiveTheme(
@@ -147,12 +144,13 @@ fun AukTheme(
             typography = AukTypography
         ) {
             if (systemBars) {
-                AukSystemBarIcons(
+                AukSystemBars(
                     accentIsDark = barColor.luminance() <= 0.5f,
-                    backgroundIsLight = colorScheme.background.luminance() > 0.5f,
+                    backgroundIsDark = colorScheme.background.luminance() <= 0.5f,
                     darkTheme = darkTheme,
                     edgeToEdge = edgeToEdge,
-                    plainStatusBar = plainStatusBar
+                    plainStatusBar = plainStatusBar,
+                    statusBarBackground = statusBarBackground
                 )
             }
             if (!systemBars) {
@@ -174,22 +172,6 @@ fun AukTheme(
                                 .fillMaxWidth()
                                 .windowInsetsBottomHeight(WindowInsets.navigationBars)
                                 .background(barColor)
-                        )
-                    }
-                    // Edge to edge on: a faint scrim keeps the status bar readable once a
-                    // collapsing header has slid away and content sits behind it. Invisible while
-                    // the accent header still covers the bar, so the header is never tinted.
-                    if (edgeToEdge) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .fillMaxWidth()
-                                .windowInsetsTopHeight(WindowInsets.statusBars)
-                                .graphicsLayer { alpha = statusBarScrimAlpha.floatValue }
-                                .background(
-                                    if (darkTheme) Color.White.copy(alpha = StatusBarScrimDarkAlpha)
-                                    else Color.Black.copy(alpha = StatusBarScrimLightAlpha)
-                                )
                         )
                     }
                 }

@@ -31,9 +31,10 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
-import auk.dialer.vroot.view.theme.AukStatusBarScrimEffect
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import auk.dialer.vroot.view.theme.aukCollapsingHeader
+import auk.dialer.vroot.view.theme.aukSampleStatusBarContent
+import auk.dialer.vroot.view.theme.rememberStatusBarSampler
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -96,11 +97,13 @@ fun MainScreen(
         scrollBehavior.state.heightOffset = 0f
     }
 
-    AukStatusBarScrimEffect(scrollBehavior, enabled = edgeToEdge)
+    val statusBarSampler = rememberStatusBarSampler(scrollBehavior, enabled = edgeToEdge)
 
     Scaffold(
         modifier = if (edgeToEdge) {
-            Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .aukSampleStatusBarContent(statusBarSampler)
         } else {
             Modifier
         },
