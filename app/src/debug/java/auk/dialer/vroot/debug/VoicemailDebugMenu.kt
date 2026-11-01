@@ -15,11 +15,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
+import auk.dialer.vroot.view.components.rememberClipboardCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,7 +34,7 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
     val context = LocalContext.current
     val contactsRepo = koinInject<IContactsRepository>()
     val voicemailRepo = koinInject<IVoicemailRepository>()
-    val clipboard = LocalClipboardManager.current
+    val copyToClipboard = rememberClipboardCopy()
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
     var showOverrideDialog by remember { mutableStateOf(false) }
@@ -125,7 +124,7 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
                 expanded = false
                 scope.launch {
                     val report = withContext(Dispatchers.IO) { VoicemailDiagnostics.build(context) }
-                    clipboard.setText(AnnotatedString(report))
+                    copyToClipboard(report)
                     // Also emitted to logcat, so the report can be grabbed from
                     // the IDE without going through the clipboard.
                     VoicemailDiagnostics.log(report)

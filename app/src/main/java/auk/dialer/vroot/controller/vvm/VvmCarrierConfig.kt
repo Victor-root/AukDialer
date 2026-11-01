@@ -1,6 +1,7 @@
 package auk.dialer.vroot.controller.vvm
 
 import android.content.Context
+import android.os.Build
 import android.os.PersistableBundle
 import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
@@ -76,14 +77,34 @@ data class VvmCarrierConfig(
             }
         }
 
-        fun read(context: Context, subscriptionId: Int, carrierName: String = ""): VvmCarrierConfig {
-            val bundle = try {
-                context.getSystemService(CarrierConfigManager::class.java)
-                    ?.getConfigForSubId(subscriptionId)
-                    ?: PersistableBundle.EMPTY
+        /** The carrier config values for [keys] on [subscriptionId], or null when unreadable. */
+        fun carrierValues(context: Context, subscriptionId: Int, vararg keys: String): PersistableBundle? {
+            val manager = context.getSystemService(CarrierConfigManager::class.java) ?: return null
+            return try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    manager.getConfigForSubId(subscriptionId, *keys)
+                } else {
+                    // The only way to read it before Android 14, which replaced it with the call above.
+                    @Suppress("DEPRECATION")
+                    manager.getConfigForSubId(subscriptionId)
+                }
             } catch (_: Exception) {
-                PersistableBundle.EMPTY
+                null
             }
+        }
+
+        fun read(context: Context, subscriptionId: Int, carrierName: String = ""): VvmCarrierConfig {
+            val bundle = carrierValues(
+                context,
+                subscriptionId,
+                CarrierConfigManager.KEY_VVM_TYPE_STRING,
+                CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING,
+                CarrierConfigManager.KEY_VVM_PORT_NUMBER_INT,
+                CarrierConfigManager.KEY_VVM_CLIENT_PREFIX_STRING,
+                CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL,
+                CarrierConfigManager.KEY_VVM_CELLULAR_DATA_REQUIRED_BOOL,
+                CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL,
+            ) ?: PersistableBundle.EMPTY
             val declaredType = bundle.getString(CarrierConfigManager.KEY_VVM_TYPE_STRING, "") ?: ""
             val declaredDestination =
                 bundle.getString(CarrierConfigManager.KEY_VVM_DESTINATION_NUMBER_STRING, "") ?: ""

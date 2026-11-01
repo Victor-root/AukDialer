@@ -143,14 +143,17 @@ object VoicemailDiagnostics {
      * differently from a plain OMTP one.
      */
     private fun StringBuilder.appendExtraCarrierKeys(context: Context, subscriptionId: Int) {
-        val bundle = try {
-            context.getSystemService(CarrierConfigManager::class.java)
-                ?.getConfigForSubId(subscriptionId) ?: return
-        } catch (_: Exception) {
+        val bundle = VvmCarrierConfig.carrierValues(
+            context,
+            subscriptionId,
+            CarrierConfigManager.KEY_VVM_LEGACY_MODE_ENABLED_BOOL,
+            CarrierConfigManager.KEY_VVM_PREFETCH_BOOL,
+            CarrierConfigManager.KEY_VVM_DISABLED_CAPABILITIES_STRING_ARRAY,
+            CarrierConfigManager.KEY_CARRIER_VVM_PACKAGE_NAME_STRING_ARRAY,
+        ) ?: run {
             appendLine("  carrier config unreadable")
             return
         }
-        appendLine("  configKeys=${bundle.size()}")
         appendLine("  legacyMode=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_LEGACY_MODE_ENABLED_BOOL, false)}")
         appendLine("  prefetch=${bundle.getBoolean(CarrierConfigManager.KEY_VVM_PREFETCH_BOOL, false)}")
         val disabled = bundle.getStringArray(CarrierConfigManager.KEY_VVM_DISABLED_CAPABILITIES_STRING_ARRAY)

@@ -163,13 +163,8 @@ class AukVisualVoicemailService : VisualVoicemailService() {
     }
 
     private fun resolveSslEnabledForSub(subscriptionId: Int): Boolean {
-        return try {
-            val manager = getSystemService(CarrierConfigManager::class.java) ?: return false
-            manager.getConfigForSubId(subscriptionId)
-                ?.getBoolean(CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL, false) ?: false
-        } catch (_: Exception) {
-            false
-        }
+        val key = CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL
+        return VvmCarrierConfig.carrierValues(this, subscriptionId, key)?.getBoolean(key, false) ?: false
     }
 
     companion object {
