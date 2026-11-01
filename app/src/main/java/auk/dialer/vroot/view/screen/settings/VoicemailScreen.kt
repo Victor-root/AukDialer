@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import android.Manifest
 import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Vibration
@@ -24,21 +26,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.getSystemVoicemailNumber
 import auk.dialer.vroot.controller.util.makeCall
+import auk.dialer.vroot.debug.VoicemailDebugMenu
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Destination<RootGraph>
 @Composable
 fun VoicemailScreen(
@@ -46,7 +55,30 @@ fun VoicemailScreen(
 ) {
     val context = LocalContext.current
     val prefs = koinInject<PreferenceManager>()
-    
+    val voicemailViewModel: VoicemailViewModel = koinActivityViewModel()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val setupSentLabel = stringResource(R.string.settings_voicemail_visual_setup_sent)
+    val setupFailedLabel = stringResource(R.string.settings_voicemail_visual_setup_failed)
+    val setupDeniedLabel = stringResource(R.string.settings_voicemail_visual_setup_denied)
+
+    fun runProvisioning() {
+        voicemailViewModel.requestProvisioning { anySent ->
+            scope.launch {
+                snackbarHostState.showSnackbar(if (anySent) setupSentLabel else setupFailedLabel)
+            }
+        }
+    }
+
+    val sendSmsPermission = rememberPermissionState(Manifest.permission.SEND_SMS) { granted ->
+        if (granted) {
+            runProvisioning()
+        } else {
+            scope.launch { snackbarHostState.showSnackbar(setupDeniedLabel) }
+        }
+    }
+
     var voicemailNumber by remember { mutableStateOf(prefs.getString(PreferenceManager.KEY_VOICEMAIL_NUMBER, "") ?: "") }
     var vibrationEnabled by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_VOICEMAIL_VIBRATION, true)) }
     var ringtoneUri by remember { mutableStateOf(prefs.getString(PreferenceManager.KEY_VOICEMAIL_RINGTONE, null)) }
@@ -96,9 +128,13 @@ fun VoicemailScreen(
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
+                },
+                actions = {
+                    VoicemailDebugMenu(onChanged = { voicemailViewModel.fetchVoicemails() })
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -211,6 +247,25 @@ fun VoicemailScreen(
                         stringResource(R.string.settings_voicemail_visual_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    AukListItem(
+                        headline = stringResource(R.string.settings_voicemail_visual_setup),
+                        supporting = stringResource(R.string.settings_voicemail_visual_setup_supporting),
+                        leadingIcon = Icons.Outlined.CloudSync,
+                        onClick = {
+                            // The provisioning request goes out as a hidden SMS,
+                            // so the system demands SEND_SMS before it will send
+                            // anything. Ask for it first, and provision straight
+                            // away once it is granted.
+                            if (sendSmsPermission.status.isGranted) {
+                                runProvisioning()
+                            } else {
+                                sendSmsPermission.launchPermissionRequest()
+                            }
+                        }
                     )
                 }
             }

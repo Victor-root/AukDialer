@@ -23,6 +23,21 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!-- Visual voicemail: reading the mailbox and importing messages fetched
+         from the carrier server. -->
+    <uses-permission android:name="com.android.voicemail.permission.READ_VOICEMAIL" />
+    <uses-permission android:name="com.android.voicemail.permission.ADD_VOICEMAIL" />
+    <!-- Required by sendVisualVoicemailSms for the OMTP provisioning request.
+         The system demands it even though the message is a hidden signalling
+         SMS; never used to send a user-visible SMS. -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- Talking IMAP to the carrier voicemail server. CHANGE_NETWORK_STATE lets
+         us ask for that carrier's own mobile data, which some voicemail servers
+         are only reachable from. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
     <!-- To open the Shizuku app from the call recording settings. -->
     <queries>
         <package android:name="moe.shizuku.privileged.api" />
@@ -436,6 +451,19 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.telecom.ConnectionService" />
+            </intent-filter>
+        </service>
+
+        <!-- Bound by the telephony framework when we are the default dialer and
+             a carrier OMTP voicemail SMS matching our filter arrives.
+             BIND_VISUAL_VOICEMAIL_SERVICE is held by the system only, so nothing
+             else can bind here. -->
+        <service
+            android:name=".controller.vvm.AukVisualVoicemailService"
+            android:permission="android.permission.BIND_VISUAL_VOICEMAIL_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telephony.VisualVoicemailService" />
             </intent-filter>
         </service>
 

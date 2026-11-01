@@ -30,6 +30,7 @@ import androidx.navigation.compose.rememberNavController
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
 import auk.dialer.vroot.controller.util.makeCall
+import auk.dialer.vroot.controller.vvm.VvmNotifier
 import auk.dialer.vroot.view.screen.onboarding.MorphingOnboardingScreen
 import auk.dialer.vroot.view.components.PermissionPopup
 import auk.dialer.vroot.controller.util.isCustomPermissionDevice
@@ -46,6 +47,8 @@ import com.ramcosta.composedestinations.generated.destinations.ContactEditScreen
 import com.ramcosta.composedestinations.generated.destinations.ContactScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DefaultDialerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.RecentScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
+import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext
@@ -146,6 +149,19 @@ class MainActivity : ComponentActivity() {
         when (action) {
             "auk.dialer.vroot.ACTION_VIEW_RECENTS" -> {
                 navController.navigate(MainScreenDestination(initialTab = 0).route) {
+                    popUpTo(navController.graph.startDestinationId)
+                    launchSingleTop = true
+                }
+            }
+            VvmNotifier.ACTION_VIEW_VOICEMAIL -> {
+                // Straight to the tab when the bar carries it, otherwise to the screen on its own.
+                val prefs = get<PreferenceManager>()
+                val route = if (PreferenceManager.TAB_VOICEMAIL in prefs.getVisibleBottomNavTabs()) {
+                    MainScreenDestination(initialTab = PreferenceManager.TAB_VOICEMAIL).route
+                } else {
+                    VoicemailListScreenDestination.route
+                }
+                navController.navigate(route) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }

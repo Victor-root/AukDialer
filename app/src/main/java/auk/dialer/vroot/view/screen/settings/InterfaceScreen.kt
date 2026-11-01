@@ -166,7 +166,8 @@ fun InterfaceScreen(
     val bottomBarOptions = listOf(
         stringResource(R.string.nav_recents) to PreferenceManager.TAB_RECENTS,
         stringResource(R.string.nav_favorites) to PreferenceManager.TAB_FAVORITES,
-        stringResource(R.string.nav_contacts) to PreferenceManager.TAB_CONTACTS
+        stringResource(R.string.nav_contacts) to PreferenceManager.TAB_CONTACTS,
+        stringResource(R.string.nav_voicemail) to PreferenceManager.TAB_VOICEMAIL
     )
 
     Scaffold(
@@ -577,5 +578,6 @@ private fun transitionStyleIcon(style: Int): ImageVector = when (style) {
 private fun defaultTabIcon(tab: Int): ImageVector = when (tab) {
     PreferenceManager.TAB_FAVORITES -> Icons.Outlined.Star
     PreferenceManager.TAB_CONTACTS -> Icons.Outlined.Person
+    PreferenceManager.TAB_VOICEMAIL -> Icons.Outlined.Voicemail
     else -> Icons.Outlined.History
 }

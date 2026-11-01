@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Package visibility for the diagnostics report only. Without it the lookup
+      of other voicemail apps comes back empty on Android 11 and later, which
+      would read as "this device has none" and point a bug report the wrong way.
+      Debug source set on purpose: a published build has no reason to ask.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.telephony.VisualVoicemailService" />
+        </intent>
+    </queries>
+
+</manifest>

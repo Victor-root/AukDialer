@@ -53,6 +53,7 @@
     <string name="date_yesterday">Hier</string>
     <string name="nav_contacts">Contacts</string>
     <string name="nav_recents">Récents</string>
+    <string name="nav_voicemail">Messagerie</string>
     <string name="call_type_incoming">Entrant</string>
     <string name="call_type_outgoing">Sortant</string>
     <string name="call_type_missed">Manqué</string>
@@ -468,7 +469,13 @@
     <string name="settings_voicemail_vibration">Vibration</string>
     <string name="settings_voicemail_vibration_supporting">Vibrer pour les nouveaux messages vocaux</string>
     <string name="settings_voicemail_visual_header">Messagerie vocale visuelle</string>
-    <string name="settings_voicemail_visual_description">La messagerie vocale visuelle est actuellement gérée par votre opérateur. Assurez-vous que l’application de votre opérateur est installée pour une expérience optimale.</string>
+    <string name="settings_voicemail_visual_description">Récupérez vos messages vocaux depuis votre opérateur et écoutez-les directement ici.</string>
+    <string name="settings_voicemail_visual_setup">Configurer avec l’opérateur</string>
+    <string name="settings_voicemail_visual_setup_supporting">Demander les paramètres de la boîte vocale à votre opérateur</string>
+    <string name="settings_voicemail_visual_setup_sent">Demande envoyée à votre opérateur</string>
+    <string name="settings_voicemail_visual_setup_failed">Votre opérateur n’a pas accepté la demande</string>
+    <string name="settings_voicemail_visual_setup_denied">La permission SMS est nécessaire pour interroger votre opérateur</string>
+
     <!-- Settings > About -->
     <string name="about_title">À propos</string>
     <string name="about_logo_content_desc">Logo AukDialer</string>
@@ -499,6 +506,43 @@
     <!-- Contact call screen background -->
     <!-- Call waiting -->
     <!-- Call recording -->
+
+    <!-- Visual voicemail -->
+    <string name="voicemail_title">Messagerie vocale</string>
+    <string name="voicemail_play">Lire</string>
+    <string name="voicemail_pause">Pause</string>
+    <string name="voicemail_sync_now">Synchroniser</string>
+    <string name="voicemail_sync_no_new">Aucun nouveau message vocal</string>
+    <string name="voicemail_route_speaker">Lecture sur haut-parleur, basculer sur l’écouteur</string>
+    <string name="voicemail_route_earpiece">Lecture sur écouteur, basculer sur le haut-parleur</string>
+    <string name="voicemail_more_options">Plus d’options</string>
+    <string name="voicemail_mark_read">Marquer comme lu</string>
+    <string name="voicemail_mark_unread">Marquer comme non lu</string>
+    <string name="voicemail_empty_title">Aucun message vocal</string>
+    <string name="voicemail_empty_description">Les nouveaux messages vocaux de votre opérateur apparaîtront ici.</string>
+    <string name="voicemail_status_unsupported_title">Indisponible chez votre opérateur</string>
+    <string name="voicemail_status_unsupported_description">Votre opérateur ne propose pas le standard de messagerie vocale pris en charge par AukDialer, les messages ne peuvent donc pas être récupérés.</string>
+    <string name="voicemail_status_not_provisioned_title">Configuration nécessaire</string>
+    <string name="voicemail_status_not_provisioned_description">AukDialer n’a pas encore reçu les paramètres de votre boîte vocale. Demandez-les à votre opérateur depuis les réglages de messagerie vocale.</string>
+    <string name="voicemail_status_activation_title">Activation en cours</string>
+    <string name="voicemail_status_activation_description">Votre opérateur active votre boîte vocale. Cela peut prendre quelques minutes.</string>
+    <string name="voicemail_status_refused_title">Messagerie vocale inactive sur cette ligne</string>
+    <string name="voicemail_status_refused_description">Votre opérateur indique qu’aucun service de messagerie vocale n’est actif sur cette ligne. Il faut peut-être l’activer sur votre forfait.</string>
+    <string name="voicemail_status_auth_title">Identifiants refusés par l’opérateur</string>
+    <string name="voicemail_status_auth_description">La boîte vocale a refusé les paramètres fournis par votre opérateur. Les redemander suffit généralement à régler le problème.</string>
+    <string name="voicemail_status_unreachable_title">Boîte vocale injoignable</string>
+    <string name="voicemail_status_unreachable_description">AukDialer n’a pas pu joindre la boîte vocale de votre opérateur. Vérifiez votre connexion, et essayez en données mobiles si vous êtes en Wi‑Fi.</string>
+    <string name="voicemail_status_open_settings">Réglages de messagerie vocale</string>
+    <string name="voicemail_audio_unavailable">Cet enregistrement n’est plus disponible.</string>
+    <string name="voicemail_needs_default_dialer_title">Messagerie vocale visuelle indisponible</string>
+    <string name="voicemail_needs_default_dialer_description">AukDialer doit être votre application de téléphone par défaut pour recevoir les messages vocaux de votre opérateur.</string>
+    <string name="notif_channel_voicemail">Messagerie vocale</string>
+    <string name="voicemail_notif_title">Nouveau message vocal</string>
+    <plurals name="voicemail_notif_text">
+        <item quantity="one">Vous avez %1$d nouveau message vocal</item>
+        <item quantity="other">Vous avez %1$d nouveaux messages vocaux</item>
+    </plurals>
+
     <!-- Video calling app picker -->
     <string name="video_call_title">Appel vidéo</string>
     <string name="video_call_chooser_with">Appel vidéo avec</string>

@@ -5,10 +5,13 @@ import auk.dialer.vroot.modal.db.AukDatabase
 import auk.dialer.vroot.controller.BackupViewModel
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
+import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.modal.`interface`.ICallLogRepository
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
+import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
 import auk.dialer.vroot.modal.repository.CallLogRepository
 import auk.dialer.vroot.modal.repository.ContactsRepository
+import auk.dialer.vroot.modal.repository.VoicemailRepository
 import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.PreferenceManager
 import org.koin.android.ext.koin.androidContext
@@ -33,6 +36,9 @@ val appModule = module {
     single<ICallLogRepository> {
         CallLogRepository(androidContext().contentResolver, androidContext(), get())
     }
+    single<IVoicemailRepository> {
+        VoicemailRepository(androidContext(), get())
+    }
     single {
         PreferenceManager(androidContext())
     }
@@ -42,4 +48,5 @@ val appModule = module {
     viewModel { ContactsViewModel(get(), get()) }
     viewModel { CallLogViewModel(get(), androidContext().contentResolver) }
     viewModel { BackupViewModel(get(), get()) }
+    viewModel { VoicemailViewModel(get(), androidContext().contentResolver, androidContext()) }
 }

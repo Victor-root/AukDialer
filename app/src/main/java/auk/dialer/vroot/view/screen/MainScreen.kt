@@ -186,6 +186,10 @@ fun MainScreen(
                         },
                         onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
                     )
+                    PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
+                        navigator = navigator,
+                        showTopBar = false
+                    )
                 }
             }
         }
