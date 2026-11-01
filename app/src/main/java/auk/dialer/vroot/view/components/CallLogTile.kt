@@ -42,7 +42,7 @@ fun CallLogTileSimple(
     val icon = when (log.type) {
         CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
         CallLog.Calls.OUTGOING_TYPE -> Icons.AutoMirrored.Filled.CallMade
-        CallLog.Calls.MISSED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
+        CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
         else -> Icons.Default.Call
     }
 
@@ -67,6 +67,7 @@ fun CallLogTileSimple(
                         CallLog.Calls.INCOMING_TYPE -> stringResource(R.string.call_type_incoming)
                         CallLog.Calls.OUTGOING_TYPE -> stringResource(R.string.call_type_outgoing)
                         CallLog.Calls.MISSED_TYPE -> stringResource(R.string.call_type_missed)
+                        CallLog.Calls.REJECTED_TYPE -> stringResource(R.string.call_type_declined)
                         else -> stringResource(R.string.action_call)
                     },
                     supporting = buildString {
@@ -115,7 +116,7 @@ fun CallLogTile(
     val settingsState by prefs.settingsChanged.collectAsState()
 
     val icon = when (log.type) {
-        CallLog.Calls.MISSED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
+        CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
         CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
         CallLog.Calls.OUTGOING_TYPE -> Icons.AutoMirrored.Filled.CallMade
         else -> Icons.Default.Call

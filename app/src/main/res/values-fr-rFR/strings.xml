@@ -57,6 +57,7 @@
     <string name="call_type_incoming">Entrant</string>
     <string name="call_type_outgoing">Sortant</string>
     <string name="call_type_missed">Manqué</string>
+    <string name="call_type_declined">Refusé</string>
     <string name="filter_all">Tous</string>
     <string name="sim_ask_every_time">Demander à chaque fois</string>
     <string name="sim_slot_1">SIM 1</string>

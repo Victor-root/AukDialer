@@ -149,7 +149,8 @@ class CallLogRepository(
             
             var simLabel = if (labelIdx != -1) cursor.getString(labelIdx) else null
             
-            val isBlocked = type == CallLog.Calls.BLOCKED_TYPE || type == CallLog.Calls.REJECTED_TYPE
+            // REJECTED_TYPE is a call the user declined, not one the block list stopped.
+            val isBlocked = type == CallLog.Calls.BLOCKED_TYPE
             
             if (simLabel.isNullOrEmpty() && accountIdIdx != -1 && componentNameIdx != -1) {
                 val accountId = cursor.getString(accountIdIdx)
