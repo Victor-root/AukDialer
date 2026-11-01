@@ -118,7 +118,7 @@ fun ContactDetailsScreen(
     val callLogViewModel: CallLogViewModel = koinActivityViewModel()
     val copyToClipboard = rememberClipboardCopy()
 
-    val allLogs by callLogViewModel.allCallLogs.collectAsState()
+    val allLogs by callLogViewModel.allCalls.collectAsState()
 
     var fullContact by remember { mutableStateOf<Contact?>(null) }
     var isFullLoading by remember { mutableStateOf(true) }

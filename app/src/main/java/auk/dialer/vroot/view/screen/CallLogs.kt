@@ -61,7 +61,7 @@ fun CallLogFullScreen(
         viewModel.fetchLogs()
     }
 
-    val allLogs by viewModel.allCallLogs.collectAsState()
+    val allLogs by viewModel.allCalls.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val context = LocalContext.current

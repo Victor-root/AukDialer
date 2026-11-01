@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.data.CallLogFilter
+import auk.dialer.vroot.modal.data.groupedConsecutive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,11 @@ class CallLogViewModel(
     private val contentResolver: ContentResolver
 ) : ViewModel() {
 
+    /** One entry per call, for anything showing or deleting single calls. */
+    private val _allCalls = MutableStateFlow<List<CallLogEntry>>(emptyList())
+    val allCalls: StateFlow<List<CallLogEntry>> = _allCalls.asStateFlow()
+
+    /** Back-to-back calls with one number folded into a single row, for the recents list. */
     private val _allCallLogs = MutableStateFlow<List<CallLogEntry>>(emptyList())
     val allCallLogs: StateFlow<List<CallLogEntry>> = _allCallLogs.asStateFlow()
 
@@ -63,8 +69,9 @@ class CallLogViewModel(
             if (_allCallLogs.value.isEmpty()) {
                 _isLoading.value = true
             }
-            val result = callLogRepo.getCallLogs()
-            _allCallLogs.value = result
+            val calls = callLogRepo.getCalls()
+            _allCalls.value = calls
+            _allCallLogs.value = calls.groupedConsecutive()
             _isLoading.value = false
         }
     }

@@ -110,7 +110,7 @@ class BackupViewModel(
     fun exportCallLogs(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val logs = callLogRepo.getCallLogs()
+                val logs = callLogRepo.getCalls()
                 val jsonString = json.encodeToString(logs)
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     OutputStreamWriter(outputStream).use { writer ->
@@ -130,8 +130,13 @@ class BackupViewModel(
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val jsonString = BufferedReader(InputStreamReader(inputStream)).readText()
                     val logs = json.decodeFromString<List<CallLogEntry>>(jsonString)
-                    logs.forEach { log ->
-                        callLogRepo.saveCallLog(log)
+                    val failed = logs.count { log -> !callLogRepo.saveCallLog(log) }
+                    if (failed > 0) {
+                        _status.value = context.getString(
+                            R.string.backup_import_failed,
+                            context.resources.getQuantityString(R.plurals.backup_call_logs_not_restored, failed, failed)
+                        )
+                        return@launch
                     }
                 }
                 _status.value = context.getString(R.string.backup_call_logs_import_success)

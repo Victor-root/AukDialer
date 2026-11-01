@@ -245,6 +245,10 @@
     <string name="backup_call_logs_import_success">Call logs imported successfully</string>
     <string name="backup_export_failed">Export failed: %1$s</string>
     <string name="backup_import_failed">Import failed: %1$s</string>
+    <plurals name="backup_call_logs_not_restored">
+        <item quantity="one">%1$d call could not be restored</item>
+        <item quantity="other">%1$d calls could not be restored</item>
+    </plurals>
 
     <!-- Settings > root -->
     <string name="settings_title">Settings</string>

@@ -26,7 +26,7 @@ class CallLogRepository(
 
     private val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
 
-    override fun getCallLogs(): List<CallLogEntry> {
+    override fun getCalls(): List<CallLogEntry> {
         val callLogs = mutableListOf<CallLogEntry>()
 
         val allContacts = try { contactsRepo.getContacts() } catch (e: Exception) { emptyList() }
@@ -88,18 +88,29 @@ class CallLogRepository(
         return callLogs
     }
 
-    override fun saveCallLog(entry: CallLogEntry) {
-        val values = ContentValues().apply {
-            put(CallLog.Calls.NUMBER, entry.number)
-            put(CallLog.Calls.TYPE, entry.type)
-            put(CallLog.Calls.DATE, entry.date)
-            put(CallLog.Calls.DURATION, entry.duration)
-            put(CallLog.Calls.NEW, 1)
-        }
-        try {
-            contentResolver.insert(CallLog.Calls.CONTENT_URI, values)
+    override fun saveCallLog(entry: CallLogEntry): Boolean {
+        return try {
+            // Restoring the same backup twice would otherwise double every call.
+            val alreadyLogged = contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls._ID),
+                "${CallLog.Calls.NUMBER} = ? AND ${CallLog.Calls.DATE} = ? AND ${CallLog.Calls.TYPE} = ?",
+                arrayOf(entry.number, entry.date.toString(), entry.type.toString()),
+                null
+            )?.use { it.moveToFirst() } ?: false
+            if (alreadyLogged) return true
+
+            val values = ContentValues().apply {
+                put(CallLog.Calls.NUMBER, entry.number)
+                put(CallLog.Calls.TYPE, entry.type)
+                put(CallLog.Calls.DATE, entry.date)
+                put(CallLog.Calls.DURATION, entry.duration)
+                // Restored history, not calls waiting to be noticed.
+                put(CallLog.Calls.NEW, 0)
+            }
+            contentResolver.insert(CallLog.Calls.CONTENT_URI, values) != null
         } catch (e: Exception) {
-            e.printStackTrace()
+            false
         }
     }
 
@@ -126,7 +137,6 @@ class CallLogRepository(
         val accountIdIdx = cursor.getColumnIndex(CallLog.Calls.PHONE_ACCOUNT_ID)
         val componentNameIdx = cursor.getColumnIndex(CallLog.Calls.PHONE_ACCOUNT_COMPONENT_NAME)
 
-        val tempLogs = mutableListOf<CallLogEntry>()
         val simCache = mutableMapOf<String, String>()
         val unknownLabel = context.getString(R.string.label_unknown)
 
@@ -170,32 +180,23 @@ class CallLogRepository(
                 contactIdFromLookupUri(it)
             }
 
-            val lastEntry = tempLogs.lastOrNull()
-            if (lastEntry != null && lastEntry.number == number) {
-                tempLogs[tempLogs.size - 1] = lastEntry.copy(
-                    types = lastEntry.types + type,
-                    ids = lastEntry.ids + callId
+            callLogs.add(
+                CallLogEntry(
+                    id = callId,
+                    number = number,
+                    name = displayName ?: number,
+                    type = type,
+                    date = date,
+                    duration = duration,
+                    photoUri = photoUri,
+                    contactId = contactId,
+                    simLabel = simLabel,
+                    isBlocked = isBlocked,
+                    types = listOf(type),
+                    ids = listOf(callId)
                 )
-            } else {
-                tempLogs.add(
-                    CallLogEntry(
-                        id = callId,
-                        number = number,
-                        name = displayName ?: number,
-                        type = type,
-                        date = date,
-                        duration = duration,
-                        photoUri = photoUri,
-                        contactId = contactId,
-                        simLabel = simLabel,
-                        isBlocked = isBlocked,
-                        types = listOf(type),
-                        ids = listOf(callId)
-                    )
-                )
-            }
+            )
         }
-        callLogs.addAll(tempLogs)
     }
 
     override fun deleteCallLog(number: String) {

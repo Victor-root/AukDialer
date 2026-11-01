@@ -19,3 +19,21 @@ data class CallLogEntry(
 ) {
     val count: Int get() = types.size.coerceAtLeast(1)
 }
+
+/**
+ * Folds back-to-back calls with the same number into one row, the newest call's, which carries the
+ * types and ids of all of them. For the recents list only: anything that shows, deletes or saves
+ * individual calls works on the calls themselves.
+ */
+fun List<CallLogEntry>.groupedConsecutive(): List<CallLogEntry> {
+    val grouped = mutableListOf<CallLogEntry>()
+    for (call in this) {
+        val last = grouped.lastOrNull()
+        if (last != null && last.number == call.number) {
+            grouped[grouped.lastIndex] = last.copy(types = last.types + call.types, ids = last.ids + call.ids)
+        } else {
+            grouped += call
+        }
+    }
+    return grouped
+}
