@@ -371,11 +371,24 @@ object VoicemailDiagnostics {
     }
 
     /** Keeps the shape of a number visible without exposing who it belongs to. */
+    /**
+     * Hides all but the first two and last two digits, and keeps every other
+     * character where it is: how each app formats the same caller (a +, an
+     * @domain) is what tells two copies of one message apart.
+     */
     private fun mask(raw: String?): String {
         if (raw.isNullOrBlank()) return "<none>"
-        val digits = raw.filter { it.isDigit() }
-        if (digits.length <= 4) return "*".repeat(digits.length)
-        return "${digits.take(2)}${"*".repeat(digits.length - 4)}${digits.takeLast(2)}"
+        val digitCount = raw.count { it.isDigit() }
+        if (digitCount <= 4) return raw.map { if (it.isDigit()) '*' else it }.joinToString("")
+        var seen = 0
+        return raw.map { c ->
+            if (!c.isDigit()) {
+                c
+            } else {
+                seen++
+                if (seen <= 2 || seen > digitCount - 2) c else '*'
+            }
+        }.joinToString("")
     }
 
     /**
