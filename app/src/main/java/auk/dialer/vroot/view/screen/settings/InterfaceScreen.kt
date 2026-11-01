@@ -136,11 +136,14 @@ fun InterfaceScreen(
     fun setApplyColorToIcon(value: Boolean) {
         applyColorToIcon = value
         prefs.setBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, value)
-        // Only the manual colour picker reports its pick separately. Turning this on
-        // while system colours are already active is itself the moment the icon needs
-        // to catch up.
-        if (value && dynamicColors) {
-            offerIconColorChange(nearestSystemIconColor())
+        // Turning this on is itself the moment the icon has to catch up with the colour already
+        // in use, system or picked by hand: the picker only reports colours picked afterwards.
+        if (value) {
+            when {
+                dynamicColors -> offerIconColorChange(nearestSystemIconColor())
+                customPrimaryColor != CUSTOM_PRIMARY_COLOR_UNSET ->
+                    offerIconColorChange(LauncherIconManager.nearestColor(customPrimaryColor))
+            }
         }
     }
 
