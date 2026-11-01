@@ -26,7 +26,9 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.android.ext.android.inject
 
@@ -84,6 +86,11 @@ class CallService : InCallService() {
         val audioState = _audioState.asStateFlow()
 
         val isActivityVisible = MutableStateFlow(false)
+
+        // Fires when a call that had connected ends. The call screen cannot tell from the session:
+        // once the last call ends there is no session left, not a disconnected one.
+        private val _connectedCallEnded = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        val connectedCallEnded = _connectedCallEnded.asSharedFlow()
 
         private var instance: CallService? = null
 
@@ -259,6 +266,7 @@ class CallService : InCallService() {
 
     private fun handleDisconnect(call: Call, cause: DisconnectCause?) {
         val number = call.details.handle?.schemeSpecificPart ?: ""
+        if (call.details.connectTimeMillis != 0L) _connectedCallEnded.tryEmit(Unit)
 
         // Also cancels a recording still starting: it would otherwise carry on after the call.
         if (getCalls()?.none { it != call && it.details.state == Call.STATE_ACTIVE } != false) {

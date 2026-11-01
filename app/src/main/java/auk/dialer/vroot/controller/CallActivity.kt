@@ -120,6 +120,16 @@ class CallActivity : ComponentActivity() {
                     onDispose { }
                 }
 
+                LaunchedEffect(Unit) {
+                    CallService.connectedCallEnded.collect {
+                        if (preferenceManager.getBoolean(PreferenceManager.KEY_VIBRATE_ON_HANGUP, false)) {
+                            this@CallActivity.window?.decorView?.performHapticFeedback(
+                                HapticFeedbackConstants.REJECT
+                            )
+                        }
+                    }
+                }
+
                 LaunchedEffect(callState, settingsState) {
                     val keepScreenOn =
                         preferenceManager.getBoolean(PreferenceManager.KEY_KEEP_SCREEN_ON, true)
@@ -163,15 +173,6 @@ class CallActivity : ComponentActivity() {
                         }
 
                         Call.STATE_DISCONNECTED -> {
-                            if (preferenceManager.getBoolean(
-                                    PreferenceManager.KEY_VIBRATE_ON_HANGUP,
-                                    false
-                                )
-                            ) {
-                                this@CallActivity.window?.decorView?.performHapticFeedback(
-                                    HapticFeedbackConstants.REJECT
-                                )
-                            }
                             releaseProximityLock()
                             delay(1200)
                             dismissCallScreen()
