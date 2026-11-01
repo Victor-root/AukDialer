@@ -44,3 +44,7 @@
 -dontwarn javax.mail.**
 -dontwarn com.sun.mail.**
 -dontwarn javax.activation.**
+
+# Tink (behind androidx.security:security-crypto, which encrypts the voicemail credentials)
+# references Error Prone annotations that only matter at compile time and are not shipped.
+-dontwarn com.google.errorprone.annotations.**
