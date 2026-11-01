@@ -277,7 +277,7 @@
     <string name="settings_interface_expressive_cards_supporting">Listeneinträge in stilisierten Karten anordnen</string>
     <string name="settings_interface_transition_animation">Übergangs-Animationen</string>
     <string name="settings_interface_transition_animation_supporting">Animationsstil zwischen Bildschirmen</string>
-    <string name="settings_interface_transition_slide">Streichen</string>
+    <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Verblassen</string>
     <string name="settings_interface_transition_none">Keine</string>
     <string name="settings_interface_search_matching_mode">Suchmodus</string>

@@ -336,7 +336,7 @@
     <string name="settings_interface_expressive_cards_supporting">Wraps list items in styled cards</string>
     <string name="settings_interface_transition_animation">Transition animation</string>
     <string name="settings_interface_transition_animation_supporting">Style of animations between screens</string>
-    <string name="settings_interface_transition_slide">Slide</string>
+    <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Fade</string>
     <string name="settings_interface_transition_none">None</string>
     <string name="settings_interface_search_matching_mode">Search Matching Mode</string>

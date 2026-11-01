@@ -278,7 +278,7 @@
     <string name="settings_interface_expressive_cards_supporting">Использовать стиль карточек для списков</string>
     <string name="settings_interface_transition_animation">Анимация перехода</string>
     <string name="settings_interface_transition_animation_supporting">Стиль анимации между экранами</string>
-    <string name="settings_interface_transition_slide">Слайд</string>
+    <string name="settings_interface_transition_zoom">Масштаб</string>
     <string name="settings_interface_transition_fade">Затухание</string>
     <string name="settings_interface_transition_none">Нет</string>
     <string name="settings_interface_search_matching_mode">Режим поиска</string>

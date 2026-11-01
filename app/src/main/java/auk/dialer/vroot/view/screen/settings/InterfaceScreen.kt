@@ -159,7 +159,7 @@ fun InterfaceScreen(
     )
     val transitionOptions = listOf(
         stringResource(R.string.option_standard) to 0,
-        stringResource(R.string.settings_interface_transition_slide) to 1,
+        stringResource(R.string.settings_interface_transition_zoom) to 1,
         stringResource(R.string.settings_interface_transition_fade) to 2,
         stringResource(R.string.settings_interface_transition_none) to 3
     )

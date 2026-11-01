@@ -306,7 +306,7 @@
     <string name="settings_interface_expressive_cards_supporting">Enveloppe les éléments de liste dans des cartes stylisées</string>
     <string name="settings_interface_transition_animation">Animation de transition</string>
     <string name="settings_interface_transition_animation_supporting">Style des animations entre les écrans</string>
-    <string name="settings_interface_transition_slide">Glissement</string>
+    <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Fondu</string>
     <string name="settings_interface_transition_none">Aucune</string>
     <string name="settings_interface_search_matching_mode">Mode de correspondance de recherche</string>

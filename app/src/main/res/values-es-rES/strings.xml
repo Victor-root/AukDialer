@@ -268,7 +268,7 @@
     <string name="settings_interface_expressive_cards">Utilizar tarjetas expresivas</string>
     <string name="settings_interface_transition_animation">Animaciones de transición</string>
     <string name="settings_interface_transition_animation_supporting">Estilo de animaciones entre pantallas</string>
-    <string name="settings_interface_transition_slide">Deslizar</string>
+    <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Desvanecer</string>
     <string name="settings_interface_transition_none">Nada</string>
     <string name="settings_interface_search_matching_mode">Modo de búsqueda de coincidencia</string>
