@@ -1,8 +1,6 @@
 package auk.dialer.vroot.view.screen
 
-import android.content.Context
 import android.provider.CallLog
-import android.telecom.TelecomManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
@@ -26,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallLogViewModel
+import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
-import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.normalizePhoneNumber
 import auk.dialer.vroot.controller.util.areNumbersEqual
@@ -81,11 +79,10 @@ fun CallLogFullScreen(
             listState.firstVisibleItemIndex > 2
         }
     }
-    val telecomManager = remember { context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager }
-
-    var showSimPicker by remember { mutableStateOf(false) }
-    var pendingNumber by remember { mutableStateOf<String?>(null) }
-    var pendingContactId by remember { mutableStateOf<String?>(null) }
+    // Calls go through the shared launcher, which honours the default SIM and each contact's own.
+    val callLauncher = rememberCallLauncher()
+    val contactsVM: ContactsViewModel = koinActivityViewModel()
+    val allContacts by contactsVM.allContacts.collectAsState()
 
     val filteredLogsByContact = remember(allLogs, contactId, phoneNumber) {
         if (contactId == null && phoneNumber == null) allLogs
@@ -97,16 +94,6 @@ fun CallLogFullScreen(
 
     val contactName = remember(filteredLogsByContact) {
         filteredLogsByContact.firstOrNull { it.name != null && it.name != it.number }?.name ?: (if (phoneNumber != null) formatPhoneNumber(phoneNumber) else null)
-    }
-
-    if (showSimPicker && pendingNumber != null) {
-        SimPickerDialog(
-            onDismissRequest = { showSimPicker = false },
-            onSimSelected = { handle ->
-                makeCall(context, pendingNumber!!, handle, contactId = pendingContactId)
-                showSimPicker = false
-            }
-        )
     }
 
     Scaffold(
@@ -237,25 +224,8 @@ fun CallLogFullScreen(
                                                     }
                                                 },
                                                 onCallClick = {
-                                                    val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
-                                                        context,
-                                                        android.Manifest.permission.READ_PHONE_STATE
-                                                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
                                                     val targetContactId = lg.contactId ?: contactId
-
-                                                    if (hasPermission) {
-                                                        val accounts = telecomManager.callCapablePhoneAccounts
-                                                        if (accounts.size > 1) {
-                                                            pendingNumber = lg.number
-                                                            pendingContactId = targetContactId
-                                                            showSimPicker = true
-                                                        } else {
-                                                            makeCall(context, lg.number, contactId = targetContactId)
-                                                        }
-                                                    } else {
-                                                        makeCall(context, lg.number, contactId = targetContactId)
-                                                    }
+                                                    callLauncher.dial(lg.number, allContacts.find { it.id == targetContactId })
                                                 },
                                                 selected = selectedEntries.any { it.id == lg.id }
                                             )
