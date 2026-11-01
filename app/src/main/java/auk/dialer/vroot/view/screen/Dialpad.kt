@@ -217,7 +217,7 @@ fun DialPadScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+                .padding(top = innerPadding.calculateTopPadding())
         ) {
             BoxWithConstraints(
                 modifier = Modifier
@@ -351,10 +351,12 @@ fun DialPadScreen(
                 shadowElevation = 16.dp,
                 shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
             ) {
+                // The panel reaches the bottom of the screen, behind the navigation bar, and only
+                // its keys stay above it.
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 24.dp),
+                        .padding(top = 24.dp, bottom = innerPadding.calculateBottomPadding()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     InterceptPlatformTextInput(
