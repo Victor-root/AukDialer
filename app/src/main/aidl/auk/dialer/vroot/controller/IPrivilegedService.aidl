@@ -2,7 +2,7 @@ package auk.dialer.vroot.controller;
 
 import android.os.ParcelFileDescriptor;
 
-interface IPrivilegedRecorder {
+interface IPrivilegedService {
 
     // Transaction code Shizuku calls to stop the user service.
     void destroy() = 16777114;

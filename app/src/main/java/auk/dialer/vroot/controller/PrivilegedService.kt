@@ -19,13 +19,14 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
 /**
- * Records a call from the Shizuku user service process, which runs as the shell (or root) user.
- * Unlike the app, that user holds CAPTURE_AUDIO_OUTPUT, which the VOICE_CALL sources require.
+ * Runs in the Shizuku user service process, as the shell (or root) user, what the app is not
+ * allowed to do itself. Records calls: unlike the app, that user holds CAPTURE_AUDIO_OUTPUT,
+ * which the VOICE_CALL sources require.
  *
  * Shizuku creates it by reflection through the Context constructor, and nothing of the app process
  * (Koin, preferences) exists here.
  */
-class PrivilegedRecorderService(context: Context) : IPrivilegedRecorder.Stub() {
+class PrivilegedService(context: Context) : IPrivilegedService.Stub() {
 
     private val callerContext = CallerContext(context)
     private val lock = Any()

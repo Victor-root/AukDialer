@@ -120,7 +120,7 @@ object CallRecorder {
         }
     }
 
-    private fun privilegedCapture(remote: IPrivilegedRecorder, source: Int, file: File): Capture {
+    private fun privilegedCapture(remote: IPrivilegedService, source: Int, file: File): Capture {
         val output = ParcelFileDescriptor.open(
             file,
             ParcelFileDescriptor.MODE_WRITE_ONLY or ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_TRUNCATE
@@ -164,8 +164,8 @@ object CallRecorder {
     fun start(context: Context, label: String) {
         if (_isRecording.value || attemptInProgress) return
         // Through Shizuku, the capture runs under the shell's own grant rather than the app's.
-        ShizukuRecorder.refresh()
-        if (!hasPermission(context) && ShizukuRecorder.status.value != ShizukuRecorder.Status.Ready) return
+        ShizukuBridge.refresh()
+        if (!hasPermission(context) && ShizukuBridge.status.value != ShizukuBridge.Status.Ready) return
         attemptInProgress = true
 
         val safeLabel = label
@@ -179,9 +179,9 @@ object CallRecorder {
         scope.launch {
             // The call itself, captured through Shizuku when it is set up, ahead of what the app
             // can capture on its own.
-            val privileged = ShizukuRecorder.recorder()
+            val privileged = ShizukuBridge.service()
             if (BuildConfig.DEBUG_TOOLS) {
-                Log.d(TAG, "Shizuku status=${ShizukuRecorder.status.value} service=${privileged != null}")
+                Log.d(TAG, "Shizuku status=${ShizukuBridge.status.value} service=${privileged != null}")
             }
             val attempts = buildList {
                 // A muted capture reads exact zeros, while a live call line always carries some

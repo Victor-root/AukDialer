@@ -28,9 +28,9 @@
     <init>();
 }
 
-# Shizuku starts the call recorder service in its own process by reflection, through the
+# Shizuku starts the privileged service (call recording) in its own process by reflection, through the
 # constructor taking a Context, so nothing in the visible call graph uses it.
--keep class auk.dialer.vroot.controller.PrivilegedRecorderService {
+-keep class auk.dialer.vroot.controller.PrivilegedService {
     public <init>(android.content.Context);
 }
 

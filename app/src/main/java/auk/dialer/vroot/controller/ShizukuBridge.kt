@@ -17,10 +17,10 @@ import kotlinx.coroutines.withTimeoutOrNull
 import rikka.shizuku.Shizuku
 
 /**
- * Access to [PrivilegedRecorderService] through Shizuku: whether it can be used, the permission it
+ * Access to [PrivilegedService] through Shizuku: whether it can be used, the permission it
  * needs, and the connection to it once it can.
  */
-object ShizukuRecorder {
+object ShizukuBridge {
 
     enum class Status {
         /** Shizuku (or Sui) is not running, or too old for a service built with a Context. */
@@ -41,21 +41,21 @@ object ShizukuRecorder {
     val status = _status.asStateFlow()
 
     private val serviceArgs = Shizuku.UserServiceArgs(
-        ComponentName(BuildConfig.APPLICATION_ID, PrivilegedRecorderService::class.java.name)
+        ComponentName(BuildConfig.APPLICATION_ID, PrivilegedService::class.java.name)
     )
         // Shizuku tells services apart by tag, and the class name changes with R8.
-        .tag("call_recorder")
-        .processNameSuffix("recorder")
+        .tag("privileged")
+        .processNameSuffix("privileged")
         .daemon(false)
         .version(BuildConfig.VERSION_CODE)
 
     // Only touched on the main thread.
-    private var connection: CompletableDeferred<IPrivilegedRecorder>? = null
+    private var connection: CompletableDeferred<IPrivilegedService>? = null
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             if (binder != null && binder.pingBinder()) {
-                connection?.complete(IPrivilegedRecorder.Stub.asInterface(binder))
+                connection?.complete(IPrivilegedService.Stub.asInterface(binder))
             }
         }
 
@@ -98,8 +98,8 @@ object ShizukuRecorder {
         runCatching { context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
 
-    /** The recorder service, started if needed, or null when Shizuku can't provide it. */
-    suspend fun recorder(): IPrivilegedRecorder? {
+    /** The privileged service, started if needed, or null when Shizuku can't provide it. */
+    suspend fun service(): IPrivilegedService? {
         val pending = withContext(Dispatchers.Main) {
             refresh()
             if (_status.value != Status.Ready) null else connection ?: bind()
@@ -111,8 +111,8 @@ object ShizukuRecorder {
         return null
     }
 
-    private fun bind(): CompletableDeferred<IPrivilegedRecorder>? {
-        val deferred = CompletableDeferred<IPrivilegedRecorder>()
+    private fun bind(): CompletableDeferred<IPrivilegedService>? {
+        val deferred = CompletableDeferred<IPrivilegedService>()
         connection = deferred
         if (runCatching { Shizuku.bindUserService(serviceArgs, serviceConnection) }.isFailure) {
             connection = null
