@@ -45,6 +45,11 @@ class CallService : InCallService() {
     private var redialCount = 0
     private val callStartTimes = mutableMapOf<Call, Long>()
 
+    // Runs while the call screen is being opened for a new call, until it shows or a timeout
+    // passes. The ringing notification stays quiet meanwhile rather than peeking over a screen
+    // about to cover it, and still alerts should that screen never open.
+    private var callScreenStartJob: Job? = null
+
     private fun getContactBitmap(photoUri: String?): Bitmap? {
         if (photoUri == null) return null
         return try {
@@ -61,6 +66,7 @@ class CallService : InCallService() {
         private const val CHANNEL_ID = "call_channel"
         private const val MISSED_CHANNEL_ID = "missed_call_channel"
         private const val NOTIFICATION_ID = 101
+        private const val CALL_SCREEN_START_TIMEOUT_MS = 1500L
 
         private val _currentCallSession = MutableStateFlow<CallSession?>(null)
         val currentCallSession = _currentCallSession.asStateFlow()
@@ -193,7 +199,11 @@ class CallService : InCallService() {
         super.onCreate()
         instance = this
         serviceScope.launch {
-            isActivityVisible.collect {
+            isActivityVisible.collect { visible ->
+                if (visible) {
+                    callScreenStartJob?.cancel()
+                    callScreenStartJob = null
+                }
                 _currentCallSession.value?.call?.let { currentCall ->
                     updateNotification(currentCall)
                 }
@@ -466,6 +476,17 @@ class CallService : InCallService() {
         }
 
         updateCallState()
+        if (!isActivityVisible.value) {
+            callScreenStartJob?.cancel()
+            callScreenStartJob = serviceScope.launch {
+                delay(CALL_SCREEN_START_TIMEOUT_MS)
+                callScreenStartJob = null
+                if (!isActivityVisible.value) {
+                    if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: call screen not shown in time, notification alerts")
+                    _currentCallSession.value?.call?.let { updateNotification(it) }
+                }
+            }
+        }
         updateNotification(call)
 
         val intent = Intent(this, CallActivity::class.java).apply {
@@ -476,6 +497,9 @@ class CallService : InCallService() {
             if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) succeeded")
         } catch (e: Exception) {
             if (BuildConfig.DEBUG_TOOLS) Log.e(DEBUG_TAG, "onCallAdded: startActivity(CallActivity) failed", e)
+            callScreenStartJob?.cancel()
+            callScreenStartJob = null
+            updateNotification(call)
         }
     }
 
@@ -557,12 +581,13 @@ class CallService : InCallService() {
             } catch (e: SecurityException) { null }
         }
         
+        val isRinging = call.details.state == Call.STATE_RINGING
         val fullScreenIntent = Intent(this, CallActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
-            if (call.details.state == Call.STATE_RINGING) call.hashCode() else 0,
+            if (isRinging) call.hashCode() else 0,
             fullScreenIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -601,15 +626,22 @@ class CallService : InCallService() {
         }
 
         val contentText = buildString {
-            if (call.details.state == Call.STATE_RINGING) append(getString(R.string.call_status_incoming)) else append(getString(R.string.notif_active_call))
+            if (isRinging) append(getString(R.string.call_status_incoming)) else append(getString(R.string.notif_active_call))
             if (!simLabel.isNullOrEmpty()) {
                 append(" ")
                 append(getString(R.string.notif_via_sim, simLabel))
             }
         }
 
+        // Over the call screen, a heads-up would only repeat it. It alerts while that screen is
+        // neither showing nor about to.
+        val alerts = isRinging && !isActivityVisible.value && callScreenStartJob == null
+        if (BuildConfig.DEBUG_TOOLS) {
+            Log.d(DEBUG_TAG, "updateNotification: ringing=$isRinging visible=${isActivityVisible.value} starting=${callScreenStartJob != null} alerts=$alerts")
+        }
+
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(if (call.details.state == Call.STATE_RINGING) android.R.drawable.sym_call_incoming else R.drawable.ic_call_ongoing)
+            .setSmallIcon(if (isRinging) android.R.drawable.sym_call_incoming else R.drawable.ic_call_ongoing)
             .setContentTitle(contactName)
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -618,19 +650,19 @@ class CallService : InCallService() {
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(false)
-            .setSilent(call.details.state != Call.STATE_RINGING)
-            .setOnlyAlertOnce(call.details.state != Call.STATE_RINGING)
-            .setDefaults(if (call.details.state == Call.STATE_RINGING) NotificationCompat.DEFAULT_ALL else 0)
+            .setSilent(!alerts)
+            .setOnlyAlertOnce(!isRinging)
+            .setDefaults(if (alerts) NotificationCompat.DEFAULT_ALL else 0)
             .setStyle(
-                if (call.details.state == Call.STATE_RINGING) {
+                if (isRinging) {
                     NotificationCompat.CallStyle.forIncomingCall(person, declinePendingIntent, answerPendingIntent)
                 } else {
                     NotificationCompat.CallStyle.forOngoingCall(person, declinePendingIntent)
                 }
             )
 
-        if (call.details.state == Call.STATE_RINGING) {
-            builder.setFullScreenIntent(fullScreenPendingIntent, true)
+        if (isRinging) {
+            if (alerts) builder.setFullScreenIntent(fullScreenPendingIntent, true)
         } else {
             builder.addAction(
                 NotificationCompat.Action.Builder(
