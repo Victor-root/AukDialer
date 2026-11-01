@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Environment
@@ -172,7 +173,7 @@ object CallRecorder {
             .replace(Regex("[^\\p{L}\\p{N}+_-]"), "_")
             .take(40)
             .ifBlank { "call" }
-        val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val stamp = SimpleDateFormat(FILE_STAMP_PATTERN, Locale.US).format(Date())
         val file = File(getRecordingsDirectory(context), "${safeLabel}_$stamp.m4a")
         val thisAttempt = ++attemptId
 
@@ -251,13 +252,39 @@ object CallRecorder {
         return saved
     }
 
-    fun listRecordings(context: Context): List<File> {
-        val dir = getRecordingsDirectory(context)
-        return dir.listFiles()
+    /** A saved call recording, as the recordings list shows it. */
+    data class Recording(val file: File, val caller: String, val startedAt: Long, val durationMs: Long)
+
+    private const val FILE_STAMP_PATTERN = "yyyyMMdd_HHmmss"
+
+    // Files are named after the caller, then the time recording started: Marie_Dupont_20261101_141502.
+    private val FILE_NAME = Regex("""^(.*)_(\d{8}_\d{6})$""")
+
+    /** The saved recordings, newest first. Blocking: each file is opened to read its duration. */
+    fun loadRecordings(context: Context): List<Recording> {
+        val files = getRecordingsDirectory(context).listFiles()
             ?.filter { it.isFile && it.length() > 0 }
-            ?.sortedByDescending { it.lastModified() }
-            ?: emptyList()
+            ?: return emptyList()
+        return files.map { file ->
+            val parts = FILE_NAME.find(file.nameWithoutExtension)
+            val startedAt = parts?.groupValues?.get(2)
+                ?.let { runCatching { SimpleDateFormat(FILE_STAMP_PATTERN, Locale.US).parse(it)?.time }.getOrNull() }
+                ?: file.lastModified()
+            Recording(
+                file = file,
+                caller = (parts?.groupValues?.get(1) ?: file.nameWithoutExtension).replace('_', ' ').trim(),
+                startedAt = startedAt,
+                durationMs = durationMsOf(file)
+            )
+        }.sortedByDescending { it.startedAt }
     }
+
+    private fun durationMsOf(file: File): Long = runCatching {
+        MediaMetadataRetriever().use { retriever ->
+            retriever.setDataSource(file.absolutePath)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+        }
+    }.getOrNull() ?: 0L
 
     fun delete(file: File): Boolean = file.delete()
 

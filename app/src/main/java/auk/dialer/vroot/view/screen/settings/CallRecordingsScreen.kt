@@ -1,19 +1,18 @@
 package auk.dialer.vroot.view.screen.settings
 
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MicNone
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,57 +25,81 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.util.SpeechPlayer
+import auk.dialer.vroot.controller.util.formatDateHeader
+import auk.dialer.vroot.controller.util.formatDuration
+import auk.dialer.vroot.controller.util.formatPhoneNumber
+import auk.dialer.vroot.controller.util.formatTime
+import auk.dialer.vroot.view.components.AudioMessageRow
+import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukConfirmationDialog
 import auk.dialer.vroot.view.components.AukDivider
 import auk.dialer.vroot.view.components.AukExpressiveCard
-import auk.dialer.vroot.view.components.AukListItem
+import auk.dialer.vroot.view.components.AukLoadingIndicatorView
+import auk.dialer.vroot.view.components.AukSectionHeader
+import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.aukExceptBottom
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
-import auk.dialer.vroot.view.theme.aukExceptBottom
-import auk.dialer.vroot.view.theme.aukScrollContentPadding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun CallRecordingsScreen(
     navigator: DestinationsNavigator
 ) {
+    CallRecordingsContent(onNavigateUp = { navigator.navigateUp() })
+}
+
+/**
+ * The saved call recordings, laid out and played like voicemails. With [onNavigateUp] it is a
+ * screen of its own with a back arrow, without it a tab of the main screen.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CallRecordingsContent(
+    onNavigateUp: (() -> Unit)? = null,
+    // False while another tab of the main screen is shown: the pager keeps this one composed.
+    isShown: Boolean = true
+) {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
-    var recordings by remember { mutableStateOf<List<File>>(emptyList()) }
-    var pendingDelete by remember { mutableStateOf<File?>(null) }
+    var recordings by remember { mutableStateOf<List<CallRecorder.Recording>?>(null) }
+    var pendingDelete by remember { mutableStateOf<CallRecorder.Recording?>(null) }
     val shareTitle = stringResource(R.string.call_recordings_share)
 
     // Same player as voicemails: loudspeaker or earpiece, with the screen off against the ear.
     var playingPath by remember { mutableStateOf<String?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
+    var positionMs by remember { mutableIntStateOf(0) }
+    var durationMs by remember { mutableIntStateOf(0) }
     var isSpeakerOn by remember { mutableStateOf(true) }
     val playbackFailedText = stringResource(R.string.call_recordings_playback_failed)
     val player = remember {
         SpeechPlayer<String>(
             context = context.applicationContext,
-            onUpdate = { path, playing, _, _ ->
+            onUpdate = { path, playing, position, duration ->
                 playingPath = path
                 isPlaying = playing
+                positionMs = position
+                durationMs = duration
             },
             onError = { Toast.makeText(context, playbackFailedText, Toast.LENGTH_SHORT).show() },
             onAudioUnavailable = { Toast.makeText(context, playbackFailedText, Toast.LENGTH_SHORT).show() },
         )
     }
 
-    fun togglePlayback(file: File) = player.toggle(file.absolutePath, Uri.fromFile(file))
-
-    // Playback stops with the list out of sight: nothing else could stop it.
+    // Playback stops with the list out of sight, and the list is read again on each return, a
+    // call having possibly been recorded meanwhile.
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) player.release()
+            when (event) {
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> refreshKey++
+                androidx.lifecycle.Lifecycle.Event.ON_STOP -> player.release()
+                else -> {}
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
@@ -84,107 +107,76 @@ fun CallRecordingsScreen(
             player.release()
         }
     }
+    LaunchedEffect(isShown) {
+        if (!isShown) player.release()
+    }
 
     LaunchedEffect(refreshKey) {
-        recordings = CallRecorder.listRecordings(context)
+        recordings = withContext(Dispatchers.IO) { CallRecorder.loadRecordings(context) }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.call_recordings_title), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+            if (onNavigateUp != null) {
+                TopAppBar(
+                    colors = aukAccentTopAppBarColors(),
+                    title = { Text(stringResource(R.string.call_recordings_title), fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                        }
                     }
-                }
-            )
-        }
-    ) { padding ->
-        if (recordings.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    Icons.Outlined.MicNone,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    stringResource(R.string.call_recordings_empty),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    stringResource(R.string.call_recordings_empty_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
                 )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding.aukExceptBottom()),
-                contentPadding = aukScrollContentPadding(16.dp, padding),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(recordings, key = { it.absolutePath }) { file ->
-                    val isCurrent = playingPath == file.absolutePath
-                    val isFilePlaying = isCurrent && isPlaying
-                    AukExpressiveCard {
-                        AukListItem(
-                            headline = file.nameWithoutExtension,
-                            supporting = recordingSubtitle(file),
-                            headlineMaxLines = 2,
-                            supportingMaxLines = 2,
-                            leadingIcon = Icons.Outlined.MicNone,
-                            onClick = { togglePlayback(file) }
-                        )
-                        AukDivider(Modifier.padding(horizontal = 16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            if (isCurrent) {
-                                IconButton(onClick = {
-                                    isSpeakerOn = !isSpeakerOn
-                                    player.setSpeakerOn(isSpeakerOn)
-                                }) {
-                                    Icon(
-                                        if (isSpeakerOn) Icons.AutoMirrored.Filled.VolumeUp else Icons.Default.Phone,
-                                        contentDescription = stringResource(
-                                            if (isSpeakerOn) R.string.playback_route_speaker
-                                            else R.string.playback_route_earpiece
-                                        )
-                                    )
+        },
+        // As a tab, the main screen's header and bottom bar already clear the system bars.
+        contentWindowInsets = if (onNavigateUp != null) ScaffoldDefaults.contentWindowInsets else WindowInsets(0)
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding.aukExceptBottom()).fillMaxSize()) {
+            val list = recordings
+            when {
+                list == null -> AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
+                list.isEmpty() -> EmptyRecordingsState()
+                else -> {
+                    val grouped = remember(list) { list.groupBy { formatDateHeader(context, it.startedAt) } }
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + padding.calculateBottomPadding())
+                    ) {
+                        grouped.forEach { (header, group) ->
+                            item(key = header) {
+                                AukSectionHeader(title = header)
+                                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
+                                    AukExpressiveCard(isCompact = true) {
+                                        group.forEachIndexed { index, recording ->
+                                            val path = recording.file.absolutePath
+                                            val isCurrent = playingPath == path
+                                            RecordingRow(
+                                                recording = recording,
+                                                isCurrent = isCurrent,
+                                                isPlaying = isCurrent && isPlaying,
+                                                positionMs = positionMs,
+                                                durationMs = durationMs,
+                                                isSpeakerOn = isSpeakerOn,
+                                                onToggle = { player.toggle(path, Uri.fromFile(recording.file)) },
+                                                onSeek = { player.seekTo(it) },
+                                                onToggleSpeaker = {
+                                                    isSpeakerOn = !isSpeakerOn
+                                                    player.setSpeakerOn(isSpeakerOn)
+                                                },
+                                                onShare = { CallRecorder.share(context, recording.file, shareTitle) },
+                                                onDelete = {
+                                                    if (isCurrent) player.release()
+                                                    pendingDelete = recording
+                                                }
+                                            )
+                                            if (index < group.size - 1) {
+                                                AukDivider(Modifier.padding(horizontal = 16.dp))
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            IconButton(onClick = { togglePlayback(file) }) {
-                                Icon(
-                                    if (isFilePlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = stringResource(
-                                        if (isFilePlaying) R.string.call_recordings_pause else R.string.call_recordings_play
-                                    )
-                                )
-                            }
-                            IconButton(onClick = { CallRecorder.share(context, file, shareTitle) }) {
-                                Icon(Icons.Default.Share, contentDescription = shareTitle)
-                            }
-                            IconButton(onClick = {
-                                if (isCurrent) player.release()
-                                pendingDelete = file
-                            }) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.action_delete),
-                                    tint = MaterialTheme.colorScheme.error
-                                )
+                                Spacer(Modifier.height(8.dp))
                             }
                         }
                     }
@@ -193,11 +185,11 @@ fun CallRecordingsScreen(
         }
     }
 
-    pendingDelete?.let { file ->
+    pendingDelete?.let { recording ->
         AukConfirmationDialog(
             onDismissRequest = { pendingDelete = null },
             onConfirm = {
-                CallRecorder.delete(file)
+                CallRecorder.delete(recording.file)
                 pendingDelete = null
                 refreshKey++
             },
@@ -210,8 +202,99 @@ fun CallRecordingsScreen(
     }
 }
 
-private fun recordingSubtitle(file: File): String {
-    val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(file.lastModified()))
-    val sizeKb = file.length() / 1024
-    return "$date  •  ${sizeKb} KB"
+@Composable
+private fun RecordingRow(
+    recording: CallRecorder.Recording,
+    isCurrent: Boolean,
+    isPlaying: Boolean,
+    positionMs: Int,
+    durationMs: Int,
+    isSpeakerOn: Boolean,
+    onToggle: () -> Unit,
+    onSeek: (Int) -> Unit,
+    onToggleSpeaker: () -> Unit,
+    onShare: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val context = LocalContext.current
+    // Recorded under the contact's name when it was known, under the number otherwise.
+    val isNumber = recording.caller.isNotEmpty() && recording.caller.all { it.isDigit() || it == '+' }
+    val displayName = when {
+        recording.caller.isEmpty() -> stringResource(R.string.label_unknown)
+        isNumber -> formatPhoneNumber(recording.caller)
+        else -> recording.caller
+    }
+
+    key(recording.file.absolutePath) {
+        AudioMessageRow(
+            title = displayName,
+            subtitle = recordingSubtitle(context, recording),
+            avatarName = displayName,
+            photoUri = null,
+            avatarIcon = if (isNumber || recording.caller.isEmpty()) Icons.Outlined.MicNone else null,
+            emphasized = false,
+            canPlay = true,
+            isCurrent = isCurrent,
+            isPlaying = isPlaying,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            isSpeakerOn = isSpeakerOn,
+            onToggle = onToggle,
+            onSeek = onSeek,
+            onToggleSpeaker = onToggleSpeaker,
+            actions = listOf(
+                AudioRowAction(stringResource(R.string.call_recordings_share), Icons.Outlined.Share, onShare),
+                AudioRowAction(stringResource(R.string.action_delete), Icons.Outlined.Delete, onDelete)
+            )
+        )
+    }
+}
+
+/** Time, then length, like a voicemail's details: the day is the group the row sits in. */
+private fun recordingSubtitle(context: Context, recording: CallRecorder.Recording): String = buildString {
+    append(formatTime(context, recording.startedAt))
+    if (recording.durationMs > 0) {
+        append("  ·  ")
+        append(formatDuration(recording.durationMs / 1000))
+    }
+}
+
+@Composable
+private fun EmptyRecordingsState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(28.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.MicNone,
+                contentDescription = null,
+                modifier = Modifier.size(60.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.call_recordings_empty),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = stringResource(R.string.call_recordings_empty_description),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
+        )
+    }
 }

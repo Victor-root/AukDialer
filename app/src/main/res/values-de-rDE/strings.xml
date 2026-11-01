@@ -538,7 +538,6 @@
     <string name="call_recordings_supporting">Abspielen, teilen oder löschen von Aufnahmen</string>
     <string name="call_recordings_empty">Keine Aufnahmen</string>
     <string name="call_recordings_empty_description">Aufnahmen von Anrufen erscheinen hier.</string>
-    <string name="call_recordings_play">Abspielen</string>
     <string name="call_recordings_share">Aufnahme teilen</string>
     <string name="call_recordings_delete_title">Aufnahme löschen?</string>
     <string name="call_recordings_delete_message">Diese Aufnahme wird dauerhaft von Ihrem Gerät gelöscht.</string>

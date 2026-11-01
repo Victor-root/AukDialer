@@ -540,7 +540,6 @@
     <string name="call_recordings_supporting">Воспроизведение, отправка или удаление сохраненных записей</string>
     <string name="call_recordings_empty">Нет записей</string>
     <string name="call_recordings_empty_description">Здесь будут появляться записи, сделанные во время звонков.</string>
-    <string name="call_recordings_play">Воспроизведение</string>
     <string name="call_recordings_share">Поделиться записью</string>
     <string name="call_recordings_delete_title">Удалить запись?</string>
     <string name="call_recordings_delete_message">Эта запись будет навсегда удалена с вашего устройства.</string>

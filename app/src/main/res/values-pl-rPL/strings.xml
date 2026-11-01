@@ -538,7 +538,6 @@
     <string name="call_recordings_supporting">Odtwórz, udostępnij lub usuń zapisane nagrania</string>
     <string name="call_recordings_empty">Brak nagrań</string>
     <string name="call_recordings_empty_description">Tutaj pojawią się nagrania wykonywane podczas połączeń.</string>
-    <string name="call_recordings_play">Odtwórz</string>
     <string name="call_recordings_share">Udostępnij nagranie</string>
     <string name="call_recordings_delete_title">Usunąć nagranie?</string>
     <string name="call_recordings_delete_message">To nagranie zostanie trwale usunięte z Twojego urządzenia.</string>
