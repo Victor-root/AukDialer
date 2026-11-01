@@ -30,7 +30,6 @@ import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.getSystemVoicemailNumber
 import auk.dialer.vroot.controller.util.makeCall
-import auk.dialer.vroot.debug.VoicemailDebugMenu
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
@@ -128,9 +127,6 @@ fun VoicemailScreen(
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
-                },
-                actions = {
-                    VoicemailDebugMenu(onChanged = { voicemailViewModel.fetchVoicemails() })
                 }
             )
         },

@@ -7,7 +7,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 
 /**
- * Debug-build toolbar menu for populating the voicemail list without a carrier.
+ * Debug-build menu for populating the voicemail list without a carrier.
  * The release source set provides an empty implementation of this function, so
  * none of it reaches a published build.
  */
@@ -47,7 +47,8 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
         }
     }
 
-    IconButton(onClick = { expanded = true }) {
+    // Filled, as it floats over the voicemail list rather than sitting in a toolbar.
+    FilledTonalIconButton(onClick = { expanded = true }) {
         Icon(Icons.Outlined.BugReport, contentDescription = "Debug tools")
     }
 

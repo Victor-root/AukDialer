@@ -33,6 +33,7 @@ import auk.dialer.vroot.controller.util.formatDuration
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.formatTime
 import auk.dialer.vroot.controller.util.getDefaultDialerIntent
+import auk.dialer.vroot.debug.VoicemailDebugMenu
 import auk.dialer.vroot.modal.data.Voicemail
 import auk.dialer.vroot.modal.data.VoicemailStatus
 import auk.dialer.vroot.view.components.AukAvatar
@@ -143,6 +144,8 @@ fun VoicemailScreenContent(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        // Debug builds only: the release source set makes this an empty function.
+        floatingActionButton = { VoicemailDebugMenu(onChanged = { viewModel.fetchVoicemails() }) },
         // Inside the main screen, its bottom bar already clears the navigation bar.
         contentWindowInsets = if (showTopBar) {
             WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
