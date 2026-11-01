@@ -98,6 +98,12 @@ fun ExpressiveCallScreen(
 ) {
     val view = LocalView.current
     val context = LocalContext.current
+    // Nothing may be able to send a text (no SMS app), and the call screen must not go down for it.
+    fun openMessageToCaller() {
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:$phoneNumber") })
+        }
+    }
 
     if (BuildConfig.DEBUG_TOOLS) {
         val insetsDensity = LocalDensity.current
@@ -488,13 +494,7 @@ fun ExpressiveCallScreen(
                     if (callState == Call.STATE_HOLDING) call.unhold() else call.hold()
                 } catch (e: Exception) {}
             },
-            onMessage = {
-                try {
-                    context.startActivity(
-                        Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:$phoneNumber") }
-                    )
-                } catch (e: Exception) {}
-            },
+            onMessage = { openMessageToCaller() },
             onToggleRecording = {
                 if (isRecording) {
                     CallRecorder.stop()
@@ -556,10 +556,7 @@ fun ExpressiveCallScreen(
                         ) {
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onDeclineCallAction()
-                            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("smsto:$phoneNumber")
-                            }
-                            context.startActivity(intent)
+                            openMessageToCaller()
                         }
                     }
                 }
@@ -575,10 +572,7 @@ fun ExpressiveCallScreen(
                         onMessage = {
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onDeclineCallAction()
-                            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("smsto:$phoneNumber")
-                            }
-                            context.startActivity(intent)
+                            openMessageToCaller()
                         }
                     )
                     3 -> VerticalSwipeToAnswer(
