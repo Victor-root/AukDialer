@@ -68,6 +68,8 @@ fun ContactEditScreen(
     var photoUri by remember { mutableStateOf<String?>(null) }
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
     var isPrivate by remember { mutableStateOf(false) }
+    // What this screen does not edit is carried over from it, or saving would wipe it.
+    var loadedContact by remember { mutableStateOf<Contact?>(null) }
 
     val phones = remember { mutableStateListOf(PhoneNumberEntry("")) }
     val emails = remember { mutableStateListOf(EmailEntry("")) }
@@ -83,6 +85,7 @@ fun ContactEditScreen(
         if (contactId != null && contactId != "0" && contactId != "null") {
             val existing = contactsVM.getFullContactById(contactId)
             if (existing != null) {
+                loadedContact = existing
                 val split = if (!existing.givenName.isNullOrBlank() || !existing.familyName.isNullOrBlank()) {
                     (existing.givenName ?: "") to (existing.familyName ?: "")
                 } else {
@@ -186,7 +189,7 @@ fun ContactEditScreen(
                                 scope.launch {
                                     val savedPhones = phones.filter { it.number.isNotBlank() }
                                     val savedEmails = emails.filter { it.address.isNotBlank() }
-                                    val contactToSave = Contact(
+                                    val editedContact = Contact(
                                         id = if (contactId == "null" || contactId == "0" || contactId == null) "0" else contactId,
                                         name = displayName,
                                         givenName = givenName.trim().ifBlank { null },
@@ -203,6 +206,13 @@ fun ContactEditScreen(
                                         isPrivate = isPrivate,
                                         notes = notes.ifBlank { null }
                                     )
+                                    val contactToSave = loadedContact?.let { loaded ->
+                                        editedContact.copy(
+                                            isFavorite = loaded.isFavorite,
+                                            customRingtone = loaded.customRingtone,
+                                            events = loaded.events
+                                        )
+                                    } ?: editedContact
                                     contactsVM.saveContact(contactToSave)
                                     navigator.navigateUp()
                                 }
