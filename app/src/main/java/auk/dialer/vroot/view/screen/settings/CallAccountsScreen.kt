@@ -43,6 +43,7 @@ import androidx.compose.material.icons.automirrored.outlined.PhoneCallback
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.controller.CallRecorder
+import auk.dialer.vroot.controller.ShizukuRecorder
 import auk.dialer.vroot.controller.util.makeCall
 import com.ramcosta.composedestinations.generated.destinations.CallRecordingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SpeedDialScreenDestination
@@ -80,6 +81,8 @@ fun CallAccountsScreen(
     var autoRecord by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, false)) }
 
     val recordAudioPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
+    val shizukuStatus by ShizukuRecorder.status.collectAsState()
+    LaunchedEffect(Unit) { ShizukuRecorder.refresh() }
 
     var defaultCallBg by remember(settingsState) { mutableStateOf(CallBackgroundStore.defaultModel(context)) }
     var savingCallBg by remember { mutableStateOf(false) }
@@ -324,6 +327,26 @@ fun CallAccountsScreen(
                                 }
                                 autoRecord = it
                                 prefs.setBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, it)
+                            }
+                        )
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        AukListItem(
+                            headline = stringResource(R.string.settings_call_recording_shizuku),
+                            supporting = stringResource(
+                                when (shizukuStatus) {
+                                    ShizukuRecorder.Status.Unavailable -> R.string.settings_call_recording_shizuku_unavailable
+                                    ShizukuRecorder.Status.NeedsPermission -> R.string.settings_call_recording_shizuku_needs_permission
+                                    ShizukuRecorder.Status.Denied -> R.string.settings_call_recording_shizuku_denied
+                                    ShizukuRecorder.Status.Ready -> R.string.settings_call_recording_shizuku_ready
+                                }
+                            ),
+                            leadingIcon = Icons.Outlined.Security,
+                            onClick = {
+                                if (shizukuStatus == ShizukuRecorder.Status.NeedsPermission) {
+                                    ShizukuRecorder.requestPermission()
+                                } else {
+                                    ShizukuRecorder.openShizuku(context)
+                                }
                             }
                         )
                         HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

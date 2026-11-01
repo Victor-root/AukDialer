@@ -22,6 +22,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- To open the Shizuku app from the call recording settings. -->
+    <queries>
+        <package android:name="moe.shizuku.privileged.api" />
+    </queries>
+
     <application
         android:name=".AukApp"
         android:allowBackup="true"
@@ -375,6 +381,16 @@
             android:turnScreenOn="true"
             android:directBootAware="true"
             android:theme="@style/Theme.AukDialer" />
+
+        <!-- Hands Shizuku's binder to the app, for call recording. The permission keeps other
+             apps out: only Shizuku itself, holding it, talks to this provider. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

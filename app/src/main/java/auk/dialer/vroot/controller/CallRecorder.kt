@@ -6,8 +6,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -31,7 +31,7 @@ object CallRecorder {
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
 
-    private var recorder: MediaRecorder? = null
+    private var capture: Capture? = null
     private var currentFile: File? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -66,6 +66,21 @@ object CallRecorder {
     private const val SILENCE_CHECK_POLL_MS = 100L
     private const val SILENCE_AMPLITUDE_THRESHOLD = 300
 
+    /** A recording under way, whichever process captures it. */
+    private interface Capture {
+        /** The highest level since the previous call. */
+        fun maxAmplitude(): Int
+
+        /** Ends the capture. False when nothing usable was written. */
+        fun stop(): Boolean
+    }
+
+    /**
+     * One way to record: a source, captured by the app itself or through Shizuku. A capture whose
+     * level stays at or below [silenceThreshold] is taken as muted, and null skips that check.
+     */
+    private class Attempt(val name: String, val silenceThreshold: Int?, val open: (File) -> Capture)
+
     private fun sourceName(source: Int) = when (source) {
         MediaRecorder.AudioSource.VOICE_CALL -> "VOICE_CALL"
         MediaRecorder.AudioSource.VOICE_COMMUNICATION -> "VOICE_COMMUNICATION"
@@ -74,12 +89,58 @@ object CallRecorder {
         else -> "unknown($source)"
     }
 
-    private suspend fun peakAmplitude(instance: MediaRecorder): Int {
+    private fun localCapture(context: Context, source: Int, file: File): Capture {
+        val instance = MediaRecorder(context)
+        try {
+            instance.setAudioSource(source)
+            instance.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            instance.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            instance.setAudioEncodingBitRate(128000)
+            instance.setAudioSamplingRate(44100)
+            instance.setOutputFile(file.absolutePath)
+            instance.prepare()
+            instance.start()
+        } catch (e: Exception) {
+            try { instance.reset() } catch (ignored: Exception) {}
+            try { instance.release() } catch (ignored: Exception) {}
+            throw e
+        }
+        return object : Capture {
+            override fun maxAmplitude() = runCatching { instance.maxAmplitude }.getOrDefault(0)
+
+            override fun stop(): Boolean = try {
+                instance.stop()
+                true
+            } catch (e: Exception) {
+                false
+            } finally {
+                try { instance.reset() } catch (ignored: Exception) {}
+                try { instance.release() } catch (ignored: Exception) {}
+            }
+        }
+    }
+
+    private fun privilegedCapture(remote: IPrivilegedRecorder, source: Int, file: File): Capture {
+        val output = ParcelFileDescriptor.open(
+            file,
+            ParcelFileDescriptor.MODE_WRITE_ONLY or ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_TRUNCATE
+        )
+        // The service holds its own copy of the descriptor once the call returns.
+        val started = output.use { remote.start(it, source) }
+        if (!started) error("Shizuku service refused ${sourceName(source)}")
+        return object : Capture {
+            override fun maxAmplitude() = runCatching { remote.maxAmplitude() }.getOrDefault(0)
+
+            override fun stop() = runCatching { remote.stop() }.getOrDefault(false)
+        }
+    }
+
+    private suspend fun peakAmplitude(capture: Capture): Int {
         val deadline = System.currentTimeMillis() + SILENCE_CHECK_WINDOW_MS
         var peak = 0
         while (System.currentTimeMillis() < deadline) {
             delay(SILENCE_CHECK_POLL_MS)
-            val level = runCatching { instance.maxAmplitude }.getOrDefault(0)
+            val level = capture.maxAmplitude()
             if (level > peak) peak = level
             if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "amplitude sample=$level")
         }
@@ -102,7 +163,9 @@ object CallRecorder {
 
     fun start(context: Context, label: String) {
         if (_isRecording.value || attemptInProgress) return
-        if (!hasPermission(context)) return
+        // Through Shizuku, the capture runs under the shell's own grant rather than the app's.
+        ShizukuRecorder.refresh()
+        if (!hasPermission(context) && ShizukuRecorder.status.value != ShizukuRecorder.Status.Ready) return
         attemptInProgress = true
 
         val safeLabel = label
@@ -114,45 +177,48 @@ object CallRecorder {
         val thisAttempt = ++attemptId
 
         scope.launch {
-            for (source in audioSources) {
+            // The call itself, captured through Shizuku when it is set up, ahead of what the app
+            // can capture on its own.
+            val privileged = ShizukuRecorder.recorder()
+            if (BuildConfig.DEBUG_TOOLS) {
+                Log.d(TAG, "Shizuku status=${ShizukuRecorder.status.value} service=${privileged != null}")
+            }
+            val attempts = buildList {
+                // A muted capture reads exact zeros, while a live call line always carries some
+                // noise, even when nobody is talking during the check.
+                if (privileged != null) {
+                    add(Attempt("Shizuku VOICE_CALL", silenceThreshold = 0) {
+                        privilegedCapture(privileged, MediaRecorder.AudioSource.VOICE_CALL, it)
+                    })
+                }
+                audioSources.forEach { source ->
+                    val threshold = if (source == MediaRecorder.AudioSource.MIC) null else SILENCE_AMPLITUDE_THRESHOLD
+                    add(Attempt(sourceName(source), threshold) { localCapture(context, source, it) })
+                }
+            }
+
+            for (attempt in attempts) {
                 if (attemptId != thisAttempt) return@launch
 
-                val instance = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    MediaRecorder(context)
-                } else {
-                    @Suppress("DEPRECATION")
-                    MediaRecorder()
-                }
+                var opened: Capture? = null
                 try {
-                    instance.setAudioSource(source)
-                    instance.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                    instance.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                    instance.setAudioEncodingBitRate(128000)
-                    instance.setAudioSamplingRate(44100)
-                    instance.setOutputFile(file.absolutePath)
-                    instance.prepare()
-                    instance.start()
-
-                    val peak = if (source == MediaRecorder.AudioSource.MIC) {
-                        Int.MAX_VALUE
-                    } else {
-                        peakAmplitude(instance)
+                    opened = attempt.open(file)
+                    val threshold = attempt.silenceThreshold
+                    if (threshold != null) {
+                        val peak = peakAmplitude(opened)
+                        if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "source=${attempt.name} peak=$peak threshold=$threshold")
+                        if (peak <= threshold) error("no signal from ${attempt.name}")
                     }
-                    if (BuildConfig.DEBUG_TOOLS) {
-                        Log.d(TAG, "source=${sourceName(source)} peak=$peak threshold=$SILENCE_AMPLITUDE_THRESHOLD")
-                    }
-                    if (peak <= SILENCE_AMPLITUDE_THRESHOLD) error("no signal from ${sourceName(source)}")
                     if (attemptId != thisAttempt) error("superseded")
 
-                    recorder = instance
+                    capture = opened
                     currentFile = file
                     attemptInProgress = false
                     _isRecording.value = true
                     return@launch
                 } catch (e: Exception) {
-                    if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "source=${sourceName(source)} rejected: ${e.message}")
-                    try { instance.reset() } catch (ignored: Exception) {}
-                    try { instance.release() } catch (ignored: Exception) {}
+                    if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "source=${attempt.name} rejected: ${e.message}")
+                    opened?.stop()
                     if (file.exists()) file.delete()
                 }
             }
@@ -166,23 +232,18 @@ object CallRecorder {
     fun stop(): File? {
         attemptId++
         attemptInProgress = false
-        val instance = recorder ?: run {
+        val active = capture ?: run {
             _isRecording.value = false
             return null
         }
         var saved = currentFile
-        try {
-            instance.stop()
-        } catch (e: Exception) {
+        if (!active.stop()) {
             saved?.delete()
             saved = null
-        } finally {
-            try { instance.reset() } catch (ignored: Exception) {}
-            try { instance.release() } catch (ignored: Exception) {}
-            recorder = null
-            currentFile = null
-            _isRecording.value = false
         }
+        capture = null
+        currentFile = null
+        _isRecording.value = false
         if (saved != null && (!saved.exists() || saved.length() == 0L)) {
             saved.delete()
             return null

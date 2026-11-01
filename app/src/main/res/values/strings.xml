@@ -601,6 +601,11 @@
     <string name="settings_call_recording_supporting">Show a record button during calls</string>
     <string name="settings_call_recording_auto">Record every call</string>
     <string name="settings_call_recording_auto_supporting">Start recording automatically when a call connects</string>
+    <string name="settings_call_recording_shizuku">Record through Shizuku</string>
+    <string name="settings_call_recording_shizuku_unavailable">Records both sides of the call. Install and start Shizuku to use it</string>
+    <string name="settings_call_recording_shizuku_needs_permission">Shizuku is running. Tap to allow AukDialer to use it</string>
+    <string name="settings_call_recording_shizuku_denied">Access was refused. Allow AukDialer from the Shizuku app</string>
+    <string name="settings_call_recording_shizuku_ready">Active, calls are recorded from the phone line</string>
     <string name="settings_call_recording_notice">Recording calls may be restricted by your device or by law in your region. Make sure you are allowed to record before using this feature.</string>
     <string name="settings_call_default_background">Default call background</string>
     <string name="settings_call_default_background_set">A custom image is shown on every call</string>

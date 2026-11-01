@@ -603,6 +603,11 @@
     <string name="settings_call_recording_supporting">Affiche un bouton d’enregistrement pendant les appels</string>
     <string name="settings_call_recording_auto">Enregistrer tous les appels</string>
     <string name="settings_call_recording_auto_supporting">Démarre l’enregistrement dès qu’un appel est connecté</string>
+    <string name="settings_call_recording_shizuku">Enregistrer via Shizuku</string>
+    <string name="settings_call_recording_shizuku_unavailable">Enregistre les deux côtés de l’appel. Installez et démarrez Shizuku pour l’utiliser</string>
+    <string name="settings_call_recording_shizuku_needs_permission">Shizuku est démarré. Touchez pour autoriser AukDialer à l’utiliser</string>
+    <string name="settings_call_recording_shizuku_denied">L’accès a été refusé. Autorisez AukDialer depuis l’application Shizuku</string>
+    <string name="settings_call_recording_shizuku_ready">Actif, les appels sont enregistrés depuis la ligne téléphonique</string>
     <string name="settings_call_recording_notice">L’enregistrement des appels peut être restreint par votre appareil ou par la loi de votre pays. Assurez-vous d’en avoir le droit avant d’utiliser cette fonction.</string>
     <string name="settings_call_waiting">Appel en attente</string>
     <string name="settings_call_waiting_supporting">Recevoir un second appel pendant que vous êtes déjà en ligne</string>

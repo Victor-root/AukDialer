@@ -27,3 +27,9 @@
 -keep class * extends androidx.room.RoomDatabase {
     <init>();
 }
+
+# Shizuku starts the call recorder service in its own process by reflection, through the
+# constructor taking a Context, so nothing in the visible call graph uses it.
+-keep class auk.dialer.vroot.controller.PrivilegedRecorderService {
+    public <init>(android.content.Context);
+}
