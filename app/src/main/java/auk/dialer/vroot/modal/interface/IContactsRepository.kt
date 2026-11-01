@@ -15,7 +15,11 @@ interface IContactsRepository {
     fun getDeviceContactsWithDetails(): List<Contact>
     fun getContactByNumber(number: String): Contact?
     fun toggleFavorite(contactId: String, isFavorite: Boolean)
-    fun saveContact(contact: Contact)
+    /**
+     * Creates or updates [contact]. An existing contact whose isPrivate no longer matches where it is
+     * stored is moved to the other storage. False when nothing could be written.
+     */
+    fun saveContact(contact: Contact): Boolean
     fun deleteContact(contactId: String)
     fun deleteContacts(contactIds: List<String>)
     fun moveContacts(contactIds: List<String>, accountName: String?, accountType: String?)

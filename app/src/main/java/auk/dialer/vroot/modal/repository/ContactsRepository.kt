@@ -410,7 +410,35 @@ class ContactsRepository(
         return Pair(null, null)
     }
 
-    override fun saveContact(contact: Contact) {
+    override fun saveContact(contact: Contact): Boolean {
+        val isExisting = contact.id.isNotEmpty() && contact.id != "0"
+        val storedPrivately = contact.id.startsWith("p")
+        return if (isExisting && storedPrivately != contact.isPrivate) moveContact(contact) else writeContact(contact)
+    }
+
+    /**
+     * Saves [contact], edits included, into the storage it now asks for, then removes the copy
+     * left in the other one. Only once the new copy exists: until then the old one is the only one.
+     */
+    private fun moveContact(contact: Contact): Boolean {
+        val oldId = contact.id
+        val newId: String?
+        if (contact.isPrivate) {
+            val localId = privateContactDao.insert(PrivateContactEntity.fromContact(contact.copy(id = "0")))
+            if (localId <= 0) return false
+            newId = "p$localId"
+        } else {
+            if (!writeContact(contact.copy(id = ""))) return false
+            newId = contact.phoneNumbers.firstNotNullOfOrNull { number ->
+                getContactByNumber(number)?.id?.takeIf { it.isNotBlank() && !it.startsWith("p") }
+            }
+        }
+        deleteContactInternal(oldId, false)
+        CallBackgroundStore.carryBlocking(context, oldId, newId, contact.phoneNumbers)
+        return true
+    }
+
+    private fun writeContact(contact: Contact): Boolean {
         if (contact.isPrivate) {
             val entity = PrivateContactEntity.fromContact(contact)
             if (entity.localId == 0L) {
@@ -418,7 +446,7 @@ class ContactsRepository(
             } else {
                 privateContactDao.update(entity)
             }
-            return
+            return true
         }
         val ops = ArrayList<ContentProviderOperation>()
         val photoBytes = contact.photoUri?.let { getPhotoBytes(it) }
@@ -535,7 +563,7 @@ class ContactsRepository(
             }
         } else {
             val rawContactIds = getRawContactIds(contact.id)
-            if (rawContactIds.isEmpty()) return
+            if (rawContactIds.isEmpty()) return false
 
             rawContactIds.forEach { rawContactId ->
                 ops.add(
@@ -704,10 +732,12 @@ class ContactsRepository(
             }
         }
 
-        try {
+        return try {
             contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+            true
         } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 
@@ -1014,28 +1044,12 @@ class ContactsRepository(
 
     override fun makeContactPrivate(contactId: String) {
         val contact = getContactById(contactId) ?: return
-        if (contact.isPrivate) return
-
-        val privateContact = contact.copy(isPrivate = true)
-        val localId = privateContactDao.insert(PrivateContactEntity.fromContact(privateContact))
-
-        deleteContactInternal(contactId, false)
-
-        CallBackgroundStore.carryBlocking(context, contactId, "p$localId", contact.phoneNumbers)
+        if (!contact.isPrivate) moveContact(contact.copy(isPrivate = true))
     }
 
     override fun makeContactPublic(contactId: String) {
         val contact = getContactById(contactId) ?: return
-        if (!contact.isPrivate) return
-
-        saveContact(contact.copy(id = "", isPrivate = false))
-
-        deleteContactInternal(contactId, false)
-
-        val newId = contact.phoneNumbers.firstNotNullOfOrNull { number ->
-            getContactByNumber(number)?.id?.takeIf { it.isNotBlank() && !it.startsWith("p") }
-        }
-        CallBackgroundStore.carryBlocking(context, contactId, newId, contact.phoneNumbers)
+        if (contact.isPrivate) moveContact(contact.copy(isPrivate = false))
     }
 
     override fun exportPrivateContacts(uri: Uri) {
