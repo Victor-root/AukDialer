@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class PreferenceManager(context: Context) {
+class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreferenceChangeListener {
     private val prefs: SharedPreferences = run {
         val deviceContext = context.createDeviceProtectedStorageContext()
         deviceContext.moveSharedPreferencesFrom(context, "auk_prefs")
@@ -23,16 +23,19 @@ class PreferenceManager(context: Context) {
     private val _edgeToEdge = MutableStateFlow(getBoolean(KEY_EDGE_TO_EDGE, false))
     val edgeToEdge: StateFlow<Boolean> = _edgeToEdge.asStateFlow()
 
-    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+    // SharedPreferences only keeps a weak reference to its listeners. A listener held in a field
+    // nothing reads gets that field stripped by R8, then the listener is garbage collected and
+    // settings stop applying until a restart. This singleton is the listener itself instead.
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(this)
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == KEY_EDGE_TO_EDGE) {
             _edgeToEdge.value = getBoolean(KEY_EDGE_TO_EDGE, false)
             if (BuildConfig.DEBUG_TOOLS) Log.d("AukEdgeToEdge", "preference changed: ${_edgeToEdge.value}")
         }
         _settingsChanged.value += 1
-    }
-
-    init {
-        prefs.registerOnSharedPreferenceChangeListener(listener)
     }
 
     fun getBoolean(key: String, defaultValue: Boolean): Boolean {
