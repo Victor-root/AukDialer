@@ -10,9 +10,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.VoicemailContract
 import android.telephony.CarrierConfigManager
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.controller.util.VoicemailPlayer
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
 import auk.dialer.vroot.modal.data.Voicemail
@@ -169,6 +171,7 @@ class VoicemailViewModel(
     }
 
     fun syncNow(onResult: (newCount: Int?) -> Unit = {}) {
+        if (BuildConfig.DEBUG_TOOLS) Log.d("VvmViewModel", "syncNow requested, already syncing=${_isSyncing.value}")
         if (_isSyncing.value) return
         viewModelScope.launch {
             _isSyncing.value = true
