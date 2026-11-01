@@ -23,6 +23,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.*
 import auk.dialer.vroot.modal.data.Contact
 import org.koin.compose.koinInject
+import auk.dialer.vroot.controller.util.favoriteNumberOf
 
 class CallLauncher(
     private val onInitiate: (String, Contact?) -> Unit
@@ -89,7 +90,7 @@ fun rememberCallLauncher(): CallLauncher {
         CallLauncher { number, contact ->
             if (number.isBlank() && contact != null) {
                 if (contact.phoneNumbers.size > 1) {
-                    val favNum = prefs.getFavoriteNumber(contact.id)
+                    val favNum = prefs.favoriteNumberOf(contact)
                     if (favNum != null) {
                         initiateCall(favNum, contact)
                     } else {

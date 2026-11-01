@@ -17,6 +17,7 @@ import android.text.format.DateUtils
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import auk.dialer.vroot.R
+import auk.dialer.vroot.modal.data.Contact
 import java.text.Collator
 import java.text.Normalizer
 import java.text.SimpleDateFormat
@@ -144,6 +145,10 @@ fun areNumbersEqual(num1: String?, num2: String?): Boolean {
     if (num1 == null || num2 == null) return false
     return PhoneNumberUtils.compare(num1, num2)
 }
+
+/** The number chosen as [contact]'s default, as long as the contact still has it. */
+fun PreferenceManager.favoriteNumberOf(contact: Contact): String? =
+    getFavoriteNumber(contact.id)?.takeIf { favorite -> contact.phoneNumbers.any { areNumbersEqual(it, favorite) } }
 
 fun deduplicateNumbers(numbers: List<String>): List<String> {
     val unique = mutableListOf<String>()
