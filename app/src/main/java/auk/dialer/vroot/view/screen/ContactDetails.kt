@@ -149,7 +149,12 @@ fun ContactDetailsScreen(
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                 scope.launch {
                     val updated = loadContact()
-                    if (updated != null) fullContact = updated
+                    if (updated != null) {
+                        fullContact = updated
+                    } else if (fullContact != null) {
+                        // The contact was deleted meanwhile, from its edit screen for one.
+                        navigator.navigateUp()
+                    }
                 }
             }
         }

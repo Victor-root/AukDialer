@@ -243,15 +243,20 @@ class ContactsViewModel(
     }
 
     fun deleteContact(contactId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { deleteContactNow(contactId) }
+    }
+
+    /** Deletes [contactId] and returns once it is gone, for a screen that has to leave it behind. */
+    suspend fun deleteContactNow(contactId: String) {
+        withContext(Dispatchers.IO) {
             contactsRepo.deleteContact(contactId)
-            
+
             val currentOrder = preferenceManager.getFavoritesOrder().toMutableList()
             if (currentOrder.contains(contactId)) {
                 currentOrder.remove(contactId)
                 preferenceManager.setFavoritesOrder(currentOrder)
             }
-            
+
             fetchContacts()
         }
     }

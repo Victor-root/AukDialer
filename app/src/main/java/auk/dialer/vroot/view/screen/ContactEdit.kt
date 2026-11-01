@@ -237,8 +237,11 @@ fun ContactEditScreen(
                 onDismissRequest = { showDeleteDialog = false },
                 onConfirm = {
                     if (contactId != null) {
-                        contactsVM.deleteContact(contactId)
-                        navigator.navigateUp()
+                        // Gone before going back, so the screen below finds it missing.
+                        scope.launch {
+                            contactsVM.deleteContactNow(contactId)
+                            navigator.navigateUp()
+                        }
                     }
                 },
                 title = stringResource(R.string.contact_delete_dialog_title),
