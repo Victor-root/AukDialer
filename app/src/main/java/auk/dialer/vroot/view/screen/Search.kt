@@ -116,6 +116,9 @@ fun ContactSearchContent(
 
     val contactsVM: ContactsViewModel = koinActivityViewModel()
     val contacts by contactsVM.allContacts.collectAsState()
+    val isLoading by contactsVM.isLoading.collectAsState()
+    // Reached straight from a permission grant here, nothing else will have loaded them.
+    LaunchedEffect(Unit) { contactsVM.fetchContacts() }
     val prefs = koinInject<PreferenceManager>()
     val callLauncher = rememberCallLauncher()
     val settingsState by prefs.settingsChanged.collectAsState()
@@ -192,7 +195,7 @@ fun ContactSearchContent(
         Box(modifier = Modifier.weight(1f)) {
             AnimatedContent(
                 targetState = when {
-                    contacts.isEmpty() -> 0
+                    isLoading && contacts.isEmpty() -> 0
                     query.isBlank() -> 1
                     filteredContacts.isEmpty() -> 2
                     else -> 3
