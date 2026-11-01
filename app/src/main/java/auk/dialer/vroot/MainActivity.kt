@@ -33,6 +33,7 @@ import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.controller.vvm.VvmNotifier
 import auk.dialer.vroot.view.screen.onboarding.MorphingOnboardingScreen
 import auk.dialer.vroot.view.components.PermissionPopup
+import auk.dialer.vroot.view.components.navigationTabRoute
 import auk.dialer.vroot.controller.util.isCustomPermissionDevice
 import auk.dialer.vroot.view.screen.transitions.AppTransitions
 import auk.dialer.vroot.view.screen.transitions.getAppTransition
@@ -47,7 +48,6 @@ import com.ramcosta.composedestinations.generated.destinations.ContactEditScreen
 import com.ramcosta.composedestinations.generated.destinations.ContactScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DefaultDialerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.RecentScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
@@ -141,31 +141,27 @@ class MainActivity : ComponentActivity() {
         intentState = intent
     }
 
+    /** Straight to [tab] when the bottom bar carries it, otherwise to its screen on its own. */
+    private fun openTab(navController: androidx.navigation.NavController, tab: Int) {
+        val route = if (tab in get<PreferenceManager>().getVisibleBottomNavTabs()) {
+            MainScreenDestination(initialTab = tab).route
+        } else {
+            navigationTabRoute(tab)
+        }
+        navController.navigate(route) {
+            popUpTo(navController.graph.startDestinationId)
+            launchSingleTop = true
+        }
+    }
+
     private fun handleIntent(intent: Intent?, navController: androidx.navigation.NavController) {
         intent ?: return
         val data = intent.data
         val action = intent.action
 
         when (action) {
-            "auk.dialer.vroot.ACTION_VIEW_RECENTS" -> {
-                navController.navigate(MainScreenDestination(initialTab = 0).route) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
-                }
-            }
-            VvmNotifier.ACTION_VIEW_VOICEMAIL -> {
-                // Straight to the tab when the bar carries it, otherwise to the screen on its own.
-                val prefs = get<PreferenceManager>()
-                val route = if (PreferenceManager.TAB_VOICEMAIL in prefs.getVisibleBottomNavTabs()) {
-                    MainScreenDestination(initialTab = PreferenceManager.TAB_VOICEMAIL).route
-                } else {
-                    VoicemailListScreenDestination.route
-                }
-                navController.navigate(route) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
-                }
-            }
+            "auk.dialer.vroot.ACTION_VIEW_RECENTS" -> openTab(navController, PreferenceManager.TAB_RECENTS)
+            VvmNotifier.ACTION_VIEW_VOICEMAIL -> openTab(navController, PreferenceManager.TAB_VOICEMAIL)
             Intent.ACTION_DIAL, Intent.ACTION_VIEW, Intent.ACTION_CALL -> {
                 if (data?.scheme == "tel") {
                     val rawNumber = data.schemeSpecificPart
