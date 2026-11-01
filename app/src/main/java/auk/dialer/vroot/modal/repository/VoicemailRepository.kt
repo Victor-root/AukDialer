@@ -24,6 +24,7 @@ import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.Voicemail
 import auk.dialer.vroot.modal.data.VoicemailProbeResult
 import auk.dialer.vroot.modal.data.VoicemailStatus
+import kotlin.math.abs
 
 /**
  * Reads and writes Android's voicemail provider, and drives the carrier-side
@@ -105,11 +106,17 @@ class VoicemailRepository(
     private fun preferOwnCopies(items: List<Voicemail>): List<Voicemail> {
         val ours = context.packageName
         if (items.none { it.sourcePackage != ours }) return items
-        return items
-            .groupBy { it.number to it.date }
-            .values
-            .map { copies -> copies.firstOrNull { it.sourcePackage == ours } ?: copies.first() }
-            .sortedByDescending { it.date }
+        // Each app dates the message its own way, a few seconds apart, so copies
+        // are matched on the caller and a short window rather than an exact time.
+        val copiesOfEach = mutableListOf<MutableList<Voicemail>>()
+        for (item in items.sortedByDescending { it.date }) {
+            val sameMessage = copiesOfEach.lastOrNull { copies ->
+                val first = copies.first()
+                first.number == item.number && abs(first.date - item.date) <= SAME_MESSAGE_WINDOW_MS
+            }
+            if (sameMessage != null) sameMessage += item else copiesOfEach += mutableListOf(item)
+        }
+        return copiesOfEach.map { copies -> copies.firstOrNull { it.sourcePackage == ours } ?: copies.first() }
     }
 
     /**
@@ -169,7 +176,8 @@ class VoicemailRepository(
                     items.add(
                         Voicemail(
                             id = cursor.getLong(0),
-                            number = cursor.getString(1),
+                            // Some rows hold the sender address as the carrier sent it.
+                            number = VvmImapClient.callerNumber(cursor.getString(1)),
                             date = cursor.getLong(2),
                             durationSeconds = cursor.getLong(3).toInt().coerceAtLeast(0),
                             isRead = cursor.getLong(4) != 0L,
@@ -430,6 +438,9 @@ class VoicemailRepository(
         private const val LOG_TAG = "VoicemailRepository"
         private const val MAX_ITEMS = 200
         private const val AUTO_PROVISION_COOLDOWN_MS = 60_000L
+
+        // Far below the time between two calls, well above the gap between two apps' copies.
+        private const val SAME_MESSAGE_WINDOW_MS = 60_000L
 
         @Volatile
         private var lastAutoProvisionAttemptMs: Long = 0L

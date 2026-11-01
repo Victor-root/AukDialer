@@ -12,6 +12,7 @@ import javax.mail.Part
 import javax.mail.Session
 import javax.mail.Store
 import javax.mail.UIDFolder
+import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeBodyPart
 
 /**
@@ -226,7 +227,8 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
     }
 
     private fun decodeMessage(message: javax.mail.Message, uid: String): FetchedMessage {
-        val from = message.from?.firstOrNull()?.toString()
+        val sender = message.from?.firstOrNull()
+        val from = callerNumber((sender as? InternetAddress)?.address ?: sender?.toString())
         // Carriers populate either sent-date or received-date; fall back to now
         // so the row never lands on the epoch.
         val dateMs = message.sentDate?.time
@@ -445,6 +447,14 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
     }
 
     companion object {
+        /**
+         * The caller's number out of an OMTP sender address. Carriers send the
+         * caller as an address ("+33612345678@o.fr"), where the dialer and the
+         * other voicemail apps keep the number alone.
+         */
+        fun callerNumber(address: String?): String? =
+            address?.substringBefore('@')?.trim()?.takeIf { it.isNotEmpty() }
+
         private const val LOG_TAG = "VvmImapClient"
         private const val CONNECT_TIMEOUT_MS = 15_000
         private const val READ_TIMEOUT_MS = 30_000
