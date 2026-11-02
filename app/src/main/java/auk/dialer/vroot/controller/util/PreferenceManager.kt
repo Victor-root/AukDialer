@@ -256,6 +256,7 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
 
         const val KEY_DYNAMIC_COLORS = "dynamic_colors"
         const val KEY_AMOLED_MODE = "amoled_mode"
+        const val KEY_VIVID_COLORS = "vivid_colors"
         const val KEY_EDGE_TO_EDGE = "edge_to_edge"
         const val KEY_SHOW_FIRST_LETTER = "show_first_letter"
         const val KEY_COLORFUL_AVATARS = "colorful_avatars"

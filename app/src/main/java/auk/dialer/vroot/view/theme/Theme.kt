@@ -91,6 +91,9 @@ fun AukTheme(
     val amoledMode = remember(settingsVersion) {
         prefs.getBoolean(PreferenceManager.KEY_AMOLED_MODE, false)
     }
+    val vividColors = remember(settingsVersion) {
+        prefs.getBoolean(PreferenceManager.KEY_VIVID_COLORS, true)
+    }
     val customPrimaryInt = remember(settingsVersion) {
         prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, CUSTOM_PRIMARY_COLOR_UNSET)
     }
@@ -99,7 +102,7 @@ fun AukTheme(
     }
     val edgeToEdge by prefs.edgeToEdge.collectAsState()
 
-    val colorScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt) {
+    val colorScheme = remember(darkTheme, dynamicColor, amoledMode, vividColors, customPrimaryInt) {
         val base = when {
             dynamicColor -> aukDynamicColorScheme(context, darkTheme)
             customPrimaryInt != CUSTOM_PRIMARY_COLOR_UNSET ->
@@ -107,17 +110,15 @@ fun AukTheme(
             darkTheme -> AukDarkColorScheme
             else -> AukLightColorScheme
         }
-        base.withNeutralSurfaces(darkTheme, amoledMode)
+        base.withNeutralSurfaces(darkTheme, amoledMode).let { if (vividColors) it.withVividContainers(darkTheme) else it }
     }
 
     val shapes = remember(cardRoundness) { aukShapes(cardRoundness) }
 
     val callColors = remember(colorScheme, darkTheme) { aukCallColors(colorScheme, darkTheme) }
 
-    // One shade for the app bars and the system bars in both themes. Material lightens primary in
-    // dark mode, but inversePrimary there is the light mode primary, so this stays the same colour.
-    val barColor = if (darkTheme) colorScheme.inversePrimary else colorScheme.primary
-    val onBarColor = if (barColor.luminance() > 0.5f) Color.Black else Color.White
+    val barColor = colorScheme.accentBarColor(darkTheme)
+    val onBarColor = contentColorOnAccent(barColor)
 
     val statusBarBackground = remember { mutableStateOf<Color?>(null) }
     val plainStatusBar = remember { mutableStateOf(false) }

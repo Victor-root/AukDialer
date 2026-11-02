@@ -74,6 +74,7 @@ fun InterfaceScreen(
 
     var dynamicColors by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, true)) }
     var amoledMode by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_AMOLED_MODE, false)) }
+    var vividColors by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_VIVID_COLORS, true)) }
     var edgeToEdge by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, false)) }
     var defaultBottomBar by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)) }
     var mergeFavorites by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MERGE_FAVORITES_RECENTS, true)) }
@@ -276,6 +277,18 @@ fun InterfaceScreen(
                                 onColorSelected = { color -> offerIconColorChange(color.toArgb()) }
                             )
                         }
+
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_vivid_colors),
+                            supporting = stringResource(R.string.settings_interface_vivid_colors_supporting),
+                            leadingIcon = Icons.Outlined.InvertColors,
+                            checked = vividColors,
+                            onCheckedChange = {
+                                vividColors = it
+                                prefs.setBoolean(PreferenceManager.KEY_VIVID_COLORS, it)
+                            }
+                        )
 
                         AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSwitchListItem(

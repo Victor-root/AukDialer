@@ -10,6 +10,7 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -482,3 +483,26 @@ val MaterialTheme.callColors: CallColors
     @Composable
     @ReadOnlyComposable
     get() = LocalCallColors.current
+
+/**
+ * Vivid colours: the pale tinted containers (icon tiles, selected tab, tonal buttons, chips) take the
+ * full accent of the app bars instead, with white or black content depending on its brightness.
+ */
+fun ColorScheme.withVividContainers(dark: Boolean): ColorScheme {
+    val accent = accentBarColor(dark)
+    val onAccent = contentColorOnAccent(accent)
+    return copy(
+        primaryContainer = accent,
+        onPrimaryContainer = onAccent,
+        secondaryContainer = accent,
+        onSecondaryContainer = onAccent
+    )
+}
+
+/**
+ * One shade for the app bars and the system bars in both themes. Material lightens primary in dark
+ * mode, but inversePrimary there is the light mode primary, so this stays the same colour.
+ */
+fun ColorScheme.accentBarColor(dark: Boolean): Color = if (dark) inversePrimary else primary
+
+fun contentColorOnAccent(accent: Color): Color = if (accent.luminance() > 0.5f) Color.Black else Color.White

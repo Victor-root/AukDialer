@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -123,8 +124,13 @@ fun CallLogTile(
         else -> Icons.Default.Call
     }
     
-    val badgeColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-    val headlineColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else Color.Unspecified
+    // A selected row is filled with the selection colour: its own content colour keeps every line readable.
+    val badgeColor = when {
+        selected -> Color.Unspecified
+        log.type == CallLog.Calls.MISSED_TYPE -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.primary
+    }
+    val headlineColor = if (log.type == CallLog.Calls.MISSED_TYPE && !selected) MaterialTheme.colorScheme.error else Color.Unspecified
     
     val favNum = log.contactId?.let { prefs.getFavoriteNumber(it) }
     val isFavorite = auk.dialer.vroot.controller.util.areNumbersEqual(log.number, favNum)
@@ -164,14 +170,14 @@ fun CallLogTile(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                tint = badgeColor,
+                                tint = badgeColor.takeOrElse { LocalContentColor.current },
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = formatTime(context, log.date),
                                 style = AukListItemDefaults.supportingStyle(),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (selected) LocalContentColor.current else MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
