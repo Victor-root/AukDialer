@@ -460,7 +460,7 @@
     <string name="content_desc_export">Exporter</string>
     <string name="action_import">Importer</string>
     <string name="action_export">Exporter</string>
-    <string name="private_contacts_select_title">Sélectionner des contacts à rendre privés</string>
+    <string name="private_contacts_select_title">Contacts à rendre privés</string>
     <string name="private_contacts_make_private_action">Rendre privé</string>
     <string name="private_contacts_pick_button">Choisir des contacts à rendre privés</string>
     <string name="private_contacts_pick_short_button">Choisir des contacts</string>

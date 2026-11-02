@@ -107,9 +107,7 @@ fun ContactSelectionScreen(
 
     Scaffold(
         topBar = {
-            // Title on its own row under the actions: some, like the private contacts picker's, are
-            // a whole sentence.
-            MediumTopAppBar(
+            TopAppBar(
                 colors = aukAccentTopAppBarColors(),
                 title = {
                     AukTopBarTitle(

@@ -166,9 +166,7 @@ fun ContactEditScreen(
 
     Scaffold(
         topBar = {
-            // Title on its own row under the actions: beside a delete and a labelled save button
-            // it has no room left and wraps.
-            MediumTopAppBar(
+            TopAppBar(
                 title = {
                     AukTopBarTitle(
                         if (contactId == null || contactId == "0") stringResource(R.string.contact_create_title) else stringResource(R.string.contact_edit_title)
@@ -196,7 +194,7 @@ fun ContactEditScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                     } else {
-                        Button(
+                        IconButton(
                             onClick = {
                                 isSaving = true
                                 scope.launch {
@@ -236,13 +234,9 @@ fun ContactEditScreen(
                                 }
                             },
                             enabled = displayName.isNotBlank() && phones.any { it.number.isNotBlank() },
-                            modifier = Modifier.padding(end = 8.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                            modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            Icon(Icons.Default.Check, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.action_save))
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.action_save))
                         }
                     }
                 },
