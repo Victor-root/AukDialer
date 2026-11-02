@@ -32,9 +32,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -56,20 +58,22 @@ fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
     val customVisible = hasCustomBackground && !customFailed
     val photoVisible = !photoUri.isNullOrEmpty() && !customVisible
 
+    // Read only while placing and drawing the blobs, so their drift redraws them without
+    // recomposing the whole background on every frame of the call.
     val infiniteTransition = rememberInfiniteTransition(label = "ambientBg")
-    val blob1Offset by infiniteTransition.animateFloat(
+    val blob1Offset = infiniteTransition.animateFloat(
         initialValue = -28f,
         targetValue = 28f,
         animationSpec = infiniteRepeatable(tween(11000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "b1"
     )
-    val blob2Offset by infiniteTransition.animateFloat(
+    val blob2Offset = infiniteTransition.animateFloat(
         initialValue = 28f,
         targetValue = -28f,
         animationSpec = infiniteRepeatable(tween(13000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "b2"
     )
-    val blobAlpha by infiniteTransition.animateFloat(
+    val blobAlpha = infiniteTransition.animateFloat(
         initialValue = 0.18f,
         targetValue = 0.34f,
         animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Reverse),
@@ -91,20 +95,22 @@ fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
         if (!customVisible) {
             Box(
                 modifier = Modifier
-                    .offset(x = blob1Offset.dp, y = (-80).dp)
+                    .offset { IntOffset(blob1Offset.value.dp.roundToPx(), (-80).dp.roundToPx()) }
                     .size(280.dp)
                     .align(Alignment.TopStart)
+                    .graphicsLayer { alpha = blobAlpha.value }
                     .clip(CircleShape)
-                    .background(scheme.primaryContainer.copy(alpha = blobAlpha))
+                    .background(scheme.primaryContainer)
                     .blur(72.dp)
             )
             Box(
                 modifier = Modifier
-                    .offset(x = blob2Offset.dp, y = 100.dp)
+                    .offset { IntOffset(blob2Offset.value.dp.roundToPx(), 100.dp.roundToPx()) }
                     .size(320.dp)
                     .align(Alignment.BottomEnd)
+                    .graphicsLayer { alpha = blobAlpha.value }
                     .clip(CircleShape)
-                    .background(scheme.tertiaryContainer.copy(alpha = blobAlpha))
+                    .background(scheme.tertiaryContainer)
                     .blur(84.dp)
             )
         }
