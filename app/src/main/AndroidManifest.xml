@@ -417,6 +417,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <receiver
+            android:name=".controller.MissedCallsNotificationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.action.SHOW_MISSED_CALLS_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".controller.CallService"
             android:permission="android.permission.BIND_INCALL_SERVICE"
