@@ -61,7 +61,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        intentState = intent
+        // Handled once: a rebuilt screen (rotation, theme change) or a relaunch from Recents would
+        // otherwise open its dialer, contact or form a second time.
+        val launchedFromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+        if (savedInstanceState == null && !launchedFromHistory) intentState = intent
 
         if (GlobalContext.getOrNull() == null) {
             startKoin {
@@ -178,6 +181,9 @@ class MainActivity : ComponentActivity() {
                     if (id != null) {
                         navController.navigate(ContactDetailsScreenDestination(contactId = id).route)
                     }
+                } else if (action == Intent.ACTION_DIAL && data == null) {
+                    // "Add call" from the call screen, or another app opening the dialer empty.
+                    navController.navigate(DialPadScreenDestination().route)
                 }
             }
             Intent.ACTION_INSERT -> {
