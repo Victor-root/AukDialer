@@ -2,6 +2,8 @@ package auk.dialer.vroot.controller
 
 import android.accounts.Account
 import android.net.Uri
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -223,8 +225,17 @@ class ContactsViewModel(
 
     suspend fun saveContact(contact: Contact) {
         withContext(Dispatchers.IO) {
-            contactsRepo.saveContact(contact)
-            
+            val saved = contactsRepo.saveContact(contact)
+            if (BuildConfig.DEBUG_TOOLS) {
+                val found = contactsRepo.getContacts().filter { it.name == contact.name }.map { it.id }
+                Log.d(
+                    "AukContactDebug",
+                    "saveContact private=${contact.isPrivate} saved=$saved found=$found " +
+                        "filters: account=${_selectedAccount.value} visible=${_visibleAccounts.value} " +
+                        "privateOnly=${_showPrivateOnly.value} localOnly=${_showLocalOnly.value}"
+                )
+            }
+
             preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
             preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_TYPE, contact.accountType)
             

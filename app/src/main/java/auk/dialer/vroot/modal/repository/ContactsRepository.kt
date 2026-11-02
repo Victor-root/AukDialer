@@ -8,6 +8,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactEvent
@@ -30,6 +32,10 @@ class ContactsRepository(
     private val contentResolver: ContentResolver = context.contentResolver
     private val preferenceManager = auk.dialer.vroot.controller.util.PreferenceManager(context)
     private val unknownLabel: String get() = context.getString(R.string.label_unknown)
+
+    private companion object {
+        const val DEBUG_TAG = "AukContactDebug"
+    }
 
     private fun formatName(rawName: String): String {
         return rawName
@@ -751,9 +757,15 @@ class ContactsRepository(
         }
 
         return try {
-            contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+            val results = contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+            if (BuildConfig.DEBUG_TOOLS) {
+                Log.d(DEBUG_TAG, "writeContact id=${contact.id} account=${contact.accountType}|${contact.accountName} ops=${ops.size} first=${results.firstOrNull()?.uri}")
+            }
             true
         } catch (e: Exception) {
+            if (BuildConfig.DEBUG_TOOLS) {
+                Log.d(DEBUG_TAG, "writeContact id=${contact.id} account=${contact.accountType}|${contact.accountName} failed", e)
+            }
             e.printStackTrace()
             false
         }
