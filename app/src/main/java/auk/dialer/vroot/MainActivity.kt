@@ -61,6 +61,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        // The launcher icon starts us through an alias. When the task was opened another way first
+        // (a notification, another app), its root is MainActivity itself, so the system does not
+        // recognise the task and stacks a fresh copy on top, back on the default tab. Close that
+        // copy and let the screen already open show through, where the user left it.
+        if (!isTaskRoot && intent?.action == Intent.ACTION_MAIN &&
+            intent.hasCategory(Intent.CATEGORY_LAUNCHER)
+        ) {
+            finish()
+            return
+        }
         // Handled once: a rebuilt screen (rotation, theme change) or a relaunch from Recents would
         // otherwise open its dialer, contact or form a second time.
         val launchedFromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
