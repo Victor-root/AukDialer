@@ -286,7 +286,8 @@ fun ContactEditScreen(
                             name = displayName,
                             photoUri = photoUri,
                             modifier = Modifier.size(120.dp),
-                            textStyle = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold)
+                            textStyle = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
+                            iconSize = 64.dp
                         )
 
                         Row {

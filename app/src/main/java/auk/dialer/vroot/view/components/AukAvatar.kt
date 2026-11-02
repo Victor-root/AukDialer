@@ -217,6 +217,7 @@ fun AukAvatar(
     badgeIcon: ImageVector? = null,
     badgeColor: Color? = null,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
+    iconSize: Dp = AukAvatarDefaults.IconSize,
     style: AukAvatarStyle = aukAvatarStyle(),
     contentDescription: String? = null,
     onClick: (() -> Unit)? = null,
@@ -303,14 +304,14 @@ fun AukAvatar(
                     imageVector = icon,
                     contentDescription = null,
                     tint = colors.content,
-                    modifier = Modifier.size(AukAvatarDefaults.IconSize)
+                    modifier = Modifier.size(iconSize)
                 )
             } else if (photoUri == "voicemail://icon" || name.equals("Voicemail", ignoreCase = true) || name.equals("Messagerie vocale", ignoreCase = true) || name.equals("Poczta głosowa", ignoreCase = true)) {
                 Icon(
                     imageVector = Icons.Outlined.Voicemail,
                     contentDescription = null,
                     tint = colors.content,
-                    modifier = Modifier.size(AukAvatarDefaults.IconSize)
+                    modifier = Modifier.size(iconSize)
                 )
             } else if (style.showFirstLetter && hasLetters) {
                 Text(
@@ -323,7 +324,7 @@ fun AukAvatar(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = colors.content,
-                    modifier = Modifier.size(AukAvatarDefaults.IconSize)
+                    modifier = Modifier.size(iconSize)
                 )
             }
         }

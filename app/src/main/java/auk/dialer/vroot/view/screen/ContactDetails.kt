@@ -520,7 +520,8 @@ fun ContactDetailsScreen(
                                 name = displayName,
                                 photoUri = fullContact?.photoUri,
                                 modifier = Modifier.size(140.dp),
-                                textStyle = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold)
+                                textStyle = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold),
+                                iconSize = 72.dp
                             )
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
