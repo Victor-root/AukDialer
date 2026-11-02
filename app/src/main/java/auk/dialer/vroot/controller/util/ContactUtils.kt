@@ -21,6 +21,14 @@ object ContactUtils {
         }
     }
 
+    /** The service an account belongs to, as a picker titles it: a Google account's own name is its address. */
+    fun getAccountTitle(context: Context, account: Account): String =
+        if (account.type == "com.google") context.getString(R.string.brand_google) else getFriendlyAccountName(context, account)
+
+    /** The account itself under its [getAccountTitle], or null when that already says it. */
+    fun getAccountSubtitle(context: Context, account: Account): String? =
+        account.name.takeIf { it != getAccountTitle(context, account) }
+
     fun getAccountIcon(account: Account): ImageVector {
         return when {
             account.type == "com.google" -> Icons.Default.Email

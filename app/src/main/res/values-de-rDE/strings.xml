@@ -153,7 +153,6 @@
     <string name="contact_create_title">Kontakt erstellen</string>
     <string name="contact_edit_title">Kontakt bearbeiten</string>
     <string name="contact_edit_account_header">Konto</string>
-    <string name="contact_edit_save_to_account">In Konto speichern</string>
     <string name="contact_edit_private_storage">Privater Speicher (nur App)</string>
     <string name="contact_edit_select_account_title">Konto auswählen</string>
     <string name="contact_edit_private_storage_description">Nicht sichtbar für andere Apps</string>

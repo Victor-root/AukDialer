@@ -22,7 +22,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -48,6 +47,7 @@ import auk.dialer.vroot.view.components.AukDropdownMenuItem
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.AukSelectionDialog
+import auk.dialer.vroot.view.components.AukSelectionRow
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -322,110 +322,78 @@ fun ContactEditScreen(
 
             item {
                 AukSectionHeader(title = stringResource(R.string.contact_edit_account_header))
-                AukExpressiveCard {
-                    var showPicker by remember { mutableStateOf(false) }
+                var showPicker by remember { mutableStateOf(false) }
 
-                    Surface(
-                        onClick = { showPicker = true },
-                        shape = RoundedCornerShape(16.dp),
-                        color = Color.Transparent
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = when {
-                                    isPrivate -> Icons.Default.Lock
-                                    selectedAccount != null -> ContactUtils.getAccountIcon(selectedAccount!!)
-                                    else -> Icons.Default.CloudOff
-                                },
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(Modifier.width(16.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.contact_edit_save_to_account),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = when {
-                                        isPrivate -> stringResource(R.string.contact_edit_private_storage)
-                                        selectedAccount != null -> ContactUtils.getFriendlyAccountName(context, selectedAccount!!)
-                                        else -> stringResource(R.string.label_local_memory)
-                                    },
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Icon(Icons.Default.ArrowDropDown, null)
-                        }
-                    }
+                val privateTitle = stringResource(R.string.contact_edit_private_storage)
+                val privateDesc = stringResource(R.string.contact_edit_private_storage_description)
+                val localTitle = stringResource(R.string.label_local_memory)
+                val localDesc = if (cloudDefaultAccount != null) {
+                    stringResource(R.string.contact_edit_local_memory_unavailable)
+                } else {
+                    ""
+                }
 
-                    if (showPicker) {
-                        val privateTitle = stringResource(R.string.contact_edit_private_storage)
-                        val privateDesc = stringResource(R.string.contact_edit_private_storage_description)
-                        val localTitle = stringResource(R.string.label_local_memory)
-                        val localDesc = if (cloudDefaultAccount != null) {
-                            stringResource(R.string.contact_edit_local_memory_unavailable)
-                        } else {
-                            ""
-                        }
-
-                        val googleTitle = stringResource(R.string.brand_google)
-
-                        val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc, googleTitle) {
-                            listOf(
-                                "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
-                                "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
-                            ) + availableAccounts.map { acc ->
-                                // The service as the title and the account under it, once: a Google
-                                // account's friendly name is its address, which then filled three lines twice.
-                                val label = if (acc.type == "com.google") googleTitle else ContactUtils.getFriendlyAccountName(context, acc)
-                                val supporting = acc.name.takeIf { it != label }.orEmpty()
-                                acc.name to Triple(label, supporting, ContactUtils.getAccountIcon(acc))
-                            }
-                        }
-
-                        AukSelectionDialog(
-                            onDismissRequest = { showPicker = false },
-                            title = stringResource(R.string.contact_edit_select_account_title),
-                            icon = Icons.Default.AccountBalance,
-                            items = accountOptions,
-                            itemLabel = { option -> option.second.first },
-                            itemSupporting = { option -> option.second.second },
-                            itemIcon = { option -> option.second.third },
-                            isEnabled = { option -> option.first != "local" || cloudDefaultAccount == null },
-                            isSelected = { option ->
-                                when (option.first) {
-                                    "private" -> isPrivate
-                                    "local" -> !isPrivate && selectedAccount == null
-                                    else -> !isPrivate && selectedAccount?.name == option.first
-                                }
-                            },
-                            onItemSelected = { selectedOption ->
-                                when (selectedOption.first) {
-                                    "private" -> {
-                                        selectedAccount = null
-                                        isPrivate = true
-                                    }
-                                    "local" -> {
-                                        selectedAccount = null
-                                        isPrivate = false
-                                    }
-                                    else -> {
-                                        selectedAccount = availableAccounts.find { it.name == selectedOption.first }
-                                        isPrivate = false
-                                    }
-                                }
-                                showPicker = false
-                            }
+                val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc) {
+                    listOf(
+                        "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
+                        "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
+                    ) + availableAccounts.map { acc ->
+                        acc.name to Triple(
+                            ContactUtils.getAccountTitle(context, acc),
+                            ContactUtils.getAccountSubtitle(context, acc).orEmpty(),
+                            ContactUtils.getAccountIcon(acc)
                         )
                     }
+                }
+                val isCurrent: (Pair<String, Triple<String, String, ImageVector>>) -> Boolean = { option ->
+                    when (option.first) {
+                        "private" -> isPrivate
+                        "local" -> !isPrivate && selectedAccount == null
+                        else -> !isPrivate && selectedAccount?.name == option.first
+                    }
+                }
+
+                // Drawn like the chosen row of the picker it opens, so both read the same.
+                accountOptions.firstOrNull(isCurrent)?.let { current ->
+                    AukSelectionRow(
+                        label = current.second.first,
+                        supporting = current.second.second.takeIf { it.isNotBlank() },
+                        icon = current.second.third,
+                        selected = true,
+                        trailingIcon = Icons.Default.ArrowDropDown,
+                        onClick = { showPicker = true }
+                    )
+                }
+
+                if (showPicker) {
+                    AukSelectionDialog(
+                        onDismissRequest = { showPicker = false },
+                        title = stringResource(R.string.contact_edit_select_account_title),
+                        icon = Icons.Default.AccountBalance,
+                        items = accountOptions,
+                        itemLabel = { option -> option.second.first },
+                        itemSupporting = { option -> option.second.second },
+                        itemIcon = { option -> option.second.third },
+                        isEnabled = { option -> option.first != "local" || cloudDefaultAccount == null },
+                        isSelected = isCurrent,
+                        onItemSelected = { selectedOption ->
+                            when (selectedOption.first) {
+                                "private" -> {
+                                    selectedAccount = null
+                                    isPrivate = true
+                                }
+                                "local" -> {
+                                    selectedAccount = null
+                                    isPrivate = false
+                                }
+                                else -> {
+                                    selectedAccount = availableAccounts.find { it.name == selectedOption.first }
+                                    isPrivate = false
+                                }
+                            }
+                            showPicker = false
+                        }
+                    )
                 }
             }
 

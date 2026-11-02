@@ -175,7 +175,6 @@
     <string name="contact_create_title">Créer un contact</string>
     <string name="contact_edit_title">Modifier le contact</string>
     <string name="contact_edit_account_header">Compte</string>
-    <string name="contact_edit_save_to_account">Enregistrer dans le compte</string>
     <string name="contact_edit_private_storage">Stockage privé (application uniquement)</string>
     <string name="contact_edit_select_account_title">Choisir un compte</string>
     <string name="contact_edit_private_storage_description">Non visible par les autres applications</string>

@@ -184,7 +184,6 @@
     <string name="contact_create_title">Create Contact</string>
     <string name="contact_edit_title">Edit Contact</string>
     <string name="contact_edit_account_header">Account</string>
-    <string name="contact_edit_save_to_account">Save to Account</string>
     <string name="contact_edit_private_storage">Private Storage (App Only)</string>
     <string name="contact_edit_select_account_title">Select Account</string>
     <string name="contact_edit_private_storage_description">Not visible to other apps</string>

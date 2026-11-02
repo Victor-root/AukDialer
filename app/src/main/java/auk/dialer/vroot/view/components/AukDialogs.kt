@@ -535,7 +535,8 @@ fun AukSelectionRow(
     icon: ImageVector? = null,
     preview: (@Composable () -> Unit)? = null,
     selected: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    trailingIcon: ImageVector? = null
 ) {
     val roundness = LocalCardRoundness.current
 
@@ -672,7 +673,10 @@ fun AukSelectionRow(
                 }
             }
 
-            if (selection > 0f) {
+            if (trailingIcon != null) {
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(imageVector = trailingIcon, contentDescription = null, tint = content)
+            } else if (selection > 0f) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Icon(
                     imageVector = Icons.Default.Check,
