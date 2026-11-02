@@ -115,9 +115,7 @@ fun ContactEditScreen(
                 photoUri = existing.photoUri
                 isPrivate = existing.isPrivate
                 if (selectedAccount == null && !existing.isPrivate) {
-                    selectedAccount = availableAccounts.find {
-                        it.name == existing.accountName && it.type == existing.accountType
-                    }
+                    selectedAccount = existing.account()
                 }
 
                 phones.clear()
@@ -337,12 +335,17 @@ fun ContactEditScreen(
                     ""
                 }
 
-                val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc) {
+                // The contact's own account stays offered even when it is not one new contacts can use
+                // (a phone maker's own account): editing must not quietly move the contact out of it.
+                val pickerAccounts = remember(availableAccounts, loadedContact) {
+                    (availableAccounts + listOfNotNull(loadedContact?.account())).distinct()
+                }
+                val accountOptions = remember(pickerAccounts, privateTitle, localTitle, localDesc) {
                     listOf(
                         "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
                         "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
-                    ) + availableAccounts.map { acc ->
-                        acc.name to Triple(
+                    ) + pickerAccounts.map { acc ->
+                        accountKey(acc) to Triple(
                             ContactUtils.getAccountTitle(context, acc),
                             ContactUtils.getAccountSubtitle(context, acc).orEmpty(),
                             ContactUtils.getAccountIcon(acc)
@@ -353,7 +356,7 @@ fun ContactEditScreen(
                     when (option.first) {
                         "private" -> isPrivate
                         "local" -> !isPrivate && selectedAccount == null
-                        else -> !isPrivate && selectedAccount?.name == option.first
+                        else -> !isPrivate && selectedAccount?.let(::accountKey) == option.first
                     }
                 }
 
@@ -391,7 +394,7 @@ fun ContactEditScreen(
                                     isPrivate = false
                                 }
                                 else -> {
-                                    selectedAccount = availableAccounts.find { it.name == selectedOption.first }
+                                    selectedAccount = pickerAccounts.find { accountKey(it) == selectedOption.first }
                                     isPrivate = false
                                 }
                             }
@@ -690,6 +693,15 @@ private fun ContactTextField(
             unfocusedLeadingIconColor = MaterialTheme.colorScheme.primary
         )
     )
+}
+
+/** An account told apart by type as well as name: one address can hold several kinds of account. */
+private fun accountKey(account: Account): String = "${account.type}|${account.name}"
+
+private fun Contact.account(): Account? {
+    val name = accountName ?: return null
+    val type = accountType ?: return null
+    return Account(name, type)
 }
 
 /** Why the contact was not saved; the screen stays open so nothing typed is lost. */

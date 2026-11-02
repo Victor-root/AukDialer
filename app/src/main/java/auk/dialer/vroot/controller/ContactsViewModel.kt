@@ -242,8 +242,11 @@ class ContactsViewModel(
             }
 
             if (saved == ContactSaveResult.SAVED) {
-                preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
-                preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_TYPE, contact.accountType)
+                // A private contact has no account: it would leave the next new contact on none.
+                if (!contact.isPrivate) {
+                    preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
+                    preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_TYPE, contact.accountType)
+                }
                 fetchContacts()
             }
             saved
