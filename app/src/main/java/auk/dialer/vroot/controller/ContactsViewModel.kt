@@ -106,7 +106,8 @@ class ContactsViewModel(
 
         val baseFiltered = when {
             privateOnly -> contacts.filter { it.isPrivate }
-            localOnly -> contacts.filter { it.accountName == null && it.accountType == null }
+            // Private contacts have no account either, yet are not in the phone's local memory.
+            localOnly -> contacts.filter { !it.isPrivate && it.accountName == null && it.accountType == null }
             account == null -> {
                 if (visibleAccounts == null) contacts
                 else contacts.filter { contact ->
