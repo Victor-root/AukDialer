@@ -202,6 +202,7 @@
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Вызов завершен</string>
     <string name="call_status_on_hold">На удержании</string>
+    <string name="call_status_active">Идёт разговор</string>
     <string name="call_status_calling">Вызов...</string>
     <string name="call_status_incoming">Входящий вызов</string>
     <string name="call_status_connecting">Подключение…</string>

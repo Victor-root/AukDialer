@@ -226,6 +226,7 @@
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Appel terminé</string>
     <string name="call_status_on_hold">En attente</string>
+    <string name="call_status_active">En communication</string>
     <string name="call_status_calling">Appel en cours...</string>
     <string name="call_status_incoming">Appel entrant</string>
     <string name="call_status_connecting">Connexion...</string>

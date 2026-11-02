@@ -289,7 +289,19 @@ fun ExpressiveCallScreen(
                     }
                 }
 
+                // The other call is not always the one on hold: while a second call rings, the first
+                // is still under way. Only a held call can be swapped back in.
+                val ocState = oc.details.state
+                val ocIsHeld = ocState == Call.STATE_HOLDING
+                val ocStatus = when (ocState) {
+                    Call.STATE_HOLDING -> stringResource(R.string.call_status_on_hold)
+                    Call.STATE_ACTIVE -> stringResource(R.string.call_status_active)
+                    Call.STATE_RINGING -> stringResource(R.string.call_status_incoming)
+                    Call.STATE_DIALING, Call.STATE_CONNECTING -> stringResource(R.string.call_status_calling)
+                    else -> ""
+                }
                 Surface(
+                    enabled = ocIsHeld && callState != Call.STATE_RINGING,
                     onClick = {
                         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                         try {
@@ -316,7 +328,7 @@ fun ExpressiveCallScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Icon(
-                                Icons.Default.PauseCircle,
+                                if (ocIsHeld) Icons.Default.PauseCircle else Icons.Default.Call,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
@@ -330,7 +342,7 @@ fun ExpressiveCallScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = stringResource(R.string.call_status_on_hold),
+                                    text = ocStatus,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )

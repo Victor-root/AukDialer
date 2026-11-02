@@ -198,6 +198,7 @@
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Anruf beendet</string>
     <string name="call_status_on_hold">Wird gehalten</string>
+    <string name="call_status_active">Im Gespräch</string>
     <string name="call_status_calling">Anruf...</string>
     <string name="call_status_incoming">Eingehender Anruf</string>
     <string name="call_status_connecting">Verbinden...</string>

@@ -192,6 +192,7 @@
     <string name="call_screen_sim_label">SIM %1$s</string>
     <string name="call_status_ended">Llamada finalizada</string>
     <string name="call_status_on_hold">En espera</string>
+    <string name="call_status_active">En llamada</string>
     <string name="call_status_calling">Llamando...</string>
     <string name="call_status_incoming">Llamada entrante</string>
     <string name="call_status_connecting">Conectando...</string>
