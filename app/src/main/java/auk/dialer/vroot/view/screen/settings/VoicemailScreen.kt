@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.controller.vvm.VvmNotifier
 import android.Manifest
 import android.content.Intent
 import android.media.RingtoneManager
@@ -102,15 +103,23 @@ fun VoicemailScreen(
                 @Suppress("DEPRECATION")
                 result.data?.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             }
-            ringtoneUri = uri?.toString()
+            // As for contacts: no sound is stored as an empty value, the default sound as no value.
+            ringtoneUri = when {
+                uri == null -> ""
+                RingtoneManager.isDefault(uri) -> null
+                else -> uri.toString()
+            }
             prefs.setString(PreferenceManager.KEY_VOICEMAIL_RINGTONE, ringtoneUri)
+            VvmNotifier(context).ensureChannel()
         }
     }
 
     val defaultRingtoneLabel = stringResource(R.string.ringtone_default)
     val customRingtoneLabel = stringResource(R.string.ringtone_custom)
-    val currentRingtoneName = remember(ringtoneUri, defaultRingtoneLabel, customRingtoneLabel) {
+    val noRingtoneLabel = stringResource(R.string.ringtone_none)
+    val currentRingtoneName = remember(ringtoneUri, defaultRingtoneLabel, customRingtoneLabel, noRingtoneLabel) {
         if (ringtoneUri == null) defaultRingtoneLabel
+        else if (ringtoneUri!!.isEmpty()) noRingtoneLabel
         else {
             try {
                 RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))?.getTitle(context) ?: customRingtoneLabel
@@ -210,7 +219,16 @@ fun VoicemailScreen(
                             val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
                                 putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, selectVoicemailNotificationLabel)
-                                putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, ringtoneUri?.let { Uri.parse(it) })
+                                putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                                putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                                putExtra(
+                                    RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                                    when (val current = ringtoneUri) {
+                                        null -> android.provider.Settings.System.DEFAULT_NOTIFICATION_URI
+                                        "" -> null
+                                        else -> Uri.parse(current)
+                                    }
+                                )
                             }
                             ringtonePickerLauncher.launch(intent)
                         }
@@ -229,6 +247,7 @@ fun VoicemailScreen(
                         onCheckedChange = {
                             vibrationEnabled = it
                             prefs.setBoolean(PreferenceManager.KEY_VOICEMAIL_VIBRATION, it)
+                            VvmNotifier(context).ensureChannel()
                         }
                     )
                 }

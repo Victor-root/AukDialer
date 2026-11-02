@@ -58,6 +58,10 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
             onClick = { run { VoicemailInjector.insertOne(context) } }
         )
         DropdownMenuItem(
+            text = { Text("Post new-voicemail notification") },
+            onClick = { run { auk.dialer.vroot.controller.vvm.VvmNotifier(context).notifyNewVoicemails(1) } }
+        )
+        DropdownMenuItem(
             text = { Text("Add 5 voicemails") },
             onClick = { run { VoicemailInjector.insertBatch(context) } }
         )
