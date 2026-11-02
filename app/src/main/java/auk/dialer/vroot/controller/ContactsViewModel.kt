@@ -119,7 +119,7 @@ class ContactsViewModel(
         
         val collator = nameCollator()
         if (sortOrder == 1) {
-            baseFiltered.sortedWith(compareBy(collator) { it.name.split(" ").lastOrNull() ?: it.name })
+            baseFiltered.sortedWith(compareBy(collator) { it.sortingLastName() })
         } else {
             baseFiltered.sortedWith(compareBy(collator) { it.name })
         }
@@ -128,7 +128,7 @@ class ContactsViewModel(
     val groupedContacts = combine(filteredContacts, _sortOrder) { contacts, sortOrder ->
         val mainGroups = contacts.groupBy {
             val nameToUse = if (sortOrder == 1) {
-                it.name.split(" ").lastOrNull() ?: it.name
+                it.sortingLastName()
             } else {
                 it.name
             }
@@ -404,3 +404,6 @@ class ContactsViewModel(
         const val CHANGE_DEBOUNCE_MS = 500L
     }
 }
+
+/** The name a contact is filed under when sorting by last name: its family name, else its last word. */
+private fun Contact.sortingLastName(): String = familyName ?: name.split(" ").lastOrNull() ?: name

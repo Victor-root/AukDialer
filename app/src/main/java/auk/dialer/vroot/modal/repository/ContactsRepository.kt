@@ -105,22 +105,24 @@ class ContactsRepository(
         }
         val list = contactsMap.values.toList()
         
+        // Nicknames, and the family names sorting by last name files contacts under.
         val nicknameMap = mutableMapOf<String, String>()
+        val familyNameMap = mutableMapOf<String, String>()
+        val nicknameType = ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE
+        val nameType = ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
         try {
             contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
-                arrayOf(ContactsContract.CommonDataKinds.Nickname.CONTACT_ID, ContactsContract.CommonDataKinds.Nickname.NAME),
-                "${ContactsContract.Data.MIMETYPE} = ?",
-                arrayOf(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE),
+                arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1, ContactsContract.Data.DATA3),
+                "${ContactsContract.Data.MIMETYPE} IN (?, ?)",
+                arrayOf(nicknameType, nameType),
                 null
             )?.use { cursor ->
-                val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.CONTACT_ID)
-                val nickIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME)
                 while (cursor.moveToNext()) {
-                    val id = cursor.getString(idIdx)
-                    val nickname = cursor.getString(nickIdx)
-                    if (id != null && nickname != null) {
-                        nicknameMap[id] = nickname
+                    val id = cursor.getString(0) ?: continue
+                    when (cursor.getString(1)) {
+                        nicknameType -> cursor.getString(2)?.let { nicknameMap[id] = it }
+                        nameType -> cursor.getString(3)?.takeIf { it.isNotBlank() }?.let { familyNameMap.putIfAbsent(id, it) }
                     }
                 }
             }
@@ -132,6 +134,7 @@ class ContactsRepository(
             val account = accounts[contact.id]
             contact.copy(
                 nickname = nicknameMap[contact.id] ?: contact.nickname,
+                familyName = familyNameMap[contact.id],
                 accountName = account?.first,
                 accountType = account?.second
             )
