@@ -286,9 +286,16 @@ fun ContactDetailsScreen(
             val uri = result.data?.let {
                 IntentCompat.getParcelableExtra(it, RingtoneManager.EXTRA_RINGTONE_PICKED_URI, Uri::class.java)
             }
+            // The contacts convention: no ringtone is stored as an empty value, the default ringtone
+            // as no value at all. The picker hands back no URI for "None".
+            val stored = when {
+                uri == null -> ""
+                RingtoneManager.isDefault(uri) -> null
+                else -> uri.toString()
+            }
             if (fullContact != null) {
-                contactsViewModel.setCustomRingtone(fullContact!!.id, uri?.toString())
-                fullContact = fullContact!!.copy(customRingtone = uri?.toString())
+                contactsViewModel.setCustomRingtone(fullContact!!.id, stored)
+                fullContact = fullContact!!.copy(customRingtone = stored)
             }
         }
     }
@@ -978,9 +985,12 @@ fun ContactDetailsScreen(
                             val customRingtoneLabel = stringResource(R.string.ringtone_custom)
                             val selectRingtoneLabel = stringResource(R.string.contact_select_ringtone)
                             AukExpressiveCard(title = stringResource(R.string.contact_settings_title), icon = Icons.Default.Settings) {
-                                val currentRingtone = fc.customRingtone?.let { uriStr ->
-                                    runCatching { RingtoneManager.getRingtone(context, Uri.parse(uriStr))?.getTitle(context) }.getOrNull() ?: customRingtoneLabel
-                                } ?: defaultRingtoneLabel
+                                val noRingtoneLabel = stringResource(R.string.ringtone_none)
+                                val currentRingtone = when (val uriStr = fc.customRingtone) {
+                                    null -> defaultRingtoneLabel
+                                    "" -> noRingtoneLabel
+                                    else -> runCatching { RingtoneManager.getRingtone(context, Uri.parse(uriStr))?.getTitle(context) }.getOrNull() ?: customRingtoneLabel
+                                }
 
                                 AukListItem(
                                     headline = stringResource(R.string.contact_custom_ringtone),
@@ -990,7 +1000,16 @@ fun ContactDetailsScreen(
                                         val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                                             putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_RINGTONE)
                                             putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, selectRingtoneLabel)
-                                            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, fc.customRingtone?.let { Uri.parse(it) })
+                                            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                                            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                                            putExtra(
+                                                RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                                                when (val current = fc.customRingtone) {
+                                                    null -> android.provider.Settings.System.DEFAULT_RINGTONE_URI
+                                                    "" -> null
+                                                    else -> Uri.parse(current)
+                                                }
+                                            )
                                         }
                                         ringtonePickerLauncher.launch(intent)
                                     }

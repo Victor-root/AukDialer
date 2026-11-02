@@ -58,6 +58,8 @@ class CallService : InCallService() {
     // passes. The ringing notification stays quiet meanwhile rather than peeking over a screen
     // about to cover it, and still alerts should that screen never open.
     private var callScreenStartJob: Job? = null
+    private val contactRinger by lazy { ContactRinger(this) }
+    private var contactRingerCall: Call? = null
 
     private fun getContactBitmap(photoUri: String?): Bitmap? {
         if (photoUri == null) return null
@@ -230,6 +232,7 @@ class CallService : InCallService() {
         override fun onStateChanged(call: Call, state: Int) {
             super.onStateChanged(call, state)
             updateCallState()
+            if (call == contactRingerCall && state != Call.STATE_RINGING) stopContactRinger()
             
             if (state == Call.STATE_ACTIVE && connectedCalls.add(call)) {
                 redialCount = 0
@@ -333,6 +336,37 @@ class CallService : InCallService() {
                 showMissedCallNotification(call)
             }
         }
+    }
+
+    /**
+     * Telecom rings with the ringtone the contacts database gives it, which misses two cases: a
+     * contact set to no ringtone (an empty ringtone gets a fallback ring) and a private contact,
+     * unknown to the system. For those the app silences Telecom and rings itself.
+     */
+    private fun ringForContact(call: Call, number: String) {
+        if (number.isEmpty()) return
+        serviceScope.launch {
+            val contact = withContext(Dispatchers.IO) {
+                try { contactsRepository.getContactByNumber(number) } catch (e: Exception) { null }
+            } ?: return@launch
+            val ringtone = contact.customRingtone
+            val ringsItself = ringtone == "" || (contact.id.startsWith("p") && !ringtone.isNullOrEmpty())
+            if (!ringsItself || call.details.state != Call.STATE_RINGING) return@launch
+            if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "ringForContact: app rings, silent=${ringtone.isNullOrEmpty()}")
+            contactRingerCall = call
+            contactRinger.start(ringtone.orEmpty())
+        }
+    }
+
+    private fun stopContactRinger() {
+        contactRingerCall = null
+        contactRinger.stop()
+    }
+
+    // Volume or power key while ringing: Telecom asks the in-call app to go quiet too.
+    override fun onSilenceRinger() {
+        super.onSilenceRinger()
+        if (contactRingerCall != null && !contactRinger.isOwnSilenceEcho()) stopContactRinger()
     }
 
     private fun isNumberBlocked(number: String): Boolean {
@@ -526,6 +560,10 @@ class CallService : InCallService() {
             return
         }
 
+        if (isIncoming && call.details.state == Call.STATE_RINGING && (getCalls()?.size ?: 1) == 1) {
+            ringForContact(call, number)
+        }
+
         updateCallState()
         if (!isActivityVisible.value) {
             callScreenStartJob?.cancel()
@@ -557,6 +595,7 @@ class CallService : InCallService() {
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
         call.unregisterCallback(callCallback)
+        if (call == contactRingerCall) stopContactRinger()
         connectedCalls.remove(call)
         updateCallState()
         val calls = getCalls() ?: emptyList()

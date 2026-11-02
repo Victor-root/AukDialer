@@ -54,6 +54,7 @@
     <string name="option_standard">Standard</string>
     <string name="ringtone_default">Default</string>
     <string name="ringtone_custom">Custom</string>
+    <string name="ringtone_none">None</string>
     <string name="empty_state_try_clearing_filters">Try clearing your filters or add a new contact.</string>
     <string name="date_today">Today</string>
     <string name="date_yesterday">Yesterday</string>

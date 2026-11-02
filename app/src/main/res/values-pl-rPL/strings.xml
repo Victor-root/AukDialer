@@ -53,6 +53,7 @@
     <string name="option_standard">Standardowy</string>
     <string name="ringtone_default">Domyślny</string>
     <string name="ringtone_custom">Własny</string>
+    <string name="ringtone_none">Brak</string>
     <string name="empty_state_try_clearing_filters">Spróbuj wyczyścić filtry lub dodaj nowy kontakt.</string>
     <string name="date_today">Dzisiaj</string>
     <string name="date_yesterday">Wczoraj</string>

@@ -53,6 +53,7 @@
     <string name="option_standard">Стандарт</string>
     <string name="ringtone_default">По умолчанию</string>
     <string name="ringtone_custom">Пользовательский</string>
+    <string name="ringtone_none">Без звука</string>
     <string name="empty_state_try_clearing_filters">Попробуйте очистить фильтры или добавить новый контакт.</string>
     <string name="date_today">Сегодня</string>
     <string name="date_yesterday">Вчера</string>
