@@ -1,7 +1,12 @@
 package auk.dialer.vroot.controller
 
 import android.accounts.Account
+import android.content.ContentResolver
+import android.database.ContentObserver
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.provider.ContactsContract
 import android.util.Log
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
@@ -11,6 +16,8 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactSaveResult
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,8 +31,22 @@ import auk.dialer.vroot.controller.util.nameCollator
 
 class ContactsViewModel(
     private val contactsRepo: IContactsRepository,
-    private val preferenceManager: PreferenceManager
+    private val preferenceManager: PreferenceManager,
+    private val contentResolver: ContentResolver
 ) : ViewModel() {
+
+    // Contacts added or edited elsewhere (another app, account sync) show up without a manual
+    // refresh. A sync writes in bursts, taken here as one change.
+    private val contactsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            observerJob?.cancel()
+            observerJob = viewModelScope.launch {
+                delay(CHANGE_DEBOUNCE_MS)
+                fetchContacts()
+            }
+        }
+    }
+    private var observerJob: Job? = null
 
     private val _allContacts = MutableStateFlow<List<Contact>>(emptyList())
     val allContacts: StateFlow<List<Contact>> = _allContacts.asStateFlow()
@@ -128,6 +149,16 @@ class ContactsViewModel(
 
     init {
         fetchAccounts()
+        try {
+            contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        contentResolver.unregisterContentObserver(contactsObserver)
     }
 
     fun fetchContacts() {
@@ -367,5 +398,9 @@ class ContactsViewModel(
             contactsRepo.importPrivateContacts(uri)
             fetchContacts()
         }
+    }
+
+    private companion object {
+        const val CHANGE_DEBOUNCE_MS = 500L
     }
 }

@@ -126,12 +126,15 @@ class ContactsRepository(
             }
         } catch (e: Exception) {}
 
+        val accounts = contactAccounts()
         val finalList = list.map { contact ->
-            if (nicknameMap.containsKey(contact.id)) {
-                contact.copy(nickname = nicknameMap[contact.id])
-            } else {
-                contact
-            }
+            if (contact.isPrivate) return@map contact
+            val account = accounts[contact.id]
+            contact.copy(
+                nickname = nicknameMap[contact.id] ?: contact.nickname,
+                accountName = account?.first,
+                accountType = account?.second
+            )
         }
 
         return finalList.sortedBy { it.name.lowercase() }
@@ -413,14 +416,43 @@ class ContactsRepository(
         }
     }
 
+    /**
+     * Each contact's account, as (name, type), for the whole address book in one query: the one of
+     * its first entry, as [getAccountInfo] reads it. Device storage has no account and maps to nulls.
+     */
+    private fun contactAccounts(): Map<String, Pair<String?, String?>> {
+        val accounts = mutableMapOf<String, Pair<String?, String?>>()
+        try {
+            contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                arrayOf(
+                    ContactsContract.RawContacts.CONTACT_ID,
+                    ContactsContract.RawContacts.ACCOUNT_NAME,
+                    ContactsContract.RawContacts.ACCOUNT_TYPE
+                ),
+                "${ContactsContract.RawContacts.DELETED} = 0",
+                null,
+                "${ContactsContract.RawContacts._ID} ASC"
+            )?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val contactId = cursor.getString(0) ?: continue
+                    accounts.getOrPut(contactId) { cursor.getString(1) to cursor.getString(2) }
+                }
+            }
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
+        return accounts
+    }
+
     private fun getAccountInfo(contactId: String): Pair<String?, String?> {
         try {
             contentResolver.query(
                 ContactsContract.RawContacts.CONTENT_URI,
                 arrayOf(ContactsContract.RawContacts.ACCOUNT_NAME, ContactsContract.RawContacts.ACCOUNT_TYPE),
-                "${ContactsContract.RawContacts.CONTACT_ID} = ?",
+                "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0",
                 arrayOf(contactId),
-                null
+                "${ContactsContract.RawContacts._ID} ASC"
             )?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val nameIdx = cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_NAME)

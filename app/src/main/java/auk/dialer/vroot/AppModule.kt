@@ -45,7 +45,7 @@ val appModule = module {
     single {
         LauncherIconManager(androidContext(), get())
     }
-    viewModel { ContactsViewModel(get(), get()) }
+    viewModel { ContactsViewModel(get(), get(), androidContext().contentResolver) }
     viewModel { CallLogViewModel(get(), androidContext().contentResolver) }
     viewModel { BackupViewModel(get(), get()) }
     viewModel { VoicemailViewModel(get(), androidContext().contentResolver, androidContext()) }
