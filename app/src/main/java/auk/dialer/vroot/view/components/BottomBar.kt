@@ -1,6 +1,8 @@
 package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
@@ -13,18 +15,20 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Voicemail
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.ShortNavigationBarItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -38,6 +42,9 @@ import com.ramcosta.composedestinations.generated.destinations.RecentScreenDesti
 import com.ramcosta.composedestinations.generated.destinations.VoicemailListScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
+
+private val LabelMinFontSize = 8.sp
+private val LabelMaxFontSize = 12.sp
 
 data class NavigationTab(
     val id: Int,
@@ -151,10 +158,17 @@ fun BottomBar(
                     )
                 },
                 label = if (iconOnly) null else ({
-                    Text(
+                    // A label too long for its slot shrinks until it fits, rather than losing its
+                    // end: the others keep the bar's own size.
+                    val style = LocalTextStyle.current
+                    BasicText(
                         text = tab.label,
+                        style = style.copy(color = LocalContentColor.current),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = LabelMinFontSize,
+                            maxFontSize = if (style.fontSize.isSpecified) style.fontSize else LabelMaxFontSize
+                        )
                     )
                 }),
                 colors = itemColors
