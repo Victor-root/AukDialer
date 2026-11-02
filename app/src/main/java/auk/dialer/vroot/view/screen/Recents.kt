@@ -454,7 +454,8 @@ fun CallLogFullContent(
 
         val isLoading by viewModel.isLoading.collectAsState()
         val selectedFilter by viewModel.selectedFilter.collectAsState()
-        LaunchedEffect(selectedFilter, mergeFavorites) {
+        // Nothing left to edit once the last favorite goes: the next one added must not arrive wiggling.
+        LaunchedEffect(selectedFilter, mergeFavorites, favorites.isEmpty()) {
             isEditingFavorites = false
         }
         val context = LocalContext.current
@@ -529,7 +530,8 @@ fun CallLogFullContent(
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.clickable {
+                                        // Not while reordering: folding the row away mid-edit would hide what is being moved.
+                                        modifier = Modifier.clickable(enabled = !isEditingFavorites) {
                                             val newCollapsed = !isFavoritesCollapsed
                                             isFavoritesCollapsed = newCollapsed
                                             prefs.setBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_RECENTS_FAVORITES_COLLAPSED, newCollapsed)

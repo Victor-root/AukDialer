@@ -272,7 +272,9 @@ fun ContactEditScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding.aukExceptBottom())
-                .fillMaxSize(),
+                .fillMaxSize()
+                // Edge to edge, the window no longer shrinks for the keyboard: the form makes room itself.
+                .imePadding(),
             contentPadding = aukScrollContentPadding(16.dp, innerPadding),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
