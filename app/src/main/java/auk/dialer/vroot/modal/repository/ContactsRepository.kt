@@ -7,6 +7,7 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
 import android.util.Log
 import auk.dialer.vroot.BuildConfig
@@ -874,6 +875,17 @@ class ContactsRepository(
             contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    override fun getCloudDefaultAccount(): Account? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) return null
+        return try {
+            val default = ContactsContract.RawContacts.DefaultAccount.getDefaultAccountForNewContacts(contentResolver)
+            val cloud = ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState.DEFAULT_ACCOUNT_STATE_CLOUD
+            if (default.state == cloud) default.account else null
+        } catch (e: SecurityException) {
+            null
         }
     }
 

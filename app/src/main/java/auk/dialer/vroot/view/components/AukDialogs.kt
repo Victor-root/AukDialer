@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -59,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
@@ -107,6 +111,7 @@ private val SelectionPreviewSize = 60.dp
 private val ColorPickerSpacing = 12.dp
 private const val ColorPickerColumns = 5
 private const val ScrimAlpha = 0.32f
+private const val DisabledAlpha = 0.38f
 private const val DialogEnterScale = 0.9f
 
 @Composable
@@ -143,7 +148,9 @@ fun AukDialog(
         properties = DialogProperties(
             dismissOnBackPress = dismissOnBackPress,
             dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
+            // Drawn under the status and navigation bars, so the scrim dims them like the rest.
+            decorFitsSystemWindows = false
         )
     ) {
         val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
@@ -169,6 +176,7 @@ fun AukDialog(
                         Modifier
                     }
                 )
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -440,6 +448,7 @@ fun <T> AukSelectionDialog(
     itemIcon: ((T) -> ImageVector)? = null,
     itemPreview: (@Composable (T) -> Unit)? = null,
     isSelected: (T) -> Boolean = { false },
+    isEnabled: (T) -> Boolean = { true },
     dismissLabel: String = stringResource(R.string.action_cancel)
 ) {
     AukDialog(
@@ -461,7 +470,8 @@ fun <T> AukSelectionDialog(
                 supporting = itemSupporting?.invoke(item)?.takeIf { it.isNotBlank() },
                 icon = itemIcon?.invoke(item),
                 preview = itemPreview?.let { p -> { p(item) } },
-                selected = isSelected(item)
+                selected = isSelected(item),
+                enabled = isEnabled(item)
             )
         }
     }
@@ -521,7 +531,8 @@ fun AukSelectionRow(
     supporting: String? = null,
     icon: ImageVector? = null,
     preview: (@Composable () -> Unit)? = null,
-    selected: Boolean = false
+    selected: Boolean = false,
+    enabled: Boolean = true
 ) {
     val roundness = LocalCardRoundness.current
 
@@ -592,9 +603,11 @@ fun AukSelectionRow(
             .fillMaxWidth()
             .selectable(
                 selected = selected,
+                enabled = enabled,
                 role = Role.RadioButton,
                 onClick = onClick
-            ),
+            )
+            .alpha(if (enabled) 1f else DisabledAlpha),
         shape = RoundedCornerShape(corner),
         color = container,
         contentColor = content

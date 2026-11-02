@@ -18,13 +18,19 @@ interface IContactsRepository {
     fun toggleFavorite(contactId: String, isFavorite: Boolean)
     /**
      * Creates or updates [contact]. An existing contact whose isPrivate no longer matches where it is
-     * stored is moved to the other storage. False when nothing could be written.
+     * stored is moved to the other storage.
      */
     fun saveContact(contact: Contact): ContactSaveResult
     fun deleteContact(contactId: String)
     fun deleteContacts(contactIds: List<String>)
     fun moveContacts(contactIds: List<String>, accountName: String?, accountType: String?)
     fun getAvailableAccounts(): List<Account>
+
+    /**
+     * The cloud account the system puts new contacts in when that is its default. Device storage
+     * then takes no contact from any app. Null when device storage is open or the system cannot tell.
+     */
+    fun getCloudDefaultAccount(): Account?
     fun findDuplicates(): List<List<Contact>>
     fun mergeContacts(targetContactId: String, sourceContactIds: List<String>)
     fun setCustomRingtone(contactId: String, ringtoneUri: String?)

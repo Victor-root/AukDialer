@@ -169,6 +169,7 @@
     <string name="contact_save_failed_message">The phone refused to save this contact. Your changes are still here, you can try again.</string>
     <string name="contact_save_device_refused_message">Your phone only accepts new contacts in its default online account, not in device storage. Change the default account for new contacts in the settings, or pick an account here.</string>
     <string name="contact_save_open_settings">Open settings</string>
+    <string name="contact_edit_local_memory_unavailable">Unavailable: your phone saves new contacts to its default online account</string>
     <plurals name="contacts_delete_dialog_title">
         <item quantity="one">Delete %1$d contact?</item>
         <item quantity="other">Delete %1$d contacts?</item>

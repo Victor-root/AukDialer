@@ -22,10 +22,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
@@ -78,6 +80,8 @@ fun ContactEditScreen(
     var isPrivate by remember { mutableStateOf(false) }
     // What this screen does not edit is carried over from it, or saving would wipe it.
     var loadedContact by remember { mutableStateOf<Contact?>(null) }
+    // Set when the system only takes new contacts into this cloud account, not into device storage.
+    var cloudDefaultAccount by remember { mutableStateOf<Account?>(null) }
 
     val phones = remember { mutableStateListOf(PhoneNumberEntry("")) }
     val emails = remember { mutableStateListOf(EmailEntry("")) }
@@ -91,6 +95,7 @@ fun ContactEditScreen(
     var saveFailure by remember { mutableStateOf<ContactSaveResult?>(null) }
 
     LaunchedEffect(contactId, availableAccounts) {
+        cloudDefaultAccount = contactsVM.getCloudDefaultAccount()
         if (contactId != null && contactId != "0" && contactId != "null") {
             val existing = contactsVM.getFullContactById(contactId)
             if (existing != null) {
@@ -141,12 +146,10 @@ fun ContactEditScreen(
             }
         } else {
             if (selectedAccount == null) {
-                val lastUsed = contactsVM.getLastUsedAccount()
-                if (lastUsed != null) {
-                    selectedAccount = availableAccounts.find {
-                        it.name == lastUsed.name && it.type == lastUsed.type
+                selectedAccount = listOfNotNull(contactsVM.getLastUsedAccount(), cloudDefaultAccount)
+                    .firstNotNullOfOrNull { preferred ->
+                        availableAccounts.find { it.name == preferred.name && it.type == preferred.type }
                     }
-                }
             }
 
             if (!initialPhone.isNullOrBlank() && phones.all { it.number.isBlank() }) {
@@ -163,11 +166,15 @@ fun ContactEditScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            // Title on its own row under the actions: beside a delete and a labelled save button
+            // it has no room left and wraps.
+            MediumTopAppBar(
                 title = {
                     Text(
                         if (contactId == null || contactId == "0") stringResource(R.string.contact_create_title) else stringResource(R.string.contact_edit_title),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -286,7 +293,8 @@ fun ContactEditScreen(
                         AukAvatar(
                             name = displayName,
                             photoUri = photoUri,
-                            modifier = Modifier.size(120.dp)
+                            modifier = Modifier.size(120.dp),
+                            textStyle = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold)
                         )
 
                         Row {
@@ -329,7 +337,7 @@ fun ContactEditScreen(
                     Surface(
                         onClick = { showPicker = true },
                         shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                        color = Color.Transparent
                     ) {
                         Row(
                             modifier = Modifier
@@ -371,11 +379,16 @@ fun ContactEditScreen(
                         val privateTitle = stringResource(R.string.contact_edit_private_storage)
                         val privateDesc = stringResource(R.string.contact_edit_private_storage_description)
                         val localTitle = stringResource(R.string.label_local_memory)
+                        val localDesc = if (cloudDefaultAccount != null) {
+                            stringResource(R.string.contact_edit_local_memory_unavailable)
+                        } else {
+                            ""
+                        }
 
-                        val accountOptions = remember(availableAccounts, privateTitle, localTitle) {
+                        val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc) {
                             listOf(
                                 "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
-                                "local" to Triple(localTitle, "", Icons.Default.CloudOff)
+                                "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
                             ) + availableAccounts.map { acc ->
                                 acc.name to Triple(ContactUtils.getFriendlyAccountName(context, acc), acc.name, ContactUtils.getAccountIcon(acc))
                             }
@@ -389,6 +402,7 @@ fun ContactEditScreen(
                             itemLabel = { option -> option.second.first },
                             itemSupporting = { option -> option.second.second },
                             itemIcon = { option -> option.second.third },
+                            isEnabled = { option -> option.first != "local" || cloudDefaultAccount == null },
                             isSelected = { option ->
                                 when (option.first) {
                                     "private" -> isPrivate

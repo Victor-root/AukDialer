@@ -153,6 +153,10 @@ class ContactsViewModel(
         }
     }
 
+    suspend fun getCloudDefaultAccount(): Account? = withContext(Dispatchers.IO) {
+        contactsRepo.getCloudDefaultAccount()
+    }
+
     fun fetchAccounts() {
         viewModelScope.launch(Dispatchers.IO) {
             _availableAccounts.value = contactsRepo.getAvailableAccounts()
