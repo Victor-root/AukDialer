@@ -516,7 +516,10 @@ class CallService : InCallService() {
             redialNumber = null
         }
         // Only incoming calls are screened: one the user places to a blocked number is theirs to make.
-        val isIncoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING
+        // A ringing call is incoming even when Telecom hands it over with no direction, as it does for
+        // a call it learns of without the usual notice (seen right after airplane mode was left).
+        val isIncoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING ||
+            call.details.state == Call.STATE_RINGING
         if (isIncoming && isNumberBlocked(number)) {
             if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
             handleBlockedCall(call, number)
