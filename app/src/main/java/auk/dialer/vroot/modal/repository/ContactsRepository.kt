@@ -19,8 +19,8 @@ import auk.dialer.vroot.modal.db.PrivateContactEntity
 import auk.dialer.vroot.controller.util.deduplicateNumbers
 import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.CallBackgroundStore
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import java.io.File
+import java.util.UUID
 
 class ContactsRepository(
     private val context: Context,
@@ -424,7 +424,9 @@ class ContactsRepository(
         val oldId = contact.id
         val newId: String?
         if (contact.isPrivate) {
-            val localId = privateContactDao.insert(PrivateContactEntity.fromContact(contact.copy(id = "0")))
+            val localId = privateContactDao.insert(
+                PrivateContactEntity.fromContact(contact.copy(id = "0", photoUri = keepPrivatePhoto(contact.photoUri)))
+            )
             if (localId <= 0) return false
             newId = "p$localId"
         } else {
@@ -440,11 +442,13 @@ class ContactsRepository(
 
     private fun writeContact(contact: Contact): Boolean {
         if (contact.isPrivate) {
-            val entity = PrivateContactEntity.fromContact(contact)
+            val entity = PrivateContactEntity.fromContact(contact.copy(photoUri = keepPrivatePhoto(contact.photoUri)))
             if (entity.localId == 0L) {
                 privateContactDao.insert(entity)
             } else {
+                val previousPhoto = privateContactDao.getById(entity.localId)?.photoUri
                 privateContactDao.update(entity)
+                if (previousPhoto != entity.photoUri) deletePrivatePhoto(previousPhoto)
             }
             return true
         }
@@ -468,6 +472,8 @@ class ContactsRepository(
                 ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                     .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountType)
                     .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountName)
+                    .withValue(ContactsContract.RawContacts.STARRED, if (contact.isFavorite) 1 else 0)
+                    .withValue(ContactsContract.RawContacts.CUSTOM_RINGTONE, contact.customRingtone)
                     .build()
             )
 
@@ -558,6 +564,18 @@ class ContactsRepository(
                             ContactsContract.CommonDataKinds.StructuredPostal.TYPE,
                             ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME
                         )
+                        .build()
+                )
+            }
+
+            contact.events.forEach { event ->
+                ops.add(
+                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactIndex)
+                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Event.START_DATE, event.date)
+                        .withValue(ContactsContract.CommonDataKinds.Event.TYPE, event.type)
+                        .withValue(ContactsContract.CommonDataKinds.Event.LABEL, event.label)
                         .build()
                 )
             }
@@ -754,11 +772,46 @@ class ContactsRepository(
         if (clearBackground) clearCallBackground(contactId)
         if (contactId.startsWith("p")) {
             val id = contactId.substring(1).toLongOrNull() ?: return
-            privateContactDao.deleteById(id)
+            deletePrivateContact(id)
             return
         }
         val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
         contentResolver.delete(uri, null, null)
+    }
+
+    private fun deletePrivateContact(localId: Long) {
+        val photoUri = privateContactDao.getById(localId)?.photoUri
+        privateContactDao.deleteById(localId)
+        deletePrivatePhoto(photoUri)
+    }
+
+    private val privatePhotosDir: File get() = File(context.filesDir, "private_photos")
+
+    /**
+     * A private contact's photo as a copy in the app's own storage: the system contact photo is
+     * deleted along with the public contact, and access to a picked gallery image does not last.
+     */
+    private fun keepPrivatePhoto(photoUri: String?): String? {
+        if (photoUri == null || isPrivatePhoto(photoUri)) return photoUri
+        val bytes = getPhotoBytes(photoUri) ?: return photoUri
+        return try {
+            val file = File(privatePhotosDir.apply { mkdirs() }, "${UUID.randomUUID()}.jpg")
+            file.writeBytes(bytes)
+            Uri.fromFile(file).toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            photoUri
+        }
+    }
+
+    private fun isPrivatePhoto(photoUri: String): Boolean {
+        val uri = Uri.parse(photoUri)
+        return uri.scheme == "file" && uri.path?.let { File(it).parentFile } == privatePhotosDir
+    }
+
+    private fun deletePrivatePhoto(photoUri: String?) {
+        if (photoUri == null || !isPrivatePhoto(photoUri)) return
+        Uri.parse(photoUri).path?.let { File(it).delete() }
     }
 
     override fun deleteContact(contactId: String) {
@@ -771,7 +824,7 @@ class ContactsRepository(
             clearCallBackground(id)
             if (id.startsWith("p")) {
                 val lid = id.substring(1).toLongOrNull()
-                if (lid != null) privateContactDao.deleteById(lid)
+                if (lid != null) deletePrivateContact(lid)
                 return@forEach
             }
             val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, id)
@@ -1010,7 +1063,8 @@ class ContactsRepository(
                     val id = contact.id.substring(1).toLongOrNull()
                     if (id != null) {
                         privateContactDao.getById(id)?.let {
-                            privateContactDao.update(it.copy(phoneNumbersJson = Json.encodeToString(updatedNumbers)))
+                            val phones = it.toContact().phones.map { entry -> entry.copy(number = entry.number.replace(" ", "")) }
+                            privateContactDao.update(it.withPhones(phones))
                         }
                     }
                 } else {
