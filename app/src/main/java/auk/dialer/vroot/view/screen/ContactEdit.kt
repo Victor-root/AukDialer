@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -22,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -589,8 +591,17 @@ fun TypedEditField(
         leadingIcon = {
             var showTypeMenu by remember { mutableStateOf(false) }
             Box {
-                IconButton(onClick = { showTypeMenu = true }) {
+                // The chevron tells the icon opens a choice, like the account field's.
+                Row(
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .clip(CircleShape)
+                        .clickable { showTypeMenu = true }
+                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(typeIcon(typeValue), contentDescription = typeLabel(typeValue))
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
                 AukDropdownMenu(
                     expanded = showTypeMenu,
