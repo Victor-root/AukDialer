@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
@@ -41,6 +43,7 @@ import auk.dialer.vroot.view.theme.rememberStatusBarSampler
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -80,10 +83,26 @@ fun MainScreen(
         else -> false
     }
 
+    // The pager only remembers a position. Keep the tab itself, so reordering the bottom bar in
+    // Settings brings the user back to the tab they were on rather than whatever now sits there.
+    var shownTab by rememberSaveable { mutableStateOf(visibleTabs.getOrNull(startPage)) }
+    // Only real page changes update it: the page restored on coming back may now hold another tab.
+    LaunchedEffect(visibleTabs) {
+        snapshotFlow { pagerState.currentPage }.drop(1).collect { page ->
+            visibleTabs.getOrNull(page)?.let { shownTab = it }
+        }
+    }
+
+    // A requested tab is shown once; coming back from another screen keeps the one the user picked since.
+    var initialTabApplied by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(initialTab, visibleTabs) {
         val target = visibleTabs.indexOf(requestedTab)
-        if (initialTab != null && target >= 0 && pagerState.currentPage != target) {
-            pagerState.scrollToPage(target)
+        val shownIndex = visibleTabs.indexOf(shownTab)
+        if (initialTab != null && !initialTabApplied && target >= 0) {
+            initialTabApplied = true
+            if (pagerState.currentPage != target) pagerState.scrollToPage(target)
+        } else if (shownIndex >= 0 && pagerState.currentPage != shownIndex) {
+            pagerState.scrollToPage(shownIndex)
         } else if (pagerState.currentPage > visibleTabs.lastIndex) {
             pagerState.scrollToPage(visibleTabs.lastIndex.coerceAtLeast(0))
         }
