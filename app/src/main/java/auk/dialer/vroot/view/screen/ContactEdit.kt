@@ -37,6 +37,7 @@ import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.ContactTypeLabels
 import auk.dialer.vroot.controller.util.ContactUtils
 import auk.dialer.vroot.controller.util.deduplicateNumbers
+import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactSaveResult
 import auk.dialer.vroot.modal.data.EmailEntry
@@ -88,7 +89,7 @@ fun ContactEditScreen(
 
     val phones = remember { mutableStateListOf(PhoneNumberEntry("")) }
     val emails = remember { mutableStateListOf(EmailEntry("")) }
-    val addresses = remember { mutableStateListOf<String>("") }
+    val addresses = remember { mutableStateListOf(AddressEntry("")) }
 
     val displayName = "${givenName.trim()} ${familyName.trim()}".trim()
 
@@ -139,10 +140,13 @@ fun ContactEditScreen(
                 }
 
                 addresses.clear()
-                if (existing.addresses.isNotEmpty()) {
-                    addresses.addAll(existing.addresses)
+                val existingAddresses = existing.addressEntries.ifEmpty {
+                    existing.addresses.map { AddressEntry(it) }
+                }
+                if (existingAddresses.isNotEmpty()) {
+                    addresses.addAll(existingAddresses)
                 } else {
-                    addresses.add("")
+                    addresses.add(AddressEntry(""))
                 }
             }
         } else {
@@ -201,6 +205,7 @@ fun ContactEditScreen(
                                 scope.launch {
                                     val savedPhones = phones.filter { it.number.isNotBlank() }
                                     val savedEmails = emails.filter { it.address.isNotBlank() }
+                                    val savedAddresses = addresses.filter { it.address.isNotBlank() }
                                     val editedContact = Contact(
                                         id = if (contactId == "null" || contactId == "0" || contactId == null) "0" else contactId,
                                         name = displayName,
@@ -211,7 +216,8 @@ fun ContactEditScreen(
                                         emails = savedEmails.map { it.address },
                                         phones = savedPhones,
                                         emailEntries = savedEmails,
-                                        addresses = addresses.filter { it.isNotBlank() },
+                                        addresses = savedAddresses.map { it.address },
+                                        addressEntries = savedAddresses,
                                         photoUri = photoUri,
                                         accountName = if (isPrivate) null else selectedAccount?.name,
                                         accountType = if (isPrivate) null else selectedAccount?.type,
@@ -518,22 +524,26 @@ fun ContactEditScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         val addressFieldLabel = stringResource(R.string.label_address)
                         addresses.forEachIndexed { index, address ->
-                            EditField(
-                                value = address,
-                                onValueChange = { addresses[index] = it },
+                            TypedEditField(
+                                value = address.address,
+                                onValueChange = { addresses[index] = address.copy(address = it) },
                                 label = addressFieldLabel,
-                                leadingIcon = { Icon(Icons.Default.LocationOn, null) },
+                                typeIcon = ContactTypeLabels::addressTypeIcon,
+                                typeValue = address.type,
+                                typeOptions = ContactTypeLabels.addressTypeOptions,
+                                typeLabel = { ContactTypeLabels.addressTypeLabel(context, it, null) },
+                                onTypeChange = { addresses[index] = address.copy(type = it) },
                                 onDelete = {
                                     if (addresses.size > 1) {
                                         addresses.removeAt(index)
                                     } else {
-                                        addresses[0] = ""
+                                        addresses[0] = AddressEntry("")
                                     }
                                 }
                             )
                         }
                         TextButton(
-                            onClick = { addresses.add("") },
+                            onClick = { addresses.add(AddressEntry("")) },
                             modifier = Modifier.align(Alignment.Start)
                         ) {
                             Icon(Icons.Default.Add, null)

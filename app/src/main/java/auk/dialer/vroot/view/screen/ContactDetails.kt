@@ -49,6 +49,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.*
+import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.EmailEntry
 import auk.dialer.vroot.modal.data.PhoneNumberEntry
@@ -820,17 +821,22 @@ fun ContactDetailsScreen(
                                         AukDivider(Modifier.padding(horizontal = 16.dp))
                                     }
                                 }
-                                fullContact!!.addresses.forEachIndexed { index, address ->
+                                val addressEntries = fullContact!!.addressEntries.ifEmpty {
+                                    fullContact!!.addresses.map { AddressEntry(it) }
+                                }
+                                addressEntries.forEachIndexed { index, addressEntry ->
+                                    val address = addressEntry.address
                                     AukListItem(
                                         headline = address,
-                                        supporting = stringResource(R.string.label_address),
-                                        leadingIcon = Icons.Default.LocationOn,
+                                        supporting = ContactTypeLabels.addressTypeLabel(context, addressEntry.type, addressEntry.label)
+                                            .ifBlank { stringResource(R.string.label_address) },
+                                        leadingIcon = ContactTypeLabels.addressTypeIcon(addressEntry.type),
                                         onClick = {
                                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$address"))
                                             context.startActivity(intent)
                                         }
                                     )
-                                    if (index < fullContact!!.addresses.size - 1) {
+                                    if (index < addressEntries.size - 1) {
                                         AukDivider(Modifier.padding(horizontal = 16.dp))
                                     }
                                 }

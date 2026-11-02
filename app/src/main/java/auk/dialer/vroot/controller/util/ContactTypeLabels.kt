@@ -3,9 +3,11 @@ package auk.dialer.vroot.controller.util
 import android.content.Context
 import android.provider.ContactsContract.CommonDataKinds.Email
 import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone as PhoneIcon
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
@@ -30,6 +32,12 @@ object ContactTypeLabels {
         Email.TYPE_OTHER
     )
 
+    val addressTypeOptions: List<Int> = listOf(
+        StructuredPostal.TYPE_HOME,
+        StructuredPostal.TYPE_WORK,
+        StructuredPostal.TYPE_OTHER
+    )
+
     fun phoneTypeLabel(context: Context, type: Int, label: String?): String {
         return try {
             Phone.getTypeLabel(context.resources, type, label).toString()
@@ -41,6 +49,14 @@ object ContactTypeLabels {
     fun emailTypeLabel(context: Context, type: Int, label: String?): String {
         return try {
             Email.getTypeLabel(context.resources, type, label).toString()
+        } catch (e: Exception) {
+            label ?: ""
+        }
+    }
+
+    fun addressTypeLabel(context: Context, type: Int, label: String?): String {
+        return try {
+            StructuredPostal.getTypeLabel(context.resources, type, label).toString()
         } catch (e: Exception) {
             label ?: ""
         }
@@ -58,5 +74,11 @@ object ContactTypeLabels {
         Email.TYPE_HOME -> Icons.Default.Home
         Email.TYPE_WORK -> Icons.Default.Work
         else -> Icons.Default.Email
+    }
+
+    fun addressTypeIcon(type: Int): ImageVector = when (type) {
+        StructuredPostal.TYPE_HOME -> Icons.Default.Home
+        StructuredPostal.TYPE_WORK -> Icons.Default.Work
+        else -> Icons.Default.LocationOn
     }
 }

@@ -3,6 +3,7 @@ package auk.dialer.vroot.modal.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactEvent
 import auk.dialer.vroot.modal.data.EmailEntry
@@ -33,6 +34,7 @@ data class PrivateContactEntity(
     fun toContact(): Contact {
         val phones = decodeEntries(phoneNumbersJson) { PhoneNumberEntry(it) }
         val emails = decodeEntries(emailsJson) { EmailEntry(it) }
+        val addresses = decodeEntries(addressesJson) { AddressEntry(it) }
         return Contact(
             id = "p$localId",
             name = name,
@@ -41,7 +43,8 @@ data class PrivateContactEntity(
             emails = emails.map { it.address },
             phones = phones,
             emailEntries = emails,
-            addresses = runCatching { Json.decodeFromString<List<String>>(addressesJson) }.getOrDefault(emptyList()),
+            addresses = addresses.map { it.address },
+            addressEntries = addresses,
             events = runCatching { Json.decodeFromString<List<ContactEvent>>(eventsJson) }.getOrDefault(emptyList()),
             photoUri = photoUri,
             isFavorite = isFavorite,
@@ -62,7 +65,7 @@ data class PrivateContactEntity(
                 nickname = contact.nickname,
                 phoneNumbersJson = Json.encodeToString(contact.phones.ifEmpty { contact.phoneNumbers.map { PhoneNumberEntry(it) } }),
                 emailsJson = Json.encodeToString(contact.emailEntries.ifEmpty { contact.emails.map { EmailEntry(it) } }),
-                addressesJson = Json.encodeToString(contact.addresses),
+                addressesJson = Json.encodeToString(contact.addressEntries.ifEmpty { contact.addresses.map { AddressEntry(it) } }),
                 eventsJson = Json.encodeToString(contact.events),
                 photoUri = contact.photoUri,
                 isFavorite = contact.isFavorite,

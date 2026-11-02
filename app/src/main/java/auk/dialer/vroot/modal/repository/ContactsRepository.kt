@@ -12,6 +12,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
+import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactEvent
 import auk.dialer.vroot.modal.data.ContactSaveResult
@@ -297,7 +298,16 @@ class ContactsRepository(
                             )
                         }
                         ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE -> {
-                            currentContact.copy(addresses = (currentContact.addresses + data1).distinct())
+                            val entry = AddressEntry(
+                                address = data1,
+                                type = cursor.getInt(data2Idx),
+                                label = cursor.getString(data3Idx)
+                            )
+                            val alreadyPresent = currentContact.addressEntries.any { it.address == data1 }
+                            currentContact.copy(
+                                addresses = (currentContact.addresses + data1).distinct(),
+                                addressEntries = if (alreadyPresent) currentContact.addressEntries else currentContact.addressEntries + entry
+                            )
                         }
                         ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE -> {
                             currentContact.copy(nickname = data1)
@@ -527,6 +537,9 @@ class ContactsRepository(
         } else {
             contact.emails.map { EmailEntry(it) }
         }
+        val effectiveAddresses = contact.addressEntries.ifEmpty {
+            contact.addresses.map { AddressEntry(it) }
+        }
 
         val isNew = contact.id.isEmpty() || contact.id == "0"
         if (isNew) {
@@ -614,7 +627,7 @@ class ContactsRepository(
                 )
             }
 
-            contact.addresses.forEach { address ->
+            effectiveAddresses.forEach { entry ->
                 ops.add(
                     ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactIndex)
@@ -622,11 +635,9 @@ class ContactsRepository(
                             ContactsContract.Data.MIMETYPE,
                             ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE
                         )
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, address)
-                        .withValue(
-                            ContactsContract.CommonDataKinds.StructuredPostal.TYPE,
-                            ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME
-                        )
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, entry.address)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, entry.type)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.LABEL, entry.label)
                         .build()
                 )
             }
@@ -780,7 +791,7 @@ class ContactsRepository(
                         )
                         .build()
                 )
-                contact.addresses.forEach { address ->
+                effectiveAddresses.forEach { entry ->
                     ops.add(
                         ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                             .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
@@ -788,11 +799,9 @@ class ContactsRepository(
                                 ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE
                             )
-                            .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, address)
-                            .withValue(
-                                ContactsContract.CommonDataKinds.StructuredPostal.TYPE,
-                                ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME
-                            )
+                            .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, entry.address)
+                            .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, entry.type)
+                            .withValue(ContactsContract.CommonDataKinds.StructuredPostal.LABEL, entry.label)
                             .build()
                     )
                 }

@@ -23,6 +23,13 @@ data class EmailEntry(
     val label: String? = null
 )
 
+@Serializable
+data class AddressEntry(
+    val address: String,
+    val type: Int = 1,
+    val label: String? = null
+)
+
 enum class ContactSaveResult {
     SAVED,
     FAILED,
@@ -43,6 +50,7 @@ data class Contact(
     val phones: List<PhoneNumberEntry> = emptyList(),
     val emailEntries: List<EmailEntry> = emptyList(),
     val addresses: List<String> = emptyList(),
+    val addressEntries: List<AddressEntry> = emptyList(),
     val events: List<ContactEvent> = emptyList(),
     val photoUri: String? = null,
     val isFavorite: Boolean = false,
