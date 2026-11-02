@@ -24,6 +24,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -44,7 +45,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import android.graphics.Color as AndroidColor
 
@@ -187,8 +190,10 @@ class StatusBarSampler internal constructor(internal val layer: GraphicsLayer) {
     internal var isSampling = false
     internal var statusBarHeight = 0
 
-    // Counts the recordings, so that the same content isn't sampled twice.
-    internal var version = 0
+    // Asks for one recording. Read while drawing, so asking redraws the content once and the layer
+    // is only recorded when a sample is due rather than on every frame of a scroll.
+    internal var requestedRecording by mutableIntStateOf(0)
+    internal var recordedRecording = 0
 }
 
 /**
@@ -224,15 +229,19 @@ fun rememberStatusBarSampler(scrollBehavior: TopAppBarScrollBehavior, enabled: B
             return@LaunchedEffect
         }
         sampler.isSampling = true
-        var sampledVersion = -1
         try {
             while (true) {
-                // Lets the content be drawn and recorded.
+                val request = ++sampler.requestedRecording
+                // One frame for the request to invalidate the content, the next for it to be drawn.
                 withFrameNanos {}
-                val version = sampler.version
-                if (version != sampledVersion && sampler.layer.size != IntSize.Zero) {
-                    sampledVersion = version
-                    val luminance = sampler.layer.toImageBitmap().averageLuminance(backgroundLuminance)
+                withFrameNanos {}
+                if (sampler.recordedRecording == request && sampler.layer.size != IntSize.Zero) {
+                    val image = sampler.layer.toImageBitmap()
+                    val shownBackgroundLuminance = backgroundLuminance
+                    // Reading the pixels back is slow, and would cost the frames of the scroll itself.
+                    val luminance = withContext(Dispatchers.Default) {
+                        image.averageLuminance(shownBackgroundLuminance)
+                    }
                     val isDark = when {
                         luminance < DARK_LUMINANCE_MAX -> true
                         luminance > LIGHT_LUMINANCE_MIN -> false
@@ -263,11 +272,12 @@ fun rememberStatusBarSampler(scrollBehavior: TopAppBarScrollBehavior, enabled: B
 fun Modifier.aukSampleStatusBarContent(sampler: StatusBarSampler): Modifier =
     drawWithContent {
         drawContent()
-        if (sampler.isSampling && sampler.statusBarHeight > 0) {
+        val request = sampler.requestedRecording
+        if (sampler.isSampling && sampler.statusBarHeight > 0 && request != sampler.recordedRecording) {
             sampler.layer.record(size = IntSize(size.width.roundToInt(), sampler.statusBarHeight)) {
                 this@drawWithContent.drawContent()
             }
-            ++sampler.version
+            sampler.recordedRecording = request
         }
     }
 

@@ -2,12 +2,6 @@ package auk.dialer.vroot.view.screen
 
 import android.Manifest
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -52,6 +46,7 @@ import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberCallLauncher
 import auk.dialer.vroot.view.components.rememberGridDragDropState
+import auk.dialer.vroot.view.components.aukWiggle
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -270,17 +265,6 @@ private fun FavoriteGridItem(
     onCall: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "favoriteWiggle")
-    val wiggle by infiniteTransition.animateFloat(
-        initialValue = -1.5f,
-        targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(150, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "wiggle"
-    )
-
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -294,7 +278,7 @@ private fun FavoriteGridItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .graphicsLayer { if (isEditing && !isDragging) rotationZ = wiggle }
+                    .aukWiggle(isEditing && !isDragging)
                     .combinedClickable(
                         enabled = !isEditing,
                         onClick = onOpen,

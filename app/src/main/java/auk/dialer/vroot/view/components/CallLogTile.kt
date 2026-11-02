@@ -38,9 +38,6 @@ fun CallLogTileSimple(
     onCallClick: () -> Unit = {},
     selected: Boolean = false
 ) {
-    val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
-    val settingsState by prefs.settingsChanged.collectAsState()
-
     val icon = when (log.type) {
         CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
         CallLog.Calls.OUTGOING_TYPE -> Icons.AutoMirrored.Filled.CallMade
@@ -127,9 +124,13 @@ fun CallLogTile(
     val badgeColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val headlineColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else Color.Unspecified
     
-    val favNum = log.contactId?.let { prefs.getFavoriteNumber(it) }
-    val isFavorite = auk.dialer.vroot.controller.util.areNumbersEqual(log.number, favNum)
+    val isFavorite = remember(log.contactId, log.number, settingsState) {
+        val favNum = log.contactId?.let { prefs.getFavoriteNumber(it) }
+        auk.dialer.vroot.controller.util.areNumbersEqual(log.number, favNum)
+    }
     val context = LocalContext.current
+    val time = remember(log.date) { formatTime(context, log.date) }
+    val formattedNumber = remember(log.number) { formatPhoneNumber(log.number) }
 
     Box(
         modifier = Modifier
@@ -142,10 +143,10 @@ fun CallLogTile(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.weight(1f)) {
-                val displayName = remember(log.name, displayOrder) {
+                val displayName = remember(log.name, displayOrder, formattedNumber) {
                     log.name?.let { 
                         if (it.isNotEmpty()) auk.dialer.vroot.controller.util.ContactUtils.formatContactName(it, displayOrder) else null
-                    } ?: formatPhoneNumber(log.number)
+                    } ?: formattedNumber
                 }
 
                 AukListItem(
@@ -170,7 +171,7 @@ fun CallLogTile(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = formatTime(context, log.date),
+                                text = time,
                                 style = AukListItemDefaults.supportingStyle(),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
@@ -179,7 +180,7 @@ fun CallLogTile(
                         }
                     },
                     // No initial for a withheld caller: the generic silhouette, like any unknown number.
-                    avatarName = if (log.number.isEmpty()) "" else log.name ?: formatPhoneNumber(log.number),
+                    avatarName = if (log.number.isEmpty()) "" else log.name ?: formattedNumber,
                     photoUri = log.photoUri,
                     headlineColor = headlineColor,
                     trailingIcon = if (isFavorite) Icons.Default.Star else null,

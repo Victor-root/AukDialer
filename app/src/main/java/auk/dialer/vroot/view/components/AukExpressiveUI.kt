@@ -5,6 +5,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -18,7 +20,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
@@ -36,6 +39,8 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -185,13 +190,9 @@ fun AukExpressiveCard(
     val cardsEnabled = showCards ?: aukSurfaceStyle().showCards
     val resolvedShape = shape ?: MaterialTheme.shapes.extraLarge
 
-    val padding = if (isCompact) 12.dp else 16.dp
-    val spacing = if (isCompact) 8.dp else 12.dp
-    // Sides are much tighter than top and bottom on purpose. The screen already
-    // insets the card and the rows inset their own content, so a symmetric card
-    // padding was a third margin stacked on the other two, and rows were losing
-    // a fifth of the screen width to whitespace.
-    val horizontalPadding = if (isCompact) 4.dp else 8.dp
+    val padding = cardVerticalPadding(isCompact)
+    val spacing = cardSpacing(isCompact)
+    val horizontalPadding = cardHorizontalPadding(isCompact)
 
     if (cardsEnabled) {
         Card(
@@ -230,6 +231,75 @@ fun AukExpressiveCard(
             }
             content()
         }
+    }
+}
+
+private fun cardVerticalPadding(isCompact: Boolean): Dp = if (isCompact) 12.dp else 16.dp
+
+private fun cardSpacing(isCompact: Boolean): Dp = if (isCompact) 8.dp else 12.dp
+
+// Sides are much tighter than top and bottom on purpose. The screen already
+// insets the card and the rows inset their own content, so a symmetric card
+// padding was a third margin stacked on the other two, and rows were losing
+// a fifth of the screen width to whitespace.
+private fun cardHorizontalPadding(isCompact: Boolean): Dp = if (isCompact) 4.dp else 8.dp
+
+/**
+ * One row of an [AukExpressiveCard] split across the items of a lazy list, so a long card is
+ * composed row by row as it scrolls in rather than all at once. The rows of a card sit flush
+ * against each other and together draw the same card, [isFirst] and [isLast] carrying its ends.
+ */
+@Composable
+fun AukExpressiveCardSegment(
+    isFirst: Boolean,
+    isLast: Boolean,
+    modifier: Modifier = Modifier,
+    isCompact: Boolean = false,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    if (aukSurfaceStyle().showCards) {
+        val shape = MaterialTheme.shapes.extraLarge
+        val border = aukAccentCardBorder()
+        Box(modifier = modifier.fillMaxWidth().clipToBounds()) {
+            // The whole card's background and border, run on past the edges this row shares with
+            // its neighbours so only the ends of the card are rounded.
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .layout { measurable, constraints ->
+                        val overflow = constraints.maxWidth
+                        val top = if (isFirst) 0 else overflow
+                        val bottom = if (isLast) 0 else overflow
+                        val placeable = measurable.measure(
+                            Constraints.fixed(constraints.maxWidth, constraints.maxHeight + top + bottom)
+                        )
+                        layout(constraints.maxWidth, constraints.maxHeight) {
+                            placeable.place(0, -top)
+                        }
+                    }
+                    .background(containerColor, shape)
+                    .border(border, shape)
+            )
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Column(
+                    modifier = Modifier.padding(
+                        start = cardHorizontalPadding(isCompact),
+                        end = cardHorizontalPadding(isCompact),
+                        top = if (isFirst) cardVerticalPadding(isCompact) else 0.dp,
+                        bottom = if (isLast) cardVerticalPadding(isCompact) else cardSpacing(isCompact)
+                    ),
+                    content = content
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = if (isFirst) 8.dp else 0.dp, bottom = 8.dp),
+            content = content
+        )
     }
 }
 
@@ -464,7 +534,10 @@ fun AukListItem(
         shadowElevation = AukElevation.Flat,
         modifier = modifier
             .fillMaxWidth()
-            .scale(itemScale)
+            .graphicsLayer {
+                scaleX = itemScale
+                scaleY = itemScale
+            }
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = ripple(),

@@ -230,19 +230,19 @@ fun AukAvatar(
 ) {
     val ownInteractionSource = remember { MutableInteractionSource() }
     val resolvedInteractionSource = interactionSource ?: ownInteractionSource
-    val pressed by resolvedInteractionSource.collectIsPressedAsState()
 
-    val morphEnabled = morphOnPress || morphSelected
-    val morphTarget = if (morphSelected || (morphOnPress && pressed)) 1f else 0f
-    val morphProgress by animateFloatAsState(
-        targetValue = morphTarget,
-        animationSpec = AukMotion.shapeMorph(),
-        label = "AukAvatarMorph"
-    )
-    val morphShape = rememberAukMorphShape(morphStart, morphEnd) { morphProgress }
-
+    // Only set up for an avatar that morphs: building the morph is costly, and a list holds many
+    // avatars that never do.
     val avatarShape = when {
-        morphEnabled -> morphShape
+        morphOnPress || morphSelected -> {
+            val pressed = morphOnPress && resolvedInteractionSource.collectIsPressedAsState().value
+            val morphProgress by animateFloatAsState(
+                targetValue = if (morphSelected || pressed) 1f else 0f,
+                animationSpec = AukMotion.shapeMorph(),
+                label = "AukAvatarMorph"
+            )
+            rememberAukMorphShape(morphStart, morphEnd) { morphProgress }
+        }
         shape != null -> shape
         else -> style.shape
     }

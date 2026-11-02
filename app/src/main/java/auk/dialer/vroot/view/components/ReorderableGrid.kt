@@ -1,5 +1,11 @@
 package auk.dialer.vroot.view.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
@@ -8,7 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 
@@ -159,4 +167,23 @@ class RowDragDropState internal constructor(
             draggingItemIndex = targetItem.index
         }
     }
+}
+
+/**
+ * The wiggle of an item that can be moved, while [active]. The animation only runs then: left
+ * running in the background it would keep asking for a new frame every vsync.
+ */
+@Composable
+fun Modifier.aukWiggle(active: Boolean): Modifier {
+    if (!active) return this
+    val wiggle by rememberInfiniteTransition(label = "wiggle").animateFloat(
+        initialValue = -1.5f,
+        targetValue = 1.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(150, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "wiggle"
+    )
+    return graphicsLayer { rotationZ = wiggle }
 }

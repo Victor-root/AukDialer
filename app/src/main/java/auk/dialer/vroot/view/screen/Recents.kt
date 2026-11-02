@@ -41,12 +41,6 @@ import com.ramcosta.composedestinations.generated.destinations.ContactEditScreen
 import com.ramcosta.composedestinations.generated.destinations.DialPadScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import android.widget.Toast
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -266,17 +260,6 @@ fun FavoriteCircleItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "favoriteWiggleRecents")
-    val wiggle by infiniteTransition.animateFloat(
-        initialValue = -1.5f,
-        targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(150, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "wiggle"
-    )
-
     Column(
         modifier = modifier.width(76.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -288,7 +271,7 @@ fun FavoriteCircleItem(
                 photoUri = contact.photoUri,
                 modifier = Modifier
                     .size(64.dp)
-                    .graphicsLayer { if (isEditing && !isDragging) rotationZ = wiggle }
+                    .aukWiggle(isEditing && !isDragging)
                     .combinedClickable(
                         enabled = true,
                         onClick = {
@@ -404,13 +387,7 @@ fun CallLogFullContent(
         val contactsVM: ContactsViewModel = koinActivityViewModel()
         val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
         val settingsState by prefs.settingsChanged.collectAsState()
-        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-        val hapticScrollEnabled = prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_HAPTIC_LIST_SCROLL, false)
-        if (hapticScrollEnabled) {
-            LaunchedEffect(listState.firstVisibleItemIndex) {
-                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-            }
-        }
+        ListScrollHaptics(listState, prefs)
 
         LaunchedEffect(Unit) {
             viewModel.fetchLogs()
@@ -524,16 +501,16 @@ fun CallLogFullContent(
             } else if (filteredLogs.isEmpty() && (favorites.isEmpty() || selectedFilter != CallLogFilter.All)) {
                 EmptyCallLogsState()
             } else {
+                val showFavorites = favorites.isNotEmpty() && selectedFilter == CallLogFilter.All
                 Column(modifier = Modifier.fillMaxSize()) {
 
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
                     ) {
-                        if (favorites.isNotEmpty() && selectedFilter == CallLogFilter.All) {
-                            item {
+                        if (showFavorites) {
+                            item(key = "favorites", contentType = "favorites") {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -666,43 +643,53 @@ fun CallLogFullContent(
                             }
                         }
 
-                        groupedLogs.entries.forEach { (header, logsInGroup) ->
-                            item {
-                                AukSectionHeader(title = header)
-                                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                    AukExpressiveCard(isCompact = true) {
-                                        logsInGroup.forEachIndexed { index, lg ->
-                                            CallLogTile(
-                                                log = lg,
-                                                displayOrder = displayOrder,
-                                                onTileClick = { log ->
-                                                    if (selectedEntries.isNotEmpty()) {
-                                                        onToggleSelection(log)
-                                                    } else if (log.number.isNotEmpty()) {
-                                                        navigator.navigate(
-                                                            ContactDetailsScreenDestination(
-                                                                contactId = log.contactId ?: "null",
-                                                                phoneNumber = log.number
-                                                            )
-                                                        )
-                                                    }
-                                                },
-                                                onButtonClick = { log ->
-                                                    val contact = allContacts.find { it.id == log.contactId }
-                                                    callLauncher.dial(log.number, contact)
-                                                },
-                                                onLongClick = { log ->
-                                                    onToggleSelection(log)
-                                                },
-                                                selected = selectedEntries.any { it.id == lg.id }
-                                            )
-                                            if (index < logsInGroup.size - 1) {
-                                                AukDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        groupedLogs.entries.forEachIndexed { groupIndex, (header, logsInGroup) ->
+                            item(key = "header:$header", contentType = "header") {
+                                val hasItemAbove = groupIndex > 0 || showFavorites
+                                AukSectionHeader(
+                                    title = header,
+                                    modifier = Modifier.padding(top = if (hasItemAbove) 4.dp else 0.dp)
+                                )
+                            }
+                            itemsIndexed(
+                                logsInGroup,
+                                key = { _, lg -> lg.id },
+                                contentType = { _, _ -> "call" }
+                            ) { index, lg ->
+                                val isLast = index == logsInGroup.lastIndex
+                                AukExpressiveCardSegment(
+                                    isFirst = index == 0,
+                                    isLast = isLast,
+                                    isCompact = true,
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                        .padding(bottom = if (isLast) 8.dp else 0.dp)
+                                ) {
+                                    CallLogTile(
+                                        log = lg,
+                                        displayOrder = displayOrder,
+                                        onTileClick = { log ->
+                                            if (selectedEntries.isNotEmpty()) {
+                                                onToggleSelection(log)
+                                            } else if (log.number.isNotEmpty()) {
+                                                navigator.navigate(
+                                                    ContactDetailsScreenDestination(
+                                                        contactId = log.contactId ?: "null",
+                                                        phoneNumber = log.number
+                                                    )
+                                                )
                                             }
-                                        }
-                                    }
+                                        },
+                                        onButtonClick = { log ->
+                                            val contact = allContacts.find { it.id == log.contactId }
+                                            callLauncher.dial(log.number, contact)
+                                        },
+                                        onLongClick = { log ->
+                                            onToggleSelection(log)
+                                        },
+                                        selected = selectedEntries.any { it.id == lg.id }
+                                    )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }

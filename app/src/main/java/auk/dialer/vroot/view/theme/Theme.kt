@@ -28,6 +28,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.components.LocalAukAvatarStyle
+import auk.dialer.vroot.view.components.LocalAukSurfaceStyle
+import auk.dialer.vroot.view.components.rememberAukAvatarStyle
+import auk.dialer.vroot.view.components.rememberAukSurfaceStyle
 import org.koin.compose.koinInject
 import kotlin.math.abs
 
@@ -143,36 +147,41 @@ fun AukTheme(
             shapes = shapes,
             typography = AukTypography
         ) {
-            if (systemBars) {
-                AukSystemBars(
-                    accentIsDark = barColor.luminance() <= 0.5f,
-                    backgroundIsDark = colorScheme.background.luminance() <= 0.5f,
-                    darkTheme = darkTheme,
-                    edgeToEdge = edgeToEdge,
-                    plainStatusBar = plainStatusBar,
-                    statusBarBackground = statusBarBackground
-                )
-            }
-            if (!systemBars) {
-                content()
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(colorScheme.background)
-                ) {
+            CompositionLocalProvider(
+                LocalAukAvatarStyle provides rememberAukAvatarStyle(prefs),
+                LocalAukSurfaceStyle provides rememberAukSurfaceStyle(prefs)
+            ) {
+                if (systemBars) {
+                    AukSystemBars(
+                        accentIsDark = barColor.luminance() <= 0.5f,
+                        backgroundIsDark = colorScheme.background.luminance() <= 0.5f,
+                        darkTheme = darkTheme,
+                        edgeToEdge = edgeToEdge,
+                        plainStatusBar = plainStatusBar,
+                        statusBarBackground = statusBarBackground
+                    )
+                }
+                if (!systemBars) {
                     content()
-                    // Edge to edge off: an opaque accent band over the navigation bar area, so it
-                    // reads as a solid bar matching the header. On: nothing, and the app shows
-                    // through the transparent navigation bar.
-                    if (!edgeToEdge) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                                .background(barColor)
-                        )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(colorScheme.background)
+                    ) {
+                        content()
+                        // Edge to edge off: an opaque accent band over the navigation bar area, so it
+                        // reads as a solid bar matching the header. On: nothing, and the app shows
+                        // through the transparent navigation bar.
+                        if (!edgeToEdge) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                    .background(barColor)
+                            )
+                        }
                     }
                 }
             }

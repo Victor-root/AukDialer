@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,8 +31,6 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -51,20 +50,9 @@ fun AZListScroll(
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val settingsState by prefs.settingsChanged.collectAsState()
 
-    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-    val hapticScrollEnabled = prefs.getBoolean(PreferenceManager.KEY_HAPTIC_LIST_SCROLL, false)
     val displayOrder = remember(settingsState) { prefs.getInt(PreferenceManager.KEY_CONTACT_DISPLAY_ORDER, 0) }
 
-    // Followed outside composition: reading the first visible item here recomposed the whole list
-    // on every row scrolled past.
-    if (hapticScrollEnabled) {
-        LaunchedEffect(listState) {
-            snapshotFlow { listState.firstVisibleItemIndex }
-                .distinctUntilChanged()
-                .drop(1)
-                .collect { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove) }
-        }
-    }
+    ListScrollHaptics(listState, prefs)
 
     val finalGrouped = remember(contacts, grouped) {
         if (grouped != null) return@remember grouped
@@ -86,9 +74,9 @@ fun AZListScroll(
     val alphabetIndices = remember(finalGrouped) {
         val map = mutableMapOf<Char, Int>()
         var currentIndex = 0
-        finalGrouped.forEach { (char, _) ->
+        finalGrouped.forEach { (char, contactsForChar) ->
             map[char] = currentIndex
-            currentIndex += 2 
+            currentIndex += 1 + contactsForChar.size
         }
         map
     }
@@ -107,13 +95,14 @@ fun AZListScroll(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
+        val unknownLabel = stringResource(R.string.label_unknown)
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
         ) {
             finalGrouped.entries.forEach { (initial, contactsForChar) ->
-                stickyHeader {
+                stickyHeader(key = "header:$initial", contentType = "header") {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -130,45 +119,48 @@ fun AZListScroll(
                     }
                 }
 
-                item {
+                itemsIndexed(
+                    contactsForChar,
+                    key = { _, contact -> contact.id },
+                    contentType = { _, _ -> "contact" }
+                ) { index, contact ->
+                    val isLast = index == contactsForChar.lastIndex
+                    val displayName = ContactUtils.formatContactName(
+                        contact.name.ifEmpty {
+                            contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: unknownLabel
+                        },
+                        displayOrder
+                    )
                     // Right side leaves room for the alphabet index bar so its letters don't sit on
                     // top of the card's own border.
-                    Box(modifier = Modifier.padding(start = 16.dp, end = 36.dp)) {
-                        AukExpressiveCard(isCompact = true) {
-                            val unknownLabel = stringResource(R.string.label_unknown)
-                            contactsForChar.forEachIndexed { index, contact ->
-                                val displayName = ContactUtils.formatContactName(
-                                    contact.name.ifEmpty {
-                                        contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: unknownLabel
-                                    },
-                                    displayOrder
-                                )
-                                AukListItem(
-                                    headline = displayName,
-                                    supporting = null,
-                                    headlineMaxLines = 2,
-                                    avatarName = contact.name,
-                                    photoUri = contact.photoUri,
-                                    onClick = {
-                                        if (selectedIds.isNotEmpty()) {
-                                            onToggleSelection(contact.id)
-                                        } else {
-                                            navigator.navigate(ContactDetailsScreenDestination(contactId = contact.id))
-                                        }
-                                    },
-                                    onLongClick = {
-                                        onToggleSelection(contact.id)
-                                    },
-                                    selected = selectedIds.contains(contact.id),
-                                    isCompact = true
-                                )
-                                if (index < contactsForChar.size - 1) {
-                                    AukDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    AukExpressiveCardSegment(
+                        isFirst = index == 0,
+                        isLast = isLast,
+                        isCompact = true,
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 36.dp)
+                            .padding(bottom = if (isLast) 8.dp else 0.dp)
+                    ) {
+                        AukListItem(
+                            headline = displayName,
+                            supporting = null,
+                            headlineMaxLines = 2,
+                            avatarName = contact.name,
+                            photoUri = contact.photoUri,
+                            onClick = {
+                                if (selectedIds.isNotEmpty()) {
+                                    onToggleSelection(contact.id)
+                                } else {
+                                    navigator.navigate(ContactDetailsScreenDestination(contactId = contact.id))
                                 }
-                            }
-                        }
+                            },
+                            onLongClick = {
+                                onToggleSelection(contact.id)
+                            },
+                            selected = selectedIds.contains(contact.id),
+                            isCompact = true
+                        )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
