@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.modal.data.CallLogFilter
+import auk.dialer.vroot.modal.data.groupedConsecutive
 import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.displayLabel
@@ -416,7 +417,9 @@ fun CallLogFullContent(
             contactsVM.fetchContacts()
         }
 
-        val logs by viewModel.allCallLogs.collectAsState()
+        // Single calls, filtered before they are folded: a row of back-to-back calls can mix a missed
+        // call with an answered one, and each filter has to see every call in it.
+        val logs by viewModel.allCalls.collectAsState()
         val allContacts by contactsVM.allContacts.collectAsState()
 
         val mergeFavorites = remember(settingsState) {
@@ -482,7 +485,7 @@ fun CallLogFullContent(
                 CallLogFilter.Incoming -> baseLogs.filter { it.type == CallLog.Calls.INCOMING_TYPE }
                 CallLogFilter.Outgoing -> baseLogs.filter { it.type == CallLog.Calls.OUTGOING_TYPE }
                 CallLogFilter.Contacts -> baseLogs.filter { it.contactId != null }
-            }
+            }.groupedConsecutive()
         }
 
         val groupedLogs = remember(filteredLogs) {

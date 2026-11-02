@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.data.CallLogFilter
-import auk.dialer.vroot.modal.data.groupedConsecutive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,10 +28,6 @@ class CallLogViewModel(
     /** One entry per call, for anything showing or deleting single calls. */
     private val _allCalls = MutableStateFlow<List<CallLogEntry>>(emptyList())
     val allCalls: StateFlow<List<CallLogEntry>> = _allCalls.asStateFlow()
-
-    /** Back-to-back calls with one number folded into a single row, for the recents list. */
-    private val _allCallLogs = MutableStateFlow<List<CallLogEntry>>(emptyList())
-    val allCallLogs: StateFlow<List<CallLogEntry>> = _allCallLogs.asStateFlow()
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -77,13 +72,12 @@ class CallLogViewModel(
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch(Dispatchers.IO) {
             delay(debounceMs)
-            if (_allCallLogs.value.isEmpty()) {
+            if (_allCalls.value.isEmpty()) {
                 _isLoading.value = true
             }
             val calls = callLogRepo.getCalls()
             ensureActive()
             _allCalls.value = calls
-            _allCallLogs.value = calls.groupedConsecutive()
             _isLoading.value = false
         }
     }
