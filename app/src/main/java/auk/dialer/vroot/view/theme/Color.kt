@@ -485,6 +485,33 @@ val MaterialTheme.callColors: CallColors
     get() = LocalCallColors.current
 
 /**
+ * The pale tints of the accent, kept even when vivid colours fill the containers: a selected row or
+ * the field being typed in stays soft and easy to read on.
+ */
+@Immutable
+data class SoftAccentColors(
+    val selection: Color,
+    val onSelection: Color,
+    /** Pale primary tint: the field being typed in, a picked option. */
+    val field: Color
+)
+
+fun ColorScheme.softAccentColors() = SoftAccentColors(
+    selection = secondaryContainer,
+    onSelection = onSecondaryContainer,
+    field = primaryContainer
+)
+
+val LocalSoftAccentColors: ProvidableCompositionLocal<SoftAccentColors> = staticCompositionLocalOf {
+    AukLightColorScheme.softAccentColors()
+}
+
+val MaterialTheme.softAccentColors: SoftAccentColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalSoftAccentColors.current
+
+/**
  * Vivid colours: the pale tinted containers (icon tiles, selected tab, tonal buttons, chips) take the
  * full accent of the app bars instead, with white or black content depending on its brightness.
  */

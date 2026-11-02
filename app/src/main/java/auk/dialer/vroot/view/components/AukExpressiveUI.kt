@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -420,7 +421,7 @@ fun AukListItem(
 
     val targetContainer = when {
         containerColor.isSpecified -> containerColor
-        selected -> MaterialTheme.colorScheme.secondaryContainer
+        selected -> MaterialTheme.softAccentColors.selection
         else -> Color.Transparent
     }
     val animatedContainer by animateColorAsState(
@@ -455,7 +456,7 @@ fun AukListItem(
     Surface(
         color = animatedContainer,
         contentColor = if (selected) {
-            MaterialTheme.colorScheme.onSecondaryContainer
+            MaterialTheme.softAccentColors.onSelection
         } else {
             LocalContentColor.current
         },

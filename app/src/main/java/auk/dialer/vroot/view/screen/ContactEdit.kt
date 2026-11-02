@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.theme.softAccentColors
 import android.accounts.Account
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -697,7 +698,7 @@ private fun ContactTextField(
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            focusedContainerColor = MaterialTheme.softAccentColors.field,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,

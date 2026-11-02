@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -293,7 +294,7 @@ fun ContactSelectionScreen(
                                 },
                             shape = RoundedCornerShape(itemCornerDp),
                             color = if (isCustomSelected) {
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.softAccentColors.field
                             } else {
                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                             },
@@ -410,7 +411,7 @@ fun ContactSelectionScreen(
                             AukExpressiveCard(
                                 modifier = Modifier.clip(RoundedCornerShape(itemCornerDp)),
                                 containerColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                                    MaterialTheme.softAccentColors.field.copy(alpha = 0.45f)
                                 } else {
                                     MaterialTheme.colorScheme.surfaceContainerLow
                                 }

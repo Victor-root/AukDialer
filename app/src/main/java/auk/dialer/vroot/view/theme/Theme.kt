@@ -102,7 +102,7 @@ fun AukTheme(
     }
     val edgeToEdge by prefs.edgeToEdge.collectAsState()
 
-    val colorScheme = remember(darkTheme, dynamicColor, amoledMode, vividColors, customPrimaryInt) {
+    val baseScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt) {
         val base = when {
             dynamicColor -> aukDynamicColorScheme(context, darkTheme)
             customPrimaryInt != CUSTOM_PRIMARY_COLOR_UNSET ->
@@ -110,8 +110,12 @@ fun AukTheme(
             darkTheme -> AukDarkColorScheme
             else -> AukLightColorScheme
         }
-        base.withNeutralSurfaces(darkTheme, amoledMode).let { if (vividColors) it.withVividContainers(darkTheme) else it }
+        base.withNeutralSurfaces(darkTheme, amoledMode)
     }
+    val colorScheme = remember(baseScheme, vividColors) {
+        if (vividColors) baseScheme.withVividContainers(darkTheme) else baseScheme
+    }
+    val softAccentColors = remember(baseScheme) { baseScheme.softAccentColors() }
 
     val shapes = remember(cardRoundness) { aukShapes(cardRoundness) }
 
@@ -125,6 +129,7 @@ fun AukTheme(
 
     CompositionLocalProvider(
         LocalCallColors provides callColors,
+        LocalSoftAccentColors provides softAccentColors,
         LocalCardRoundness provides cardRoundness,
         LocalAccentBarColor provides barColor,
         LocalOnAccentBarColor provides onBarColor,
