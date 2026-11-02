@@ -3,6 +3,7 @@ package auk.dialer.vroot.modal.`interface`
 import android.accounts.Account
 import android.net.Uri
 import auk.dialer.vroot.modal.data.Contact
+import auk.dialer.vroot.modal.data.ContactSaveResult
 
 interface IContactsRepository {
     fun getContacts(includePrivate: Boolean = true): List<Contact>
@@ -19,7 +20,7 @@ interface IContactsRepository {
      * Creates or updates [contact]. An existing contact whose isPrivate no longer matches where it is
      * stored is moved to the other storage. False when nothing could be written.
      */
-    fun saveContact(contact: Contact): Boolean
+    fun saveContact(contact: Contact): ContactSaveResult
     fun deleteContact(contactId: String)
     fun deleteContacts(contactIds: List<String>)
     fun moveContacts(contactIds: List<String>, accountName: String?, accountType: String?)

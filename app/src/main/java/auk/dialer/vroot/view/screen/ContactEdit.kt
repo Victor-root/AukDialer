@@ -1,6 +1,12 @@
 package auk.dialer.vroot.view.screen
 
 import android.accounts.Account
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.ContactsContract
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,11 +34,13 @@ import auk.dialer.vroot.controller.util.ContactTypeLabels
 import auk.dialer.vroot.controller.util.ContactUtils
 import auk.dialer.vroot.controller.util.deduplicateNumbers
 import auk.dialer.vroot.modal.data.Contact
+import auk.dialer.vroot.modal.data.ContactSaveResult
 import auk.dialer.vroot.modal.data.EmailEntry
 import auk.dialer.vroot.modal.data.PhoneNumberEntry
 import auk.dialer.vroot.view.components.AukAvatar
 import auk.dialer.vroot.view.components.AukConfirmationDialog
 import auk.dialer.vroot.view.components.AukDialog
+import auk.dialer.vroot.view.components.AukDialogAction
 import auk.dialer.vroot.view.components.AukDropdownMenu
 import auk.dialer.vroot.view.components.AukDropdownMenuItem
 import auk.dialer.vroot.view.components.AukExpressiveCard
@@ -80,6 +88,7 @@ fun ContactEditScreen(
     val scope = rememberCoroutineScope()
     var isSaving by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var saveFailure by remember { mutableStateOf<ContactSaveResult?>(null) }
 
     LaunchedEffect(contactId, availableAccounts) {
         if (contactId != null && contactId != "0" && contactId != "null") {
@@ -213,8 +222,13 @@ fun ContactEditScreen(
                                             events = loaded.events
                                         )
                                     } ?: editedContact
-                                    contactsVM.saveContact(contactToSave)
-                                    navigator.navigateUp()
+                                    val result = contactsVM.saveContact(contactToSave)
+                                    if (result == ContactSaveResult.SAVED) {
+                                        navigator.navigateUp()
+                                    } else {
+                                        isSaving = false
+                                        saveFailure = result
+                                    }
                                 }
                             },
                             enabled = displayName.isNotBlank() && phones.any { it.number.isNotBlank() },
@@ -232,6 +246,10 @@ fun ContactEditScreen(
             )
         }
     ) { innerPadding ->
+        saveFailure?.let { failure ->
+            SaveFailureDialog(failure = failure, onDismissRequest = { saveFailure = null })
+        }
+
         if (showDeleteDialog) {
             AukConfirmationDialog(
                 onDismissRequest = { showDeleteDialog = false },
@@ -675,5 +693,44 @@ fun EditField(
                 tint = MaterialTheme.colorScheme.error
             )
         }
+    }
+}
+
+/** Why the contact was not saved; the screen stays open so nothing typed is lost. */
+@Composable
+private fun SaveFailureDialog(failure: ContactSaveResult, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
+    if (failure == ContactSaveResult.DEVICE_STORAGE_REFUSED) {
+        AukConfirmationDialog(
+            onDismissRequest = onDismissRequest,
+            onConfirm = { openDefaultContactsAccountSettings(context) },
+            title = stringResource(R.string.contact_save_failed_title),
+            message = stringResource(R.string.contact_save_device_refused_message),
+            confirmLabel = stringResource(R.string.contact_save_open_settings),
+            dismissLabel = stringResource(R.string.action_close),
+            icon = Icons.Default.Warning
+        )
+    } else {
+        AukDialog(
+            onDismissRequest = onDismissRequest,
+            title = stringResource(R.string.contact_save_failed_title),
+            icon = Icons.Default.Warning,
+            supportingText = stringResource(R.string.contact_save_failed_message),
+            confirmAction = AukDialogAction(stringResource(R.string.action_close), onDismissRequest)
+        ) {}
+    }
+}
+
+/** The system screen choosing the account new contacts go to, or the main settings without one. */
+private fun openDefaultContactsAccountSettings(context: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Intent(ContactsContract.Settings.ACTION_SET_DEFAULT_ACCOUNT)
+    } else {
+        Intent(Settings.ACTION_SETTINGS)
+    }
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        context.startActivity(Intent(Settings.ACTION_SETTINGS))
     }
 }

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.data.Contact
+import auk.dialer.vroot.modal.data.ContactSaveResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -223,8 +224,8 @@ class ContactsViewModel(
         }
     }
 
-    suspend fun saveContact(contact: Contact) {
-        withContext(Dispatchers.IO) {
+    suspend fun saveContact(contact: Contact): ContactSaveResult {
+        return withContext(Dispatchers.IO) {
             val saved = contactsRepo.saveContact(contact)
             if (BuildConfig.DEBUG_TOOLS) {
                 val found = contactsRepo.getContacts().filter { it.name == contact.name }.map { it.id }
@@ -236,10 +237,12 @@ class ContactsViewModel(
                 )
             }
 
-            preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
-            preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_TYPE, contact.accountType)
-            
-            fetchContacts()
+            if (saved == ContactSaveResult.SAVED) {
+                preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
+                preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_TYPE, contact.accountType)
+                fetchContacts()
+            }
+            saved
         }
     }
     

@@ -13,6 +13,7 @@ import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactEvent
+import auk.dialer.vroot.modal.data.ContactSaveResult
 import auk.dialer.vroot.modal.data.EmailEntry
 import auk.dialer.vroot.modal.data.PhoneNumberEntry
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
@@ -416,7 +417,7 @@ class ContactsRepository(
         return Pair(null, null)
     }
 
-    override fun saveContact(contact: Contact): Boolean {
+    override fun saveContact(contact: Contact): ContactSaveResult {
         val isExisting = contact.id.isNotEmpty() && contact.id != "0"
         val storedPrivately = contact.id.startsWith("p")
         return if (isExisting && storedPrivately != contact.isPrivate) moveContact(contact) else writeContact(contact)
@@ -426,27 +427,28 @@ class ContactsRepository(
      * Saves [contact], edits included, into the storage it now asks for, then removes the copy
      * left in the other one. Only once the new copy exists: until then the old one is the only one.
      */
-    private fun moveContact(contact: Contact): Boolean {
+    private fun moveContact(contact: Contact): ContactSaveResult {
         val oldId = contact.id
         val newId: String?
         if (contact.isPrivate) {
             val localId = privateContactDao.insert(
                 PrivateContactEntity.fromContact(contact.copy(id = "0", photoUri = keepPrivatePhoto(contact.photoUri)))
             )
-            if (localId <= 0) return false
+            if (localId <= 0) return ContactSaveResult.FAILED
             newId = "p$localId"
         } else {
-            if (!writeContact(contact.copy(id = ""))) return false
+            val result = writeContact(contact.copy(id = ""))
+            if (result != ContactSaveResult.SAVED) return result
             newId = contact.phoneNumbers.firstNotNullOfOrNull { number ->
                 getContactByNumber(number)?.id?.takeIf { it.isNotBlank() && !it.startsWith("p") }
             }
         }
         deleteContactInternal(oldId, false)
         CallBackgroundStore.carryBlocking(context, oldId, newId, contact.phoneNumbers)
-        return true
+        return ContactSaveResult.SAVED
     }
 
-    private fun writeContact(contact: Contact): Boolean {
+    private fun writeContact(contact: Contact): ContactSaveResult {
         if (contact.isPrivate) {
             val entity = PrivateContactEntity.fromContact(contact.copy(photoUri = keepPrivatePhoto(contact.photoUri)))
             if (entity.localId == 0L) {
@@ -456,7 +458,7 @@ class ContactsRepository(
                 privateContactDao.update(entity)
                 if (previousPhoto != entity.photoUri) deletePrivatePhoto(previousPhoto)
             }
-            return true
+            return ContactSaveResult.SAVED
         }
         val ops = ArrayList<ContentProviderOperation>()
         val photoBytes = contact.photoUri?.let { getPhotoBytes(it) }
@@ -472,19 +474,17 @@ class ContactsRepository(
             contact.emails.map { EmailEntry(it) }
         }
 
-        if (contact.id.isEmpty() || contact.id == "0") {
+        val isNew = contact.id.isEmpty() || contact.id == "0"
+        if (isNew) {
             val rawContactIndex = ops.size
-            val rawContactInsert = ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                .withValue(ContactsContract.RawContacts.STARRED, if (contact.isFavorite) 1 else 0)
-                .withValue(ContactsContract.RawContacts.CUSTOM_RINGTONE, contact.customRingtone)
-            // No account chosen: leave it unset so the system's default account applies. Spelling it
-            // out as null asks for the device itself, which is refused when the default is a cloud account.
-            if (contact.accountType != null || contact.accountName != null) {
-                rawContactInsert
+            ops.add(
+                ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                     .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountType)
                     .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountName)
-            }
-            ops.add(rawContactInsert.build())
+                    .withValue(ContactsContract.RawContacts.STARRED, if (contact.isFavorite) 1 else 0)
+                    .withValue(ContactsContract.RawContacts.CUSTOM_RINGTONE, contact.customRingtone)
+                    .build()
+            )
 
             ops.add(
                 ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -590,7 +590,7 @@ class ContactsRepository(
             }
         } else {
             val rawContactIds = getRawContactIds(contact.id)
-            if (rawContactIds.isEmpty()) return false
+            if (rawContactIds.isEmpty()) return ContactSaveResult.FAILED
 
             rawContactIds.forEach { rawContactId ->
                 ops.add(
@@ -764,13 +764,17 @@ class ContactsRepository(
             if (BuildConfig.DEBUG_TOOLS) {
                 Log.d(DEBUG_TAG, "writeContact id=${contact.id} account=${contact.accountType}|${contact.accountName} ops=${ops.size} first=${results.firstOrNull()?.uri}")
             }
-            true
+            ContactSaveResult.SAVED
         } catch (e: Exception) {
             if (BuildConfig.DEBUG_TOOLS) {
                 Log.d(DEBUG_TAG, "writeContact id=${contact.id} account=${contact.accountType}|${contact.accountName} failed", e)
             }
             e.printStackTrace()
-            false
+            // Where the default account for new contacts is a cloud one, the provider rejects
+            // a new contact in device storage (no account) with this exception.
+            val deviceStorageRefused = e is IllegalArgumentException && isNew &&
+                contact.accountType == null && contact.accountName == null
+            if (deviceStorageRefused) ContactSaveResult.DEVICE_STORAGE_REFUSED else ContactSaveResult.FAILED
         }
     }
 

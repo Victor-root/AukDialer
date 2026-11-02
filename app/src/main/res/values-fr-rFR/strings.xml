@@ -157,6 +157,10 @@
     <string name="contact_remove_from_device">Supprimer ce contact de l’appareil</string>
     <string name="contact_delete_dialog_title">Supprimer le contact ?</string>
     <string name="contact_delete_dialog_message">Voulez-vous vraiment supprimer ce contact ? Cette action est irréversible.</string>
+    <string name="contact_save_failed_title">Contact non enregistré</string>
+    <string name="contact_save_failed_message">Le téléphone a refusé d’enregistrer ce contact. Vos modifications sont toujours là, vous pouvez réessayer.</string>
+    <string name="contact_save_device_refused_message">Votre téléphone n’accepte les nouveaux contacts que sur son compte en ligne par défaut, pas en mémoire locale. Changez le compte par défaut des nouveaux contacts dans les réglages, ou choisissez un compte ici.</string>
+    <string name="contact_save_open_settings">Ouvrir les réglages</string>
     <plurals name="contacts_delete_dialog_title">
         <item quantity="one">Supprimer %1$d contact ?</item>
         <item quantity="other">Supprimer %1$d contacts ?</item>

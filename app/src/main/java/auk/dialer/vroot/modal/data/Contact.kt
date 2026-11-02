@@ -23,6 +23,14 @@ data class EmailEntry(
     val label: String? = null
 )
 
+enum class ContactSaveResult {
+    SAVED,
+    FAILED,
+
+    /** The system takes new contacts only into its cloud default account, not into device storage. */
+    DEVICE_STORAGE_REFUSED
+}
+
 @Serializable
 data class Contact(
     val id: String,
