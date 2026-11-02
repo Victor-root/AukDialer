@@ -226,12 +226,9 @@ fun getSystemVoicemailNumber(context: Context): String? {
     return null
 }
 
+// Not refused in airplane mode: Wi-Fi calling still works there, and the system turns the radio back
+// on for an emergency number. A call that then fails says why once it ends.
 fun makeCall(context: Context, number: String, accountHandle: PhoneAccountHandle? = null, contactId: String? = null) {
-    if (isAirplaneModeOn(context)) {
-        android.widget.Toast.makeText(context, context.getString(R.string.call_failed_airplane_mode), android.widget.Toast.LENGTH_LONG).show()
-        return
-    }
-
     val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
     
     val uri = if (number.startsWith("voicemail:")) {

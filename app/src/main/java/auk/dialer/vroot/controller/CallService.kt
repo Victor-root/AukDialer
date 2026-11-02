@@ -302,7 +302,8 @@ class CallService : InCallService() {
 
         if (isOutgoing && wasNeverConnected) {
             val failMessage = when {
-                auk.dialer.vroot.controller.util.isAirplaneModeOn(this) ->
+                auk.dialer.vroot.controller.util.isAirplaneModeOn(this) &&
+                    cause?.code != DisconnectCause.LOCAL && cause?.code != DisconnectCause.CANCELED ->
                     getString(R.string.call_failed_airplane_mode)
                 cause?.code == DisconnectCause.RESTRICTED ->
                     getString(R.string.call_failed_restricted)
