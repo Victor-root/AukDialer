@@ -439,7 +439,7 @@ fun ContactEditScreen(
                                 value = phone.number,
                                 onValueChange = { phones[index] = phone.copy(number = it) },
                                 label = phoneFieldLabel,
-                                icon = Icons.Default.Phone,
+                                typeIcon = ContactTypeLabels::phoneTypeIcon,
                                 keyboardType = KeyboardType.Phone,
                                 typeValue = phone.type,
                                 typeOptions = ContactTypeLabels.phoneTypeOptions,
@@ -477,7 +477,7 @@ fun ContactEditScreen(
                                 value = email.address,
                                 onValueChange = { emails[index] = email.copy(address = it) },
                                 label = emailFieldLabel,
-                                icon = Icons.Default.Email,
+                                typeIcon = ContactTypeLabels::emailTypeIcon,
                                 keyboardType = KeyboardType.Email,
                                 typeValue = email.type,
                                 typeOptions = ContactTypeLabels.emailTypeOptions,
@@ -515,7 +515,7 @@ fun ContactEditScreen(
                                 value = address,
                                 onValueChange = { addresses[index] = it },
                                 label = addressFieldLabel,
-                                icon = Icons.Default.LocationOn,
+                                leadingIcon = { Icon(Icons.Default.LocationOn, null) },
                                 onDelete = {
                                     if (addresses.size > 1) {
                                         addresses.removeAt(index)
@@ -566,12 +566,13 @@ fun splitDisplayName(full: String): Pair<String, String> {
     }
 }
 
+/** A phone number or email whose type is picked from its own icon, which then shows that type. */
 @Composable
 fun TypedEditField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    icon: ImageVector,
+    typeIcon: (Int) -> ImageVector,
     typeValue: Int,
     typeOptions: List<Int>,
     typeLabel: (Int) -> String,
@@ -579,42 +580,36 @@ fun TypedEditField(
     onDelete: () -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        EditField(
-            value = value,
-            onValueChange = onValueChange,
-            label = label,
-            icon = icon,
-            keyboardType = keyboardType,
-            onDelete = onDelete
-        )
-        var showTypeMenu by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.padding(start = 8.dp)) {
-            TextButton(onClick = { showTypeMenu = true }) {
-                Icon(Icons.Default.Sell, null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(typeLabel(typeValue), style = MaterialTheme.typography.labelLarge)
-                Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(18.dp))
-            }
-            AukDropdownMenu(
-                expanded = showTypeMenu,
-                onDismissRequest = { showTypeMenu = false }
-            ) {
-                typeOptions.forEach { option ->
-                    AukDropdownMenuItem(
-                        text = { Text(typeLabel(option)) },
-                        onClick = {
-                            onTypeChange(option)
-                            showTypeMenu = false
-                        }
-                    )
+    EditField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        keyboardType = keyboardType,
+        onDelete = onDelete,
+        leadingIcon = {
+            var showTypeMenu by remember { mutableStateOf(false) }
+            Box {
+                IconButton(onClick = { showTypeMenu = true }) {
+                    Icon(typeIcon(typeValue), contentDescription = typeLabel(typeValue))
+                }
+                AukDropdownMenu(
+                    expanded = showTypeMenu,
+                    onDismissRequest = { showTypeMenu = false }
+                ) {
+                    typeOptions.forEach { option ->
+                        AukDropdownMenuItem(
+                            text = { Text(typeLabel(option)) },
+                            leadingIcon = { Icon(typeIcon(option), null) },
+                            onClick = {
+                                onTypeChange(option)
+                                showTypeMenu = false
+                            }
+                        )
+                    }
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -622,7 +617,7 @@ fun EditField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    icon: ImageVector,
+    leadingIcon: @Composable () -> Unit,
     onDelete: () -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
@@ -635,7 +630,7 @@ fun EditField(
             onValueChange = onValueChange,
             label = { Text(label) },
             modifier = Modifier.weight(1f),
-            leadingIcon = { Icon(icon, null) },
+            leadingIcon = leadingIcon,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
         IconButton(
