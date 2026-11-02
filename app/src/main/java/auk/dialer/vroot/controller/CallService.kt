@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import auk.dialer.vroot.controller.util.decodeSampledBitmap
 import android.graphics.Color
@@ -30,6 +31,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.android.ext.android.inject
 
 data class CallSession(
@@ -226,6 +229,13 @@ class CallService : InCallService() {
                     updateNotification(currentCall)
                 }
             }
+        }
+        // Starting the service in the foreground with the microphone type is what lets the app keep
+        // capturing once the call screen is left: without it, Android hands it silence.
+        serviceScope.launch {
+            combine(CallRecorder.isStarting, CallRecorder.isRecording) { starting, recording -> starting || recording }
+                .distinctUntilChanged()
+                .collect { _currentCallSession.value?.call?.let { updateNotification(it) } }
         }
     }
 
@@ -731,7 +741,18 @@ class CallService : InCallService() {
         }
 
         val notification = builder.build()
-        startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+        val phoneCall = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+        if (CallRecorder.usesMicrophone() && CallRecorder.hasPermission(this)) {
+            // Android grants the microphone type only while the app is in sight, as when the user
+            // taps record on the call screen; a recording started out of sight goes on without it.
+            try {
+                startForeground(NOTIFICATION_ID, notification, phoneCall or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+                return
+            } catch (e: SecurityException) {
+                if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "updateNotification: microphone type refused", e)
+            }
+        }
+        startForeground(NOTIFICATION_ID, notification, phoneCall)
     }
 
     private fun cancelNotification() {

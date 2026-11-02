@@ -48,8 +48,11 @@ object CallRecorder {
      * take a couple of seconds now that each source gets checked for real signal, so
      * a second tap in that window used to launch a second, competing attempt at the
      * same file. */
-    @Volatile
-    private var attemptInProgress = false
+    private val _isStarting = MutableStateFlow(false)
+    val isStarting = _isStarting.asStateFlow()
+
+    /** A recording is starting or under way: the app's own capture needs the microphone. */
+    fun usesMicrophone(): Boolean = _isStarting.value || _isRecording.value
 
     private val audioSources = listOf(
         MediaRecorder.AudioSource.VOICE_CALL,
@@ -169,9 +172,9 @@ object CallRecorder {
     }
 
     fun start(context: Context, label: String) {
-        if (_isRecording.value || attemptInProgress) return
+        if (_isRecording.value || _isStarting.value) return
         if (!canStart(context)) return
-        attemptInProgress = true
+        _isStarting.value = true
 
         val safeLabel = label
             .replace(Regex("[^\\p{L}\\p{N}+_-]"), "_")
@@ -218,8 +221,9 @@ object CallRecorder {
 
                     capture = opened
                     currentFile = file
-                    attemptInProgress = false
+                    // Recording before no longer starting, so the microphone is never seen as released.
                     _isRecording.value = true
+                    _isStarting.value = false
                     return@launch
                 } catch (e: Exception) {
                     if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "source=${attempt.name} rejected: ${e.message}")
@@ -228,7 +232,7 @@ object CallRecorder {
                 }
             }
             if (attemptId == thisAttempt) {
-                attemptInProgress = false
+                _isStarting.value = false
                 if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, "no source produced a signal")
             }
         }
@@ -236,7 +240,7 @@ object CallRecorder {
 
     fun stop(): File? {
         attemptId++
-        attemptInProgress = false
+        _isStarting.value = false
         val active = capture ?: run {
             _isRecording.value = false
             return null
