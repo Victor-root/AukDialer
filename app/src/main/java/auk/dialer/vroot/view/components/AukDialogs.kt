@@ -102,6 +102,9 @@ data class AukDialogAction(
 )
 
 private val DialogMaxWidth = 560.dp
+// Kept small on both sides: on a phone the lists inside need the width more than the margins do.
+private val DialogScreenMargin = 16.dp
+private val DialogContentPadding = 16.dp
 private val DialogActionHeight = 52.dp
 private val DialogHeaderTileSize = 64.dp
 private val DialogHeaderIconSize = 32.dp
@@ -177,7 +180,7 @@ fun AukDialog(
                     }
                 )
                 .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(24.dp),
+                .padding(horizontal = DialogScreenMargin, vertical = 24.dp),
             contentAlignment = Alignment.Center
         ) {
             val destructive = confirmAction?.destructive == true
@@ -268,7 +271,7 @@ fun AukDialog(
                             .fillMaxWidth()
                             .weight(1f, fill = false)
                             .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                            .padding(horizontal = DialogContentPadding, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         content = content
@@ -278,7 +281,7 @@ fun AukDialog(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 4.dp),
+                                .padding(horizontal = DialogContentPadding, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -301,7 +304,7 @@ fun AukDialog(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 4.dp),
+                                .padding(horizontal = DialogContentPadding, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -613,7 +616,7 @@ fun AukSelectionRow(
         contentColor = content
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (preview != null) {
@@ -631,7 +634,7 @@ fun AukSelectionRow(
                         preview()
                     }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
             } else if (icon != null) {
                 Surface(
                     modifier = Modifier.size(SelectionTileSize),
@@ -647,7 +650,7 @@ fun AukSelectionRow(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
             }
 
             Column(modifier = Modifier.weight(1f)) {

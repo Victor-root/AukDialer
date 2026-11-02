@@ -64,6 +64,7 @@
     <string name="sim_slot_1">SIM 1</string>
     <string name="sim_slot_2">SIM 2</string>
     <string name="brand_whatsapp">WhatsApp</string>
+    <string name="brand_google">Google</string>
     <string name="brand_telegram">Telegram</string>
     <string name="brand_signal">Signal</string>
     <string name="brand_google_meet">Google Meet</string>

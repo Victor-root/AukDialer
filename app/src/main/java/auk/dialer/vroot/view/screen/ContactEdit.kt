@@ -382,12 +382,18 @@ fun ContactEditScreen(
                             ""
                         }
 
-                        val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc) {
+                        val googleTitle = stringResource(R.string.brand_google)
+
+                        val accountOptions = remember(availableAccounts, privateTitle, localTitle, localDesc, googleTitle) {
                             listOf(
                                 "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
                                 "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
                             ) + availableAccounts.map { acc ->
-                                acc.name to Triple(ContactUtils.getFriendlyAccountName(context, acc), acc.name, ContactUtils.getAccountIcon(acc))
+                                // The service as the title and the account under it, once: a Google
+                                // account's friendly name is its address, which then filled three lines twice.
+                                val label = if (acc.type == "com.google") googleTitle else ContactUtils.getFriendlyAccountName(context, acc)
+                                val supporting = acc.name.takeIf { it != label }.orEmpty()
+                                acc.name to Triple(label, supporting, ContactUtils.getAccountIcon(acc))
                             }
                         }
 
