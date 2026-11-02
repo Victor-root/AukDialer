@@ -25,7 +25,10 @@ val appModule = module {
             AukDatabase::class.java,
             "auk_database"
         ).allowMainThreadQueries()
-            .fallbackToDestructiveMigration()
+            // No destructive fallback: private contacts exist only in this database, and a version
+            // bump without its Migration would silently erase them all on update. Each new version
+            // must come with its Migration (see the exported schemas in app/schemas).
+            .addMigrations(*AukDatabase.MIGRATIONS)
             .build()
     }
     single { get<AukDatabase>().privateContactDao() }

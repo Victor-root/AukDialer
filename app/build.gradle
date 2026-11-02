@@ -210,3 +210,8 @@ dependencies {
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
 }
+
+// Room writes each database version's schema here, so a Migration can be checked against it.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
