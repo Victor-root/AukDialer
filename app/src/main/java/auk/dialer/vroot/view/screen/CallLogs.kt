@@ -88,7 +88,7 @@ fun CallLogFullScreen(
         if (contactId == null && phoneNumber == null) allLogs
         else allLogs.filter { log ->
             (contactId != null && contactId != "null" && log.contactId == contactId) || 
-            (phoneNumber != null && log.number.replace(" ", "").contains(phoneNumber.replace(" ", "")))
+            (phoneNumber != null && areNumbersEqual(log.number, phoneNumber))
         }
     }
 

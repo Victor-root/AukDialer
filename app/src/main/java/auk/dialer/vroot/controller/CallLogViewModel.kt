@@ -7,6 +7,9 @@ import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.data.CallLogFilter
 import auk.dialer.vroot.modal.data.groupedConsecutive
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,11 +40,14 @@ class CallLogViewModel(
     private val _selectedFilter = MutableStateFlow(CallLogFilter.All)
     val selectedFilter = _selectedFilter.asStateFlow()
 
+    // The system writes the log several times as a call ends: those changes are taken as one.
     private val contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-            fetchLogs()
+            reload(CHANGE_DEBOUNCE_MS)
         }
     }
+
+    private var fetchJob: Job? = null
 
     init {
         try {
@@ -64,16 +70,26 @@ class CallLogViewModel(
         _selectedFilter.value = newFilter
     }
 
-    fun fetchLogs() {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun fetchLogs() = reload(0)
+
+    /** One load at a time, the latest: an older one finishing last would bring back deleted calls. */
+    private fun reload(debounceMs: Long) {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(debounceMs)
             if (_allCallLogs.value.isEmpty()) {
                 _isLoading.value = true
             }
             val calls = callLogRepo.getCalls()
+            ensureActive()
             _allCalls.value = calls
             _allCallLogs.value = calls.groupedConsecutive()
             _isLoading.value = false
         }
+    }
+
+    private companion object {
+        const val CHANGE_DEBOUNCE_MS = 250L
     }
 
     fun deleteCallLog(number: String) {

@@ -1,6 +1,9 @@
 package auk.dialer.vroot.modal.data
 
 import kotlinx.serialization.Serializable
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Serializable
 data class CallLogEntry(
@@ -21,15 +24,18 @@ data class CallLogEntry(
 }
 
 /**
- * Folds back-to-back calls with the same number into one row, the newest call's, which carries the
- * types and ids of all of them. For the recents list only: anything that shows, deletes or saves
- * individual calls works on the calls themselves.
+ * Folds back-to-back calls with the same number on the same day into one row, the newest call's,
+ * which carries the types and ids of all of them. A row never spans days: the list files each row
+ * under its day, which would hide the earlier calls under a later date. For the recents list only:
+ * anything that shows, deletes or saves individual calls works on the calls themselves.
  */
 fun List<CallLogEntry>.groupedConsecutive(): List<CallLogEntry> {
+    val zone = ZoneId.systemDefault()
+    fun dayOf(entry: CallLogEntry): LocalDate = Instant.ofEpochMilli(entry.date).atZone(zone).toLocalDate()
     val grouped = mutableListOf<CallLogEntry>()
     for (call in this) {
         val last = grouped.lastOrNull()
-        if (last != null && last.number == call.number) {
+        if (last != null && last.number == call.number && dayOf(last) == dayOf(call)) {
             grouped[grouped.lastIndex] = last.copy(types = last.types + call.types, ids = last.ids + call.ids)
         } else {
             grouped += call

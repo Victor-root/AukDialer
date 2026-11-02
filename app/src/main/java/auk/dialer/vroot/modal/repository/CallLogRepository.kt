@@ -14,7 +14,7 @@ import auk.dialer.vroot.modal.`interface`.ICallLogRepository
 import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.modal.data.Contact
-import auk.dialer.vroot.controller.util.normalizePhoneNumber
+import auk.dialer.vroot.controller.util.phoneLookupKey
 
 class CallLogRepository(
     private val contentResolver: ContentResolver,
@@ -33,9 +33,7 @@ class CallLogRepository(
         val contactMap = mutableMapOf<String, Contact>()
         allContacts.forEach { contact ->
             contact.phoneNumbers.forEach { number ->
-                val normalized = normalizePhoneNumber(number)
-                val key = if (normalized.length >= 10) normalized.takeLast(10) else normalized
-                contactMap[key] = contact
+                contactMap[phoneLookupKey(number)] = contact
             }
         }
 
@@ -171,9 +169,7 @@ class CallLogRepository(
 
             if (simLabel?.isEmpty() == true) simLabel = null
 
-            val normalizedNum = normalizePhoneNumber(number)
-            val lookupKey = if (normalizedNum.length >= 10) normalizedNum.takeLast(10) else normalizedNum
-            val matchedContact = contactMap[lookupKey]
+            val matchedContact = contactMap[phoneLookupKey(number)]
             
             val displayName = matchedContact?.name ?: cursor.getString(cachedNameIdx)
             val photoUri = matchedContact?.photoUri ?: cursor.getString(cachedPhotoIdx)

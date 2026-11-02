@@ -135,6 +135,15 @@ fun normalizePhoneNumber(number: String): String {
 }
 
 /**
+ * The key both forms of one number share, +33 and 0 for a French line, to match a call to its
+ * contact. Without folding them first, "+33612345678" and "0612345678" never met.
+ */
+fun phoneLookupKey(number: String): String {
+    val normalized = normalizePhoneNumber(toNationalFrenchNumber(number))
+    return if (normalized.length >= 10) normalized.takeLast(10) else normalized
+}
+
+/**
  * Loose comparison, on purpose: it matches on the trailing digits, so the same
  * line stored as 0612345678 and received as +33612345678 counts as one number.
  * Its replacement, areSamePhoneNumber, needs a country code, is stricter about
