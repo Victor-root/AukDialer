@@ -184,7 +184,8 @@ class CallLogRepository(
 
             val matchedContact = if (number.isEmpty()) null else contactMap[phoneLookupKey(number)]
             
-            val displayName = hiddenLabel ?: matchedContact?.name ?: cursor.getString(cachedNameIdx)
+            // The system often stores an empty name for a number it could not name: no name, then.
+            val displayName = hiddenLabel ?: matchedContact?.name ?: cursor.getString(cachedNameIdx)?.takeIf { it.isNotBlank() }
             val photoUri = if (hiddenLabel != null) null else matchedContact?.photoUri ?: cursor.getString(cachedPhotoIdx)
             val contactId = if (hiddenLabel != null) null else matchedContact?.id ?: cursor.getString(cachedLookupIdx)?.let {
                 contactIdFromLookupUri(it)
