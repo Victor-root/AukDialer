@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -281,7 +282,7 @@ fun BatchActionBar(
                     Icon(Icons.Default.Close, stringResource(R.string.action_clear_selection))
                 }
                 Text(
-                    text = stringResource(R.string.selection_count_selected, selectedCount),
+                    text = pluralStringResource(R.plurals.selection_count_selected, selectedCount, selectedCount),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f).padding(start = 8.dp)

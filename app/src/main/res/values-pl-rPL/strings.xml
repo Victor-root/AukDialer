@@ -34,7 +34,12 @@
     <string name="content_desc_scroll_to_top">Przewiń na górę</string>
     <string name="sim_picker_title">Wybierz kartę SIM</string>
     <string name="sim_picker_unknown_sim">Nieznana karta SIM</string>
-    <string name="selection_count_selected">Zaznaczono: %1$d</string>
+    <plurals name="selection_count_selected">
+        <item quantity="one">Zaznaczono: %1$d</item>
+        <item quantity="few">Zaznaczono: %1$d</item>
+        <item quantity="many">Zaznaczono: %1$d</item>
+        <item quantity="other">Zaznaczono: %1$d</item>
+    </plurals>
     <string name="label_unknown">Nieznany</string>
     <string name="label_unknown_number">Nieznany numer</string>
     <string name="label_mobile">Komórkowy</string>
@@ -93,7 +98,12 @@
     <string name="call_history_with_contact">Historia z: %1$s</string>
     <string name="call_log_no_history_found">Nie znaleziono historii połączeń</string>
     <string name="call_log_no_filter_match">Brak połączeń pasujących do tego filtra</string>
-    <string name="call_log_delete_confirm">Czy na pewno chcesz usunąć %1$d zaznaczone wpisy z rejestru połączeń?</string>
+    <plurals name="call_log_delete_confirm">
+        <item quantity="one">Czy na pewno chcesz usunąć %1$d zaznaczone wpisy z rejestru połączeń?</item>
+        <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczone wpisy z rejestru połączeń?</item>
+        <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczone wpisy z rejestru połączeń?</item>
+        <item quantity="other">Czy na pewno chcesz usunąć %1$d zaznaczone wpisy z rejestru połączeń?</item>
+    </plurals>
     <string name="call_log_delete_title">Usuń rejestr połączeń</string>
     <string name="call_log_clear_all_title">Wyczyść cały rejestr</string>
     <string name="call_log_clear_all_confirm">Wyczyść wszystko</string>
@@ -496,7 +506,12 @@
     <string name="contact_unblock">Odblokuj kontakt</string>
     <string name="contact_unblock_supporting">Zezwalaj ponownie na połączenia z tego kontaktu</string>
     <string name="call_log_block_title">Zablokować numery?</string>
-    <string name="call_log_block_message">Połączenia z %1$d zaznaczonych wpisów zostaną zablokowane.</string>
+    <plurals name="call_log_block_message">
+        <item quantity="one">Połączenia z %1$d zaznaczonych wpisów zostaną zablokowane.</item>
+        <item quantity="few">Połączenia z %1$d zaznaczonych wpisów zostaną zablokowane.</item>
+        <item quantity="many">Połączenia z %1$d zaznaczonych wpisów zostaną zablokowane.</item>
+        <item quantity="other">Połączenia z %1$d zaznaczonych wpisów zostaną zablokowane.</item>
+    </plurals>
     <!-- Contact call screen background -->
     <string name="contact_call_background">Tło ekranu połączenia</string>
     <string name="contact_call_background_set">Wybrano niestandardowe zdjęcie</string>

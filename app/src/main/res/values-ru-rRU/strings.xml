@@ -34,7 +34,12 @@
     <string name="content_desc_scroll_to_top">Прокрутить вверх</string>
     <string name="sim_picker_title">Выберите SIM-карту</string>
     <string name="sim_picker_unknown_sim">Неизвестная SIM-карта</string>
-    <string name="selection_count_selected">%1$d Выбрано</string>
+    <plurals name="selection_count_selected">
+        <item quantity="one">%1$d Выбрано</item>
+        <item quantity="few">%1$d Выбрано</item>
+        <item quantity="many">%1$d Выбрано</item>
+        <item quantity="other">%1$d Выбрано</item>
+    </plurals>
     <string name="label_unknown">Неизвестно</string>
     <string name="label_unknown_number">Неизвестный номер</string>
     <string name="label_mobile">Мобильный</string>
@@ -93,7 +98,12 @@
     <string name="call_history_with_contact">История с %1$s</string>
     <string name="call_log_no_history_found">История вызовов не найдена</string>
     <string name="call_log_no_filter_match">Нет звонков, соответствующих этому фильтру</string>
-    <string name="call_log_delete_confirm">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</string>
+    <plurals name="call_log_delete_confirm">
+        <item quantity="one">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</item>
+        <item quantity="few">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</item>
+        <item quantity="many">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</item>
+        <item quantity="other">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</item>
+    </plurals>
     <string name="call_log_delete_title">Удалить журнал вызовов</string>
     <string name="call_log_clear_all_title">Очистить все журналы</string>
     <string name="call_log_clear_all_confirm">Очистить всё</string>
@@ -498,7 +508,12 @@
     <string name="contact_unblock">Разблокировать контакт</string>
     <string name="contact_unblock_supporting">Разрешить вызовы от этого контакта</string>
     <string name="call_log_block_title">Заблокировать номер?</string>
-    <string name="call_log_block_message">Заблокировать звонки от выбранных контактов (%1$d)</string>
+    <plurals name="call_log_block_message">
+        <item quantity="one">Заблокировать звонки от выбранных контактов (%1$d)</item>
+        <item quantity="few">Заблокировать звонки от выбранных контактов (%1$d)</item>
+        <item quantity="many">Заблокировать звонки от выбранных контактов (%1$d)</item>
+        <item quantity="other">Заблокировать звонки от выбранных контактов (%1$d)</item>
+    </plurals>
     <!-- Contact call screen background -->
     <string name="contact_call_background">Фон экрана вызова</string>
     <string name="contact_call_background_set">Выбрано пользовательское изображение</string>

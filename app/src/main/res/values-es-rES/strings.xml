@@ -34,7 +34,10 @@
     <string name="content_desc_scroll_to_top">Volver arriba</string>
     <string name="sim_picker_title">Seleccionar tarjeta SIM</string>
     <string name="sim_picker_unknown_sim">SIM desconocida</string>
-    <string name="selection_count_selected">%1$d seleccionado(s)</string>
+    <plurals name="selection_count_selected">
+        <item quantity="one">%1$d seleccionado(s)</item>
+        <item quantity="other">%1$d seleccionado(s)</item>
+    </plurals>
     <string name="label_unknown">Desconocido</string>
     <string name="label_unknown_number">Número desconocido</string>
     <string name="label_mobile">Móvil</string>
@@ -92,7 +95,10 @@
     <string name="call_history_with_contact">Historial con %1$s</string>
     <string name="call_log_no_history_found">No se encontró historial de llamadas</string>
     <string name="call_log_no_filter_match">Ninguna llamada coincide con este filtro</string>
-    <string name="call_log_delete_confirm">¿Está seguro que deseas eliminar %1$d registros de llamadas seleccionados?</string>
+    <plurals name="call_log_delete_confirm">
+        <item quantity="one">¿Está seguro que deseas eliminar %1$d registros de llamadas seleccionados?</item>
+        <item quantity="other">¿Está seguro que deseas eliminar %1$d registros de llamadas seleccionados?</item>
+    </plurals>
     <string name="call_log_delete_title">Borrar registros de llamadas</string>
     <string name="call_log_clear_all_title">Borrar todos los registros</string>
     <string name="call_log_clear_all_confirm">Borrar todo</string>

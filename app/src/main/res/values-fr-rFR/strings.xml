@@ -36,7 +36,10 @@
     <string name="sim_picker_unknown_sim">SIM inconnue</string>
     <string name="sim_slot_unknown_label">SIM %1$d (%2$s)</string>
     <string name="sim_slot_supporting">Emplacement %1$d</string>
-    <string name="selection_count_selected">%1$d sélectionné(s)</string>
+    <plurals name="selection_count_selected">
+        <item quantity="one">%1$d sélectionné</item>
+        <item quantity="other">%1$d sélectionnés</item>
+    </plurals>
     <string name="label_unknown">Inconnu</string>
     <string name="label_unknown_number">Numéro inconnu</string>
     <string name="label_mobile">Mobile</string>
@@ -101,7 +104,10 @@
     <string name="call_history_with_contact">Historique avec %1$s</string>
     <string name="call_log_no_history_found">Aucun historique d’appels trouvé</string>
     <string name="call_log_no_filter_match">Aucun appel ne correspond à ce filtre</string>
-    <string name="call_log_delete_confirm">Voulez-vous vraiment supprimer les %1$d journaux d’appels sélectionnés ?</string>
+    <plurals name="call_log_delete_confirm">
+        <item quantity="one">Voulez-vous vraiment supprimer %1$d journal d’appel sélectionné ?</item>
+        <item quantity="other">Voulez-vous vraiment supprimer les %1$d journaux d’appels sélectionnés ?</item>
+    </plurals>
     <string name="call_log_delete_title">Supprimer les journaux d’appels</string>
     <string name="call_log_clear_all_title">Effacer tous les journaux</string>
     <string name="call_log_clear_all_confirm">Tout effacer</string>
@@ -608,7 +614,10 @@
     <string name="contact_unblock">Débloquer le contact</string>
     <string name="contact_unblock_supporting">Autoriser à nouveau les appels de ce contact</string>
     <string name="call_log_block_title">Bloquer ces numéros ?</string>
-    <string name="call_log_block_message">Les appels des %1$d entrées sélectionnées seront bloqués.</string>
+    <plurals name="call_log_block_message">
+        <item quantity="one">Les appels de %1$d entrée sélectionnée seront bloqués.</item>
+        <item quantity="other">Les appels des %1$d entrées sélectionnées seront bloqués.</item>
+    </plurals>
     <string name="blocked_select_title">Bloquer des numéros ou des contacts</string>
     <string name="blocked_select_or_enter_button">Sélectionner des contacts ou saisir un numéro</string>
     <string name="blocked_search_list_placeholder">Rechercher dans la liste des numéros bloqués...</string>

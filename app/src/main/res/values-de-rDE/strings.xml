@@ -34,7 +34,10 @@
     <string name="content_desc_scroll_to_top">Nach oben scrollen</string>
     <string name="sim_picker_title">SIM-Karte auswählen</string>
     <string name="sim_picker_unknown_sim">Unbekannte SIM-Karte</string>
-    <string name="selection_count_selected">%1$d Ausgewählt</string>
+    <plurals name="selection_count_selected">
+        <item quantity="one">%1$d Ausgewählt</item>
+        <item quantity="other">%1$d Ausgewählt</item>
+    </plurals>
     <string name="label_unknown">Unbekannt</string>
     <string name="label_unknown_number">Unbekannte Nummer</string>
     <string name="label_mobile">Mobil</string>
@@ -93,7 +96,10 @@
     <string name="call_history_with_contact">Verlauf mit %1$s</string>
     <string name="call_log_no_history_found">Keine Anrufliste gefunden</string>
     <string name="call_log_no_filter_match">Keine Anrufe unter diesem Filter</string>
-    <string name="call_log_delete_confirm">Sind Sie sicher, dass sie die ausgewählten %1$d Anruf-Einträge löschen wollen?</string>
+    <plurals name="call_log_delete_confirm">
+        <item quantity="one">Sind Sie sicher, dass sie die ausgewählten %1$d Anruf-Einträge löschen wollen?</item>
+        <item quantity="other">Sind Sie sicher, dass sie die ausgewählten %1$d Anruf-Einträge löschen wollen?</item>
+    </plurals>
     <string name="call_log_delete_title">Anrufliste löschen</string>
     <string name="call_log_clear_all_title">Alle Listen leeren</string>
     <string name="call_log_clear_all_confirm">Alles leeren</string>
@@ -496,7 +502,10 @@
     <string name="contact_unblock">Kontakt  nicht mehr blockieren</string>
     <string name="contact_unblock_supporting">Anrufe von diesem Kontakt wieder zulassen</string>
     <string name="call_log_block_title">Nummer blockieren?</string>
-    <string name="call_log_block_message">Anrufe der %1$d ausgewählten Einträge werden blockiert.</string>
+    <plurals name="call_log_block_message">
+        <item quantity="one">Anrufe der %1$d ausgewählten Einträge werden blockiert.</item>
+        <item quantity="other">Anrufe der %1$d ausgewählten Einträge werden blockiert.</item>
+    </plurals>
     <!-- Contact call screen background -->
     <string name="contact_call_background">Hintergrund des Anrufbildschirms</string>
     <string name="contact_call_background_set">Ausgewähltes individuelles Bild</string>

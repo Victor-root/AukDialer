@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.formatDate
@@ -236,7 +237,7 @@ fun BatchCallLogActionBar(
                     Icon(Icons.Default.Close, stringResource(R.string.action_clear_selection))
                 }
                 Text(
-                    text = stringResource(R.string.selection_count_selected, selectedCount),
+                    text = pluralStringResource(R.plurals.selection_count_selected, selectedCount, selectedCount),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f).padding(start = 8.dp)
@@ -266,7 +267,7 @@ fun BatchCallLogActionBar(
             onDismissRequest = { showDeleteConfirm = false },
             onConfirm = onDelete,
             title = stringResource(R.string.call_log_delete_title),
-            message = stringResource(R.string.call_log_delete_confirm, selectedCount),
+            message = pluralStringResource(R.plurals.call_log_delete_confirm, selectedCount, selectedCount),
             confirmLabel = stringResource(R.string.action_delete),
             dismissLabel = stringResource(R.string.action_cancel),
             icon = Icons.Default.Delete,
@@ -279,7 +280,7 @@ fun BatchCallLogActionBar(
             onDismissRequest = { showBlockConfirm = false },
             onConfirm = onBlock,
             title = stringResource(R.string.call_log_block_title),
-            message = stringResource(R.string.call_log_block_message, selectedCount),
+            message = pluralStringResource(R.plurals.call_log_block_message, selectedCount, selectedCount),
             confirmLabel = stringResource(R.string.action_block),
             dismissLabel = stringResource(R.string.action_cancel),
             icon = Icons.Default.Block,
