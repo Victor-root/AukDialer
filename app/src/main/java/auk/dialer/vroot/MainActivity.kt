@@ -167,6 +167,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * The contact a link from another app points to. Its last number is not always the contact's id:
+     * a link to one of the contact's numbers or to one account's copy of the contact ends with the
+     * id of that row instead, which belongs to some other contact. The contacts provider says which
+     * contact the row belongs to.
+     */
+    private fun resolveContactId(uri: android.net.Uri): String? {
+        if (uri.authority == ContactsContract.AUTHORITY) {
+            val column = when (uri.pathSegments.firstOrNull()) {
+                "raw_contacts", "data" -> ContactsContract.Data.CONTACT_ID
+                else -> ContactsContract.Contacts._ID
+            }
+            try {
+                contentResolver.query(uri, arrayOf(column), null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst() && !cursor.isNull(0)) return cursor.getLong(0).toString()
+                }
+            } catch (e: Exception) {
+                if (BuildConfig.DEBUG_TOOLS) Log.d("AukIntent", "contact link not resolved: $uri", e)
+            }
+        }
+        return uri.lastPathSegment
+    }
+
     private fun handleIntent(intent: Intent?, navController: androidx.navigation.NavController) {
         intent ?: return
         val data = intent.data
@@ -187,7 +210,7 @@ class MainActivity : ComponentActivity() {
                         navController.navigate(DialPadScreenDestination(initialNumber = number).route)
                     }
                 } else if (data?.toString()?.contains("contacts") == true || data?.toString()?.contains("com.android.contacts") == true || intent.hasExtra("contact_id")) {
-                    val id = data?.lastPathSegment ?: intent.getStringExtra("contact_id")
+                    val id = data?.let { resolveContactId(it) } ?: intent.getStringExtra("contact_id")
                     if (id != null) {
                         navController.navigate(ContactDetailsScreenDestination(contactId = id).route)
                     }
