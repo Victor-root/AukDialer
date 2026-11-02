@@ -1193,36 +1193,14 @@ class ContactsRepository(
     override fun importPrivateContacts(uri: Uri) {
         try {
             val content = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: return
-            val vCards = content.split("BEGIN:VCARD")
-            vCards.forEach { vCard ->
-                if (vCard.isBlank()) return@forEach
-                var name = ""
-                val numbers = mutableListOf<String>()
-                val emails = mutableListOf<String>()
-                
-                vCard.lines().forEach { line ->
-                    when {
-                        line.startsWith("FN:") -> name = line.substring(3)
-                        line.startsWith("TEL") -> {
-                            val parts = line.split(":")
-                            if (parts.size > 1) numbers.add(parts[1])
-                        }
-                        line.startsWith("EMAIL") -> {
-                            val parts = line.split(":")
-                            if (parts.size > 1) emails.add(parts[1])
-                        }
-                    }
-                }
-                
-                if (name.isNotBlank() || numbers.isNotEmpty()) {
-                    saveContact(Contact(
-                        id = "0",
-                        name = if (name.isBlank()) numbers.firstOrNull() ?: unknownLabel else name,
-                        phoneNumbers = numbers,
-                        emails = emails,
-                        isPrivate = true
-                    ))
-                }
+            auk.dialer.vroot.controller.util.VCardReader.parse(content).forEach { entry ->
+                saveContact(Contact(
+                    id = "0",
+                    name = entry.name.ifBlank { entry.phoneNumbers.firstOrNull() ?: unknownLabel },
+                    phoneNumbers = entry.phoneNumbers,
+                    emails = entry.emails,
+                    isPrivate = true
+                ))
             }
         } catch (e: Exception) {
             e.printStackTrace()

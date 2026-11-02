@@ -1,5 +1,6 @@
 package auk.dialer.vroot.controller
 
+import auk.dialer.vroot.controller.util.VCardReader
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -64,40 +65,16 @@ class BackupViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                        var currentName = ""
-                        val currentNumbers = mutableListOf<String>()
-                        val currentEmails = mutableListOf<String>()
-
-                        while (true) {
-                            val line = reader.readLine() ?: break
-                            when {
-                                line.startsWith("FN:") -> currentName = line.substring(3)
-                                line.startsWith("TEL") -> {
-                                    val parts = line.split(":")
-                                    if (parts.size > 1) currentNumbers.add(parts[1])
-                                }
-                                line.startsWith("EMAIL") -> {
-                                    val parts = line.split(":")
-                                    if (parts.size > 1) currentEmails.add(parts[1])
-                                }
-                                line.startsWith("END:VCARD") -> {
-                                    if (currentName.isNotEmpty()) {
-                                        contactsRepo.saveContact(
-                                            Contact(
-                                                id = "0",
-                                                name = currentName,
-                                                phoneNumbers = currentNumbers.toList(),
-                                                emails = currentEmails.toList()
-                                            )
-                                        )
-                                    }
-                                    currentName = ""
-                                    currentNumbers.clear()
-                                    currentEmails.clear()
-                                }
-                            }
-                        }
+                    val text = BufferedReader(InputStreamReader(inputStream)).use { it.readText() }
+                    VCardReader.parse(text).forEach { entry ->
+                        contactsRepo.saveContact(
+                            Contact(
+                                id = "0",
+                                name = entry.name.ifBlank { entry.phoneNumbers.first() },
+                                phoneNumbers = entry.phoneNumbers,
+                                emails = entry.emails
+                            )
+                        )
                     }
                 }
                 _status.value = context.getString(R.string.backup_contacts_import_success)
