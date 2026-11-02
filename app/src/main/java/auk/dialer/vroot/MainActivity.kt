@@ -207,7 +207,7 @@ class MainActivity : ComponentActivity() {
                     if (action == Intent.ACTION_CALL && isAlreadyDefaultDialer(this) && !isSecretOrImei) {
                         makeCall(this, number)
                     } else {
-                        navController.navigate(DialPadScreenDestination(initialNumber = number).route)
+                        navController.navigate(DialPadScreenDestination(initialNumber = number, openedByOtherApp = true).route)
                     }
                 } else if (data?.toString()?.contains("contacts") == true || data?.toString()?.contains("com.android.contacts") == true || intent.hasExtra("contact_id")) {
                     val id = data?.let { resolveContactId(it) } ?: intent.getStringExtra("contact_id")
@@ -216,7 +216,7 @@ class MainActivity : ComponentActivity() {
                     }
                 } else if (action == Intent.ACTION_DIAL && data == null) {
                     // "Add call" from the call screen, or another app opening the dialer empty.
-                    navController.navigate(DialPadScreenDestination().route)
+                    navController.navigate(DialPadScreenDestination(openedByOtherApp = true).route)
                 }
             }
             Intent.ACTION_INSERT -> {

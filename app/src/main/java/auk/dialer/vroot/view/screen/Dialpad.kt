@@ -91,7 +91,8 @@ import auk.dialer.vroot.controller.util.withoutAccents
 fun DialPadScreen(
     navController: NavController,
     navigator: DestinationsNavigator,
-    initialNumber: String? = null
+    initialNumber: String? = null,
+    openedByOtherApp: Boolean = false
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -107,6 +108,21 @@ fun DialPadScreen(
 
     BackHandler(enabled = number.isNotEmpty()) {
         textFieldValue = TextFieldValue("")
+    }
+
+    // Opened by a tel: link or another app, Back goes back there in one press, as it does with
+    // other phone apps, instead of clearing the number and then showing this app's home screen.
+    BackHandler(enabled = openedByOtherApp) {
+        val activity = context as? android.app.Activity
+        navigator.navigateUp()
+        if (activity != null) {
+            val inOwnTask = activity.getSystemService(android.app.ActivityManager::class.java)
+                .appTasks.any { it.taskInfo.taskId == activity.taskId }
+            // A copy stacked for this link (over the other app's screen, or over this app's
+            // own) closes; this app's own window then steps aside, kept as the user left it.
+            if (!activity.isTaskRoot) activity.finish()
+            if (inOwnTask) activity.moveTaskToBack(true)
+        }
     }
 
     val onDigitClick = { digit: String ->
