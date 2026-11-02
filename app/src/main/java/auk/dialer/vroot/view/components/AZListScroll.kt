@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +30,9 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import auk.dialer.vroot.controller.util.indexLetter
 
@@ -50,9 +54,14 @@ fun AZListScroll(
     val hapticScrollEnabled = prefs.getBoolean(PreferenceManager.KEY_HAPTIC_LIST_SCROLL, false)
     val displayOrder = remember(settingsState) { prefs.getInt(PreferenceManager.KEY_CONTACT_DISPLAY_ORDER, 0) }
 
+    // Followed outside composition: reading the first visible item here recomposed the whole list
+    // on every row scrolled past.
     if (hapticScrollEnabled) {
-        LaunchedEffect(listState.firstVisibleItemIndex) {
-            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .distinctUntilChanged()
+                .drop(1)
+                .collect { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove) }
         }
     }
 
@@ -170,6 +179,8 @@ fun AZListScroll(
                 .align(Alignment.CenterEnd)
                 .padding(end = 4.dp),
             onLetterSelected = { char ->
+                // A drag reports every move: only a new letter scrolls.
+                if (char == draggingChar) return@AlphabetSideBar
                 draggingChar = char
                 val index = alphabetIndices[char] ?: return@AlphabetSideBar
                 scope.launch { listState.scrollToItem(index) }
@@ -207,30 +218,38 @@ fun AlphabetSideBar(
     onDragEnd: () -> Unit
 ) {
     var columnHeight by remember { mutableStateOf(0) }
-    
+    val verticalPadding = 8.dp
+
     Surface(
         modifier = modifier
             .width(24.dp)
             .wrapContentHeight()
             .onGloballyPositioned { columnHeight = it.size.height }
             .pointerInput(alphabet) {
-                detectVerticalDragGestures(
-                    onDragStart = { offset ->
-                        if (columnHeight > 0) {
-                            val itemHeight = columnHeight.toFloat() / alphabet.size
-                            val index = (offset.y / itemHeight).toInt()
-                            val char = alphabet.getOrNull(index.coerceIn(0, alphabet.lastIndex))
-                            if (char != null) onLetterSelected(char)
+                // The letter under y, measured on the letters alone, without the bar's own padding.
+                fun letterAt(y: Float): Char? {
+                    val padding = verticalPadding.toPx()
+                    val lettersHeight = columnHeight - 2 * padding
+                    if (lettersHeight <= 0f || alphabet.isEmpty()) return null
+                    val index = ((y - padding) / (lettersHeight / alphabet.size)).toInt()
+                    return alphabet[index.coerceIn(0, alphabet.lastIndex)]
+                }
+                coroutineScope {
+                    // A plain tap jumps too: a drag only starts once the finger has moved.
+                    launch {
+                        detectTapGestures { offset ->
+                            letterAt(offset.y)?.let(onLetterSelected)
+                            onDragEnd()
                         }
-                    },
-                    onDragEnd = { onDragEnd() },
-                    onDragCancel = { onDragEnd() }
-                ) { change, _ ->
-                    if (columnHeight > 0) {
-                        val itemHeight = columnHeight.toFloat() / alphabet.size
-                        val index = (change.position.y / itemHeight).toInt()
-                        val char = alphabet.getOrNull(index.coerceIn(0, alphabet.lastIndex))
-                        if (char != null) onLetterSelected(char)
+                    }
+                    launch {
+                        detectVerticalDragGestures(
+                            onDragStart = { offset -> letterAt(offset.y)?.let(onLetterSelected) },
+                            onDragEnd = { onDragEnd() },
+                            onDragCancel = { onDragEnd() }
+                        ) { change, _ ->
+                            letterAt(change.position.y)?.let(onLetterSelected)
+                        }
                     }
                 }
             },
@@ -238,7 +257,7 @@ fun AlphabetSideBar(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 8.dp),
+            modifier = Modifier.padding(vertical = verticalPadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
