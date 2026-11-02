@@ -662,6 +662,7 @@
     <string name="settings_call_default_background_change">Modifier</string>
     <string name="settings_group_work_in_progress">En cours de développement</string>
     <string name="settings_call_recording">Enregistrement des appels</string>
+    <string name="call_recording_microphone_denied">L’enregistrement a besoin d’accéder au micro</string>
     <string name="settings_call_recording_supporting">Affiche un bouton d’enregistrement pendant les appels</string>
     <string name="settings_call_recording_auto">Enregistrer tous les appels</string>
     <string name="settings_call_recording_auto_supporting">Démarre l’enregistrement dès qu’un appel est connecté</string>

@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.PowerManager
 import android.telecom.Call
+import android.telecom.CallAudioState
 import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -74,7 +75,8 @@ class CallActivity : ComponentActivity() {
         if (CallService.allCalls.value.none { it.details.state != Call.STATE_DISCONNECTED } &&
             CallService.currentCallSession.value == null
         ) {
-            finish()
+            // A late tap on a notification: leave as a finished call does, without lighting the screen.
+            dismissCallScreen()
             return
         }
 
@@ -130,6 +132,15 @@ class CallActivity : ComponentActivity() {
                     }
                 }
 
+                // Only held against the ear: on speaker, Bluetooth or a headset the screen has to
+                // stay usable whatever comes near it.
+                val audioRoute = audioState?.route
+                LaunchedEffect(callState, audioRoute, settingsState) {
+                    val inCall = callState == Call.STATE_ACTIVE || callState == Call.STATE_DIALING
+                    val atEar = audioRoute == null || audioRoute == CallAudioState.ROUTE_EARPIECE
+                    if (inCall && atEar) acquireProximityLock() else releaseProximityLock()
+                }
+
                 LaunchedEffect(callState, settingsState) {
                     val keepScreenOn =
                         preferenceManager.getBoolean(PreferenceManager.KEY_KEEP_SCREEN_ON, true)
@@ -149,36 +160,14 @@ class CallActivity : ComponentActivity() {
                                     HapticFeedbackConstants.CONFIRM
                                 )
                             }
-                            if (preferenceManager.getBoolean(
-                                    PreferenceManager.KEY_PROXIMITY_SENSOR,
-                                    true
-                                )
-                            ) {
-                                acquireProximityLock()
-                            } else {
-                                releaseProximityLock()
-                            }
-                        }
-
-                        Call.STATE_DIALING -> {
-                            if (preferenceManager.getBoolean(
-                                    PreferenceManager.KEY_PROXIMITY_SENSOR,
-                                    true
-                                )
-                            ) {
-                                acquireProximityLock()
-                            } else {
-                                releaseProximityLock()
-                            }
                         }
 
                         Call.STATE_DISCONNECTED -> {
-                            releaseProximityLock()
                             delay(1200)
                             dismissCallScreen()
                         }
 
-                        else -> releaseProximityLock()
+                        else -> Unit
                     }
 
                     if (session == null) {

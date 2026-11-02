@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -12,6 +13,9 @@ import android.telecom.CallAudioState
 import android.telecom.VideoProfile
 import android.util.Log
 import android.view.HapticFeedbackConstants
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -120,6 +124,19 @@ fun ExpressiveCallScreen(
 
     val preferenceManager = koinInject<PreferenceManager>()
     val contactsRepo = koinInject<IContactsRepository>()
+
+    val recordingLabel = contactName.ifBlank { phoneNumber }
+    val microphoneDeniedText = stringResource(R.string.call_recording_microphone_denied)
+    // Asked when recording is tapped without the microphone and without Shizuku to capture instead.
+    val microphonePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            CallRecorder.start(context, recordingLabel)
+        } else {
+            Toast.makeText(context, microphoneDeniedText, Toast.LENGTH_LONG).show()
+        }
+    }
     val telecomManager = remember { context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager }
     
     val allCalls by CallService.allCalls.collectAsState()
@@ -483,10 +500,9 @@ fun ExpressiveCallScreen(
             onAudioClick = {
                 if (hasBluetooth) showAudioPicker = true else CallService.cycleAudioRoute()
             },
+            // Telecom holds this call itself once the second one is placed: holding it here left it
+            // on hold whenever the user came back without dialing.
             onAddCall = {
-                if (callState != Call.STATE_HOLDING) {
-                    try { call.hold() } catch (e: Exception) {}
-                }
                 try { context.startActivity(Intent(Intent.ACTION_DIAL)) } catch (e: Exception) {}
             },
             onToggleHold = {
@@ -496,10 +512,10 @@ fun ExpressiveCallScreen(
             },
             onMessage = { openMessageToCaller() },
             onToggleRecording = {
-                if (isRecording) {
-                    CallRecorder.stop()
-                } else {
-                    CallRecorder.start(context, contactName.ifBlank { phoneNumber })
+                when {
+                    isRecording -> CallRecorder.stop()
+                    CallRecorder.canStart(context) -> CallRecorder.start(context, recordingLabel)
+                    else -> microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                 }
             },
             onEndCall = { try { call.disconnect() } catch (e: Exception) {} }
@@ -980,6 +996,10 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                                 }
                             }
                         },
+                        // An interrupted gesture (system gesture, second finger) puts the handle back.
+                        onDragCancel = {
+                            coroutineScope.launch { offsetX.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMedium)) }
+                        },
                         onHorizontalDrag = { change, dragAmount ->
                             change.consume()
                             coroutineScope.launch { 
@@ -1142,6 +1162,10 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                                         else -> offsetY.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMedium))
                                     }
                                 }
+                            },
+                            // An interrupted gesture (system gesture, second finger) puts the handle back.
+                            onDragCancel = {
+                                coroutineScope.launch { offsetY.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMedium)) }
                             },
                             onVerticalDrag = { change, dragAmount ->
                                 change.consume()
@@ -1318,6 +1342,10 @@ fun IPhoneSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit, onMessage: 
                                         offsetX.animateTo(0f, spring(dampingRatio = 0.8f))
                                     }
                                 }
+                            },
+                            // An interrupted gesture (system gesture, second finger) puts the handle back.
+                            onDragCancel = {
+                                coroutineScope.launch { offsetX.animateTo(0f, spring(dampingRatio = 0.8f)) }
                             },
                             onHorizontalDrag = { change, dragAmount ->
                                 change.consume()

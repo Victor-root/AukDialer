@@ -162,11 +162,15 @@ object CallRecorder {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    /** Whether a recording can start: the app holds the microphone, or Shizuku captures under its own grant. */
+    fun canStart(context: Context): Boolean {
+        ShizukuBridge.refresh()
+        return hasPermission(context) || ShizukuBridge.status.value == ShizukuBridge.Status.Ready
+    }
+
     fun start(context: Context, label: String) {
         if (_isRecording.value || attemptInProgress) return
-        // Through Shizuku, the capture runs under the shell's own grant rather than the app's.
-        ShizukuBridge.refresh()
-        if (!hasPermission(context) && ShizukuBridge.status.value != ShizukuBridge.Status.Ready) return
+        if (!canStart(context)) return
         attemptInProgress = true
 
         val safeLabel = label
