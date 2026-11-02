@@ -474,14 +474,17 @@ class ContactsRepository(
 
         if (contact.id.isEmpty() || contact.id == "0") {
             val rawContactIndex = ops.size
-            ops.add(
-                ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+            val rawContactInsert = ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                .withValue(ContactsContract.RawContacts.STARRED, if (contact.isFavorite) 1 else 0)
+                .withValue(ContactsContract.RawContacts.CUSTOM_RINGTONE, contact.customRingtone)
+            // No account chosen: leave it unset so the system's default account applies. Spelling it
+            // out as null asks for the device itself, which is refused when the default is a cloud account.
+            if (contact.accountType != null || contact.accountName != null) {
+                rawContactInsert
                     .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountType)
                     .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountName)
-                    .withValue(ContactsContract.RawContacts.STARRED, if (contact.isFavorite) 1 else 0)
-                    .withValue(ContactsContract.RawContacts.CUSTOM_RINGTONE, contact.customRingtone)
-                    .build()
-            )
+            }
+            ops.add(rawContactInsert.build())
 
             ops.add(
                 ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
