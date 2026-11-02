@@ -117,13 +117,14 @@ fun DialPadScreen(
         textFieldValue = TextFieldValue(newText, newSelection)
     }
 
-    val toneGenerator = remember { ToneGenerator(AudioManager.STREAM_DTMF, 80) }
+    // Null when the audio service has no tone generator to spare: the keys then just stay silent.
+    val toneGenerator = remember { runCatching { ToneGenerator(AudioManager.STREAM_DTMF, 80) }.getOrNull() }
 
     DisposableEffect(Unit) {
         onDispose {
             // Release talks to the audio service over binder and can briefly block; running it on
             // a background thread keeps that off the screen's closing slide-down animation.
-            thread { toneGenerator.release() }
+            toneGenerator?.let { thread { it.release() } }
         }
     }
 
@@ -474,7 +475,8 @@ fun DialPadScreen(
                                                 onDigitClick("+")
                                             } else if (speedDialEnabled && number.isEmpty()) {
                                                 val mapping = prefs.getString("speed_dial_$digit", null)
-                                                val speedNumber = mapping?.split("|")?.getOrNull(1)
+                                                // The number is after the last "|": the name before it may hold one too.
+                                                val speedNumber = mapping?.takeIf { "|" in it }?.substringAfterLast("|")
                                                 if (speedNumber != null) {
                                                     callLauncher.dial(speedNumber, null)
                                                 }
@@ -658,7 +660,7 @@ fun DialerActionExpressive(
 fun DialPadKey(
     number: String,
     letters: String,
-    toneGenerator: ToneGenerator,
+    toneGenerator: ToneGenerator?,
     context: Context,
     onClick: (String) -> Unit,
     onLongClick: ((String) -> Unit)? = null
@@ -785,7 +787,7 @@ object T9Matcher {
     }
 }
 
-private fun playDtmf(key: String, toneGenerator: ToneGenerator) {
+private fun playDtmf(key: String, toneGenerator: ToneGenerator?) {
     val toneType = when (key) {
         "1" -> ToneGenerator.TONE_DTMF_1
         "2" -> ToneGenerator.TONE_DTMF_2
@@ -802,7 +804,7 @@ private fun playDtmf(key: String, toneGenerator: ToneGenerator) {
         else -> -1
     }
     if (toneType != -1) {
-        toneGenerator.startTone(toneType, 120)
+        toneGenerator?.startTone(toneType, 120)
     }
 }
 

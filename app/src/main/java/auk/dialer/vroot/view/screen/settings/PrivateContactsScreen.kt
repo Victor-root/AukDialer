@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatPhoneNumber
@@ -113,10 +114,7 @@ fun PrivateContactsScreen(
         if (searchQuery.isBlank()) {
             privateContacts
         } else {
-            privateContacts.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.phoneNumbers.any { num -> num.contains(searchQuery) }
-            }
+            privateContacts.filter { it.matchesSearch(searchQuery) }
         }
     }
 

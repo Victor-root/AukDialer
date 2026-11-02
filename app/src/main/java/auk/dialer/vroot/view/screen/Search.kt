@@ -22,6 +22,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.formatPhoneNumber
@@ -30,8 +31,6 @@ import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
-import auk.dialer.vroot.controller.util.numberMatchesQuery
-import auk.dialer.vroot.controller.util.withoutAccents
 
 /** The screen's own [content], or the contacts matching [search] while it is open. */
 @OptIn(ExperimentalPermissionsApi::class)
@@ -93,15 +92,7 @@ private fun ContactSearchResults(
 
     val filteredContacts = remember(query, contacts) {
         if (query.isBlank()) emptyList()
-        else {
-            val plainQuery = query.withoutAccents()
-            contacts.filter {
-                val matchesName = it.name.withoutAccents().contains(plainQuery, ignoreCase = true)
-                val matchesNickname = it.nickname?.withoutAccents()?.contains(plainQuery, ignoreCase = true) ?: false
-                val matchesNumber = it.phoneNumbers.any { number -> numberMatchesQuery(number, query) }
-                matchesName || matchesNickname || matchesNumber
-            }.take(50)
-        }
+        else contacts.filter { it.matchesSearch(query) }.take(50)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

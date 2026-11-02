@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
@@ -94,9 +95,9 @@ fun SpeedDialScreen(
             items(8) { index ->
                 val key = index + 2
                 val mapping = prefs.getString("speed_dial_$key", null)
-                val parts = mapping?.split("|")
-                val name = parts?.getOrNull(0)
-                val number = parts?.getOrNull(1)
+                // "name|number", split on the last "|": a name may contain one.
+                val name = mapping?.takeIf { "|" in it }?.substringBeforeLast("|")
+                val number = mapping?.takeIf { "|" in it }?.substringAfterLast("|")
 
                 AukExpressiveCard {
                     Row(
@@ -180,10 +181,7 @@ fun ContactPickerDialog(
     var searchQuery by remember { mutableStateOf("") }
     val filteredContacts = remember(searchQuery, contacts) {
         if (searchQuery.isEmpty()) contacts
-        else contacts.filter { 
-            it.name.contains(searchQuery, ignoreCase = true) || 
-            it.phoneNumbers.any { num -> num.contains(searchQuery) }
-        }
+        else contacts.filter { it.matchesSearch(searchQuery) }
     }
 
     AukDialog(

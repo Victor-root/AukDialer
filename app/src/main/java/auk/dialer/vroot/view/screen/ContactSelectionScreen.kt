@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatPhoneNumber
@@ -48,8 +49,6 @@ import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
 import auk.dialer.vroot.controller.util.nameCollator
-import auk.dialer.vroot.controller.util.numberMatchesQuery
-import auk.dialer.vroot.controller.util.withoutAccents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -88,10 +87,7 @@ fun ContactSelectionScreen(
             else -> allContacts
         }
         if (searchQuery.isNotBlank()) {
-            list = list.filter {
-                it.name.withoutAccents().contains(searchQuery.withoutAccents(), ignoreCase = true) ||
-                it.phoneNumbers.any { num -> numberMatchesQuery(num, searchQuery) }
-            }
+            list = list.filter { it.matchesSearch(searchQuery) }
         }
         list.sortedWith(compareBy(nameCollator()) { it.name })
     }

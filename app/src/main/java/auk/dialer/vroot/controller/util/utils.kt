@@ -130,6 +130,17 @@ fun numberMatchesQuery(number: String, query: String): Boolean {
         toNationalFrenchNumber(number).filter { it.isDigit() }.contains(queryDigits)
 }
 
+/**
+ * Whether [query] finds this contact: its name or nickname without minding accents or case, or one
+ * of its numbers whatever the spacing and the +33 or 0 form.
+ */
+fun Contact.matchesSearch(query: String): Boolean {
+    val plainQuery = query.withoutAccents()
+    return name.withoutAccents().contains(plainQuery, ignoreCase = true) ||
+        nickname?.withoutAccents()?.contains(plainQuery, ignoreCase = true) == true ||
+        phoneNumbers.any { numberMatchesQuery(it, query) }
+}
+
 fun normalizePhoneNumber(number: String): String {
     return PhoneNumberUtils.normalizeNumber(number)
 }

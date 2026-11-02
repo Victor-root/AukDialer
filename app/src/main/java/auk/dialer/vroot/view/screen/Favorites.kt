@@ -250,7 +250,7 @@ private fun FavoritesGridContent(navigator: DestinationsNavigator) {
                     },
                     onCall = {
                         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        callLauncher.dial(contact.phoneNumbers.firstOrNull() ?: "", contact)
+                        callLauncher.dial("", contact)
                     }
                 )
             }

@@ -409,7 +409,8 @@ fun ContactDetailsScreen(
             }
         ) {
             val vCard = remember(displayName, displayPhone, fullContact?.emails?.firstOrNull()) {
-                QrCodeUtils.generateVCard(displayName, displayPhone, fullContact?.emails?.firstOrNull())
+                // The real number only: displayPhone falls back to the "Unknown" label for the screen.
+                QrCodeUtils.generateVCard(displayName, phoneNumber ?: fullContact?.phoneNumbers?.firstOrNull(), fullContact?.emails?.firstOrNull())
             }
             val qrBitmap = remember(vCard) { QrCodeUtils.generateQrCode(vCard, 600) }
 

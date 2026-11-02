@@ -36,8 +36,8 @@ object QrCodeUtils {
             append("BEGIN:VCARD\n")
             append("VERSION:3.0\n")
             append("FN:$name\n")
-            if (phone != null) append("TEL;TYPE=CELL:$phone\n")
-            if (email != null) append("EMAIL:$email\n")
+            if (!phone.isNullOrBlank()) append("TEL;TYPE=CELL:$phone\n")
+            if (!email.isNullOrBlank()) append("EMAIL:$email\n")
             append("END:VCARD")
         }
     }

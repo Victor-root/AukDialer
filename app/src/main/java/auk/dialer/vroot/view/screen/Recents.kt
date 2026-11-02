@@ -27,6 +27,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.view.components.*
@@ -324,10 +325,7 @@ fun AddFavoriteDialog(
         if (searchQuery.isBlank()) {
             nonFavs
         } else {
-            nonFavs.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.phoneNumbers.any { num -> num.contains(searchQuery) }
-            }
+            nonFavs.filter { it.matchesSearch(searchQuery) }
         }
     }
 
@@ -613,7 +611,7 @@ fun CallLogFullContent(
                                                 onUnfavorite = { contactsVM.toggleFavorite(contact) },
                                                 onLongClick = { isEditingFavorites = true },
                                                 onClick = {
-                                                    callLauncher.dial(contact.phoneNumbers.firstOrNull() ?: "", contact)
+                                                    callLauncher.dial("", contact)
                                                 }
                                             )
                                         }
