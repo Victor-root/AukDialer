@@ -149,6 +149,20 @@ class LauncherIconManager(
         handler.postDelayed({ finish() }, TIMEOUT_MS)
     }
 
+    /**
+     * Puts back the icon a restored backup recorded. A reinstall restores the preference but not
+     * which alias is enabled, so the launcher shows the default colour again. Run right after the
+     * restore, while the app is not on screen, so swapping aliases has nothing to close.
+     */
+    fun applySavedColor() {
+        val saved = preferenceManager.getInt(PreferenceManager.KEY_APP_ICON_COLOR, 0)
+        if (saved == 0 || !isChangeNeeded(saved)) return
+        val targetSuffix = ICONS.first { it.first == nearestColor(saved) }.second
+        val pm = context.packageManager
+        setEnabled(pm, targetSuffix, true)
+        ICONS.filter { it.second != targetSuffix }.forEach { (_, suffix) -> setEnabled(pm, suffix, false) }
+    }
+
     private fun aliasComponent(suffix: String) =
         ComponentName(context.packageName, "$COMPONENT_PACKAGE.LauncherAlias_$suffix")
 
