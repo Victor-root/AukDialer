@@ -122,6 +122,9 @@ fun ContactDetailsScreen(
     val allLogs by callLogViewModel.allCalls.collectAsState()
 
     var fullContact by remember { mutableStateOf<Contact?>(null) }
+    // The voicemail line stands in for a contact but is none: no favorite, edit, ringtone, storage
+    // or delete applies to it, and the contacts database would refuse each of them.
+    val isVoicemailEntry = fullContact?.id == "voicemail"
     var isFullLoading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
@@ -480,7 +483,7 @@ fun ContactDetailsScreen(
                     }
                 },
                 actions = {
-                    if (fullContact != null) {
+                    if (fullContact != null && !isVoicemailEntry) {
                         IconButton(onClick = {
                             fullContact?.let { contact ->
                                 val newFavorite = !contact.isFavorite
@@ -501,7 +504,7 @@ fun ContactDetailsScreen(
                         }) {
                             Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.action_edit))
                         }
-                    } else if (phoneNumber != null && phoneNumber != unknownLabel) {
+                    } else if (fullContact == null && phoneNumber != null && phoneNumber != unknownLabel) {
                         IconButton(onClick = {
                             navigator.navigate(ContactEditScreenDestination(initialPhone = phoneNumber))
                         }) {
@@ -926,7 +929,7 @@ fun ContactDetailsScreen(
                         }
                     }
 
-                    item {
+                    if (!isVoicemailEntry) item {
                         val whatsAppLabel = stringResource(R.string.brand_whatsapp)
                         val telegramLabel = stringResource(R.string.brand_telegram)
                         val signalLabel = stringResource(R.string.brand_signal)
@@ -979,7 +982,7 @@ fun ContactDetailsScreen(
                     }
 
                     val fc = fullContact
-                    if (fc != null) {
+                    if (fc != null && !isVoicemailEntry) {
                         item {
                             val defaultRingtoneLabel = stringResource(R.string.ringtone_default)
                             val customRingtoneLabel = stringResource(R.string.ringtone_custom)
