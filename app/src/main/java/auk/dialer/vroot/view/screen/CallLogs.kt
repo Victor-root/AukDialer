@@ -27,7 +27,6 @@ import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.controller.util.formatPhoneNumber
-import auk.dialer.vroot.controller.util.normalizePhoneNumber
 import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.data.CallLogFilter
