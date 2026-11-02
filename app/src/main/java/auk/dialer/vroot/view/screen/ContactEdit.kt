@@ -543,7 +543,6 @@ fun ContactEditScreen(
                     ContactTextField(
                         value = notes,
                         onValueChange = { notes = it },
-                        label = { Text(stringResource(R.string.label_notes)) },
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, null) },
                         minLines = 3
@@ -660,8 +659,8 @@ fun EditField(
 private fun ContactTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: @Composable () -> Unit,
     leadingIcon: @Composable () -> Unit,
+    label: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     minLines: Int = 1
