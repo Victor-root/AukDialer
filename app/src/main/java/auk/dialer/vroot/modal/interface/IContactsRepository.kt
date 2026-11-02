@@ -31,8 +31,6 @@ interface IContactsRepository {
      * then takes no contact from any app. Null when device storage is open or the system cannot tell.
      */
     fun getCloudDefaultAccount(): Account?
-    fun findDuplicates(): List<List<Contact>>
-    fun mergeContacts(targetContactId: String, sourceContactIds: List<String>)
     fun setCustomRingtone(contactId: String, ringtoneUri: String?)
     fun formatAllPhoneNumbers(onProgress: ((current: Int, total: Int) -> Unit)? = null)
 

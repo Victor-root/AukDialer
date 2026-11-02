@@ -159,19 +159,6 @@ class CallService : InCallService() {
             }
         }
 
-        fun mergeCalls() {
-            val calls = instance?.getCalls() ?: return
-            if (calls.size >= 2) {
-                val activeCall = calls.find { it.details.state == Call.STATE_ACTIVE }
-                val heldCall = calls.find { it.details.state == Call.STATE_HOLDING }
-                if (activeCall != null && heldCall != null) {
-                    activeCall.conference(heldCall)
-                } else if (calls.size >= 2) {
-                    calls[0].conference(calls[1])
-                }
-            }
-        }
-
         /** Clears the missed-call notifications this service posted, once the call history is seen. */
         fun cancelMissedCallNotifications(context: Context) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
