@@ -25,10 +25,13 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.util.SpeechPlayer
+import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.controller.util.formatDuration
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.formatTime
+import auk.dialer.vroot.modal.`interface`.ICallLogRepository
+import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.view.components.AudioMessageRow
 import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukConfirmationDialog
@@ -43,6 +46,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.koin.compose.koinInject
 
 @Destination<RootGraph>
 @Composable
@@ -65,7 +69,10 @@ fun CallRecordingsContent(
 ) {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
-    var recordings by remember { mutableStateOf<List<CallRecorder.Recording>?>(null) }
+    val contactsRepo = koinInject<IContactsRepository>()
+    val callLogRepo = koinInject<ICallLogRepository>()
+    val unknownLabel = stringResource(R.string.label_unknown)
+    var recordings by remember { mutableStateOf<List<RecordingEntry>?>(null) }
     var pendingDelete by remember { mutableStateOf<CallRecorder.Recording?>(null) }
     val shareTitle = stringResource(R.string.call_recordings_share)
 
@@ -112,7 +119,9 @@ fun CallRecordingsContent(
     }
 
     LaunchedEffect(refreshKey) {
-        recordings = withContext(Dispatchers.IO) { CallRecorder.loadRecordings(context) }
+        recordings = withContext(Dispatchers.IO) {
+            identifyCallers(CallRecorder.loadRecordings(context), contactsRepo, callLogRepo, unknownLabel)
+        }
     }
 
     Scaffold(
@@ -138,7 +147,7 @@ fun CallRecordingsContent(
                 list == null -> AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
                 list.isEmpty() -> EmptyRecordingsState()
                 else -> {
-                    val grouped = remember(list) { list.groupBy { formatDateHeader(context, it.startedAt) } }
+                    val grouped = remember(list) { list.groupBy { formatDateHeader(context, it.recording.startedAt) } }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + padding.calculateBottomPadding())
@@ -148,11 +157,12 @@ fun CallRecordingsContent(
                                 AukSectionHeader(title = header)
                                 Box(modifier = Modifier.padding(horizontal = 12.dp)) {
                                     AukExpressiveCard(isCompact = true) {
-                                        group.forEachIndexed { index, recording ->
+                                        group.forEachIndexed { index, entry ->
+                                            val recording = entry.recording
                                             val path = recording.file.absolutePath
                                             val isCurrent = playingPath == path
                                             RecordingRow(
-                                                recording = recording,
+                                                entry = entry,
                                                 isCurrent = isCurrent,
                                                 isPlaying = isCurrent && isPlaying,
                                                 positionMs = positionMs,
@@ -202,9 +212,45 @@ fun CallRecordingsContent(
     }
 }
 
+/**
+ * A recording with who it was with, as known now rather than when it was recorded: a number not in
+ * the contacts then may be a contact since, or carry the name the call log got after the call
+ * (a business name, for instance).
+ */
+private data class RecordingEntry(
+    val recording: CallRecorder.Recording,
+    val name: String,
+    val photoUri: String?,
+    val isIdentified: Boolean
+)
+
+/** Blocking: looks numbers up in the contacts, then in the call log. */
+private fun identifyCallers(
+    recordings: List<CallRecorder.Recording>,
+    contacts: IContactsRepository,
+    callLog: ICallLogRepository,
+    unknownLabel: String
+): List<RecordingEntry> {
+    // Only read when a recording carries a number nobody in the contacts has.
+    val calls by lazy { runCatching { callLog.getCalls() }.getOrDefault(emptyList()) }
+    return recordings.map { recording ->
+        val caller = recording.caller
+        // Recorded under the contact's name when it was known, under the number otherwise.
+        val isNumber = caller.isNotEmpty() && caller.all { it.isDigit() || it == '+' }
+        if (!isNumber) {
+            return@map RecordingEntry(recording, caller.ifEmpty { unknownLabel }, null, caller.isNotEmpty())
+        }
+        val contact = runCatching { contacts.getContactByNumber(caller) }.getOrNull()
+        val name = contact?.name ?: calls.firstOrNull { call ->
+            call.name != null && call.name != call.number && areNumbersEqual(call.number, caller)
+        }?.name
+        RecordingEntry(recording, name ?: formatPhoneNumber(caller), contact?.photoUri, name != null)
+    }
+}
+
 @Composable
 private fun RecordingRow(
-    recording: CallRecorder.Recording,
+    entry: RecordingEntry,
     isCurrent: Boolean,
     isPlaying: Boolean,
     positionMs: Int,
@@ -217,21 +263,15 @@ private fun RecordingRow(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    // Recorded under the contact's name when it was known, under the number otherwise.
-    val isNumber = recording.caller.isNotEmpty() && recording.caller.all { it.isDigit() || it == '+' }
-    val displayName = when {
-        recording.caller.isEmpty() -> stringResource(R.string.label_unknown)
-        isNumber -> formatPhoneNumber(recording.caller)
-        else -> recording.caller
-    }
+    val recording = entry.recording
 
     key(recording.file.absolutePath) {
         AudioMessageRow(
-            title = displayName,
+            title = entry.name,
             subtitle = recordingSubtitle(context, recording),
-            avatarName = displayName,
-            photoUri = null,
-            avatarIcon = if (isNumber || recording.caller.isEmpty()) Icons.Outlined.MicNone else null,
+            avatarName = entry.name,
+            photoUri = entry.photoUri,
+            avatarIcon = if (entry.isIdentified) null else Icons.Outlined.MicNone,
             emphasized = false,
             canPlay = true,
             isCurrent = isCurrent,
