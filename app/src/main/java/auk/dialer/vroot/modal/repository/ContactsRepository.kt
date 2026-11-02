@@ -23,6 +23,7 @@ import auk.dialer.vroot.modal.db.PrivateContactEntity
 import auk.dialer.vroot.controller.util.deduplicateNumbers
 import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.CallBackgroundStore
+import auk.dialer.vroot.controller.util.decodeSampledBitmap
 import java.io.File
 import java.util.UUID
 
@@ -37,6 +38,8 @@ class ContactsRepository(
 
     private companion object {
         const val DEBUG_TAG = "AukContactDebug"
+        const val CONTACT_PHOTO_SIZE = 720
+        const val MAX_BATCH_OPERATIONS = 400
     }
 
     private fun formatName(rawName: String): String {
@@ -82,7 +85,7 @@ class ContactsRepository(
                     val existingContact = contactsMap[id]
                     if (existingContact != null) {
                         val numbers = existingContact.phoneNumbers.toMutableList()
-                        if (numbers.none { areNumbersEqual(it, number) } && numbers.size < 5) {
+                        if (numbers.none { areNumbersEqual(it, number) }) {
                             numbers.add(number)
                             contactsMap[id] = existingContact.copy(phoneNumbers = numbers)
                         }
@@ -326,47 +329,23 @@ class ContactsRepository(
         val updateUri = ContactsContract.Contacts.CONTENT_URI.buildUpon()
             .appendPath(contactId)
             .build()
-        contentResolver.update(updateUri, contentValue, null, null)
+        // The provider can refuse it (contact gone meanwhile, read-only account): the star stays as it was.
+        try {
+            contentResolver.update(updateUri, contentValue, null, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun getPhotoBytes(uriString: String): ByteArray? {
+        val bitmap = decodeSampledBitmap(contentResolver, Uri.parse(uriString), CONTACT_PHOTO_SIZE) ?: return null
         return try {
-            val uri = Uri.parse(uriString)
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
-            inputStream.close()
-
-            if (bitmap == null) return null
-
-            val maxSize = 720
-            val width = bitmap.width
-            val height = bitmap.height
-
-            val finalBitmap = if (width > maxSize || height > maxSize) {
-                val scale = maxSize.toFloat() / Math.max(width, height)
-                android.graphics.Bitmap.createScaledBitmap(
-                    bitmap,
-                    (width * scale).toInt(),
-                    (height * scale).toInt(),
-                    true
-                )
-            } else {
-                bitmap
+            java.io.ByteArrayOutputStream().use { output ->
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, output)
+                output.toByteArray()
             }
-
-            val outputStream = java.io.ByteArrayOutputStream()
-            finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, outputStream)
-            val bytes = outputStream.toByteArray()
-
-            if (finalBitmap != bitmap) {
-                finalBitmap.recycle()
-            }
+        } finally {
             bitmap.recycle()
-
-            bytes
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 
@@ -393,6 +372,45 @@ class ContactsRepository(
 
     private fun getRawContactId(contactId: String): String? {
         return getRawContactIds(contactId).firstOrNull()
+    }
+
+    /**
+     * Writes the edited first and last names into [rawContactId]'s existing name row, so what the
+     * form does not show (middle name, prefix, suffix, phonetic names) stays, and the provider
+     * rebuilds the display name from all of them. Inserts the row where there is none yet.
+     */
+    private fun structuredNameOperation(rawContactId: String, contact: Contact): ContentProviderOperation {
+        val name = ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
+        val selection = "${ContactsContract.Data.RAW_CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=?"
+        val selectionArgs = arrayOf(rawContactId, name)
+        val hasNameRow = try {
+            contentResolver.query(ContactsContract.Data.CONTENT_URI, arrayOf(ContactsContract.Data._ID), selection, selectionArgs, null)
+                ?.use { it.moveToFirst() } == true
+        } catch (e: SecurityException) {
+            false
+        }
+        val hasParts = contact.givenName != null || contact.familyName != null
+        return if (hasNameRow) {
+            ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                .withSelection(selection, selectionArgs)
+                .apply {
+                    if (hasParts) {
+                        withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, contact.givenName)
+                        withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, contact.familyName)
+                    } else {
+                        withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
+                    }
+                }
+                .build()
+        } else {
+            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+                .withValue(ContactsContract.Data.MIMETYPE, name)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, contact.givenName)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, contact.familyName)
+                .build()
+        }
     }
 
     private fun getAccountInfo(contactId: String): Pair<String?, String?> {
@@ -592,36 +610,22 @@ class ContactsRepository(
         } else {
             val rawContactIds = getRawContactIds(contact.id)
             if (rawContactIds.isEmpty()) return ContactSaveResult.FAILED
+            // Re-filed only when the account was actually changed: rewriting it on every save moved
+            // linked entries (WhatsApp, device storage) into the account shown for the first one.
+            val accountChanged = getAccountInfo(contact.id) != (contact.accountName to contact.accountType)
 
             rawContactIds.forEach { rawContactId ->
-                ops.add(
-                    ContentProviderOperation.newUpdate(ContactsContract.RawContacts.CONTENT_URI)
-                        .withSelection("${ContactsContract.RawContacts._ID}=?", arrayOf(rawContactId))
-                        .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountType)
-                        .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountName)
-                        .build()
-                )
+                if (accountChanged) {
+                    ops.add(
+                        ContentProviderOperation.newUpdate(ContactsContract.RawContacts.CONTENT_URI)
+                            .withSelection("${ContactsContract.RawContacts._ID}=?", arrayOf(rawContactId))
+                            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountType)
+                            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountName)
+                            .build()
+                    )
+                }
 
-                ops.add(
-                    ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(
-                            "${ContactsContract.Data.RAW_CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=?",
-                            arrayOf(rawContactId, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                        )
-                        .build()
-                )
-                ops.add(
-                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
-                        .withValue(
-                            ContactsContract.Data.MIMETYPE,
-                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
-                        )
-                        .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, contact.givenName)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, contact.familyName)
-                        .build()
-                )
+                ops.add(structuredNameOperation(rawContactId, contact))
 
                 if (contact.photoUri == null) {
                     ops.add(
@@ -850,16 +854,17 @@ class ContactsRepository(
             val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, id)
             ops.add(ContentProviderOperation.newDelete(uri).build())
         }
-        try {
-            contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        applyInBatches(ops)
     }
 
     override fun moveContacts(contactIds: List<String>, accountName: String?, accountType: String?) {
         val ops = ArrayList<ContentProviderOperation>()
         contactIds.forEach { id ->
+            // A private contact has no system entry to re-file: it is copied into the account instead.
+            if (id.startsWith("p")) {
+                getContactById(id)?.let { moveContact(it.copy(isPrivate = false, accountName = accountName, accountType = accountType)) }
+                return@forEach
+            }
             val rawContactId = getRawContactId(id)
             if (rawContactId != null) {
                 ops.add(
@@ -871,10 +876,17 @@ class ContactsRepository(
                 )
             }
         }
-        try {
-            contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        applyInBatches(ops)
+    }
+
+    /** Sends [ops] in chunks: the provider refuses a single batch beyond about 500 operations. */
+    private fun applyInBatches(ops: List<ContentProviderOperation>) {
+        ops.chunked(MAX_BATCH_OPERATIONS).forEach { chunk ->
+            try {
+                contentResolver.applyBatch(ContactsContract.AUTHORITY, ArrayList(chunk))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -1099,11 +1111,12 @@ class ContactsRepository(
                         }
                     }
                 } else {
+                    // Every linked entry of the contact: the number may live in any of them.
+                    val rawIds = getRawContactIds(contact.id)
                     contact.phoneNumbers.forEachIndexed { i, oldNum ->
                         val newNum = updatedNumbers[i]
                         if (newNum != oldNum) {
-                            val rawId = getRawContactId(contact.id)
-                            if (rawId != null) {
+                            rawIds.forEach { rawId ->
                                 ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                                     .withSelection(
                                         "${ContactsContract.Data.RAW_CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=? AND ${ContactsContract.CommonDataKinds.Phone.NUMBER}=?",
@@ -1118,13 +1131,7 @@ class ContactsRepository(
             }
         }
 
-        try {
-            if (ops.isNotEmpty()) {
-                contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        applyInBatches(ops)
     }
 
     override fun makeContactPrivate(contactId: String) {
