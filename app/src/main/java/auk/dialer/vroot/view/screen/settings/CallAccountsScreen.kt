@@ -10,9 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukSelectionDialog
 import auk.dialer.vroot.view.components.AukExpressiveCard
@@ -112,7 +112,7 @@ fun CallAccountsScreen(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.settings_call_title), fontWeight = FontWeight.Bold) },
+                title = { AukTopBarTitle(stringResource(R.string.settings_call_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.makeCall
@@ -138,10 +139,9 @@ fun PrivateContactsScreen(
             if (isSelecting) {
                 TopAppBar(
                     title = {
-                        Text(
+                        AukTopBarTitle(
                             text = stringResource(R.string.selection_count_selected, selectedContactIds.size),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.titleMedium
                         )
                     },
                     navigationIcon = {
@@ -178,7 +178,7 @@ fun PrivateContactsScreen(
             } else {
                 TopAppBar(
                     colors = aukAccentTopAppBarColors(),
-                    title = { Text(stringResource(R.string.settings_private_title), fontWeight = FontWeight.Bold) },
+                    title = { AukTopBarTitle(stringResource(R.string.settings_private_title)) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.navigateUp() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

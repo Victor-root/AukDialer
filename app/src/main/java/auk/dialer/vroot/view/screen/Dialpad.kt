@@ -60,6 +60,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
@@ -235,7 +236,7 @@ fun DialPadScreen(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.dialpad_title), fontWeight = FontWeight.Bold) },
+                title = { AukTopBarTitle(stringResource(R.string.dialpad_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

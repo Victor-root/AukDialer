@@ -6,13 +6,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
@@ -27,11 +25,10 @@ fun MenuTopAppBar(
 ) {
     TopAppBar(
         title = {
-            Text(
+            AukTopBarTitle(
                 text = text,
                 style = MaterialTheme.typography.titleLargeEmphasized,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                fontWeight = null
             )
         },
         modifier = modifier,

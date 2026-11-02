@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.data.Contact
@@ -55,7 +56,7 @@ fun SpeedDialScreen(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.settings_speed_dial_title), fontWeight = FontWeight.Bold) },
+                title = { AukTopBarTitle(stringResource(R.string.settings_speed_dial_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

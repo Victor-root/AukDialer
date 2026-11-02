@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.util.SpeechPlayer
 import auk.dialer.vroot.controller.util.areNumbersEqual
@@ -129,7 +130,7 @@ fun CallRecordingsContent(
             if (onNavigateUp != null) {
                 TopAppBar(
                     colors = aukAccentTopAppBarColors(),
-                    title = { Text(stringResource(R.string.call_recordings_title), fontWeight = FontWeight.Bold) },
+                    title = { AukTopBarTitle(stringResource(R.string.call_recordings_title)) },
                     navigationIcon = {
                         IconButton(onClick = onNavigateUp) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

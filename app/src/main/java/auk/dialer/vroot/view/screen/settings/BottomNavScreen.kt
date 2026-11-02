@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukDivider
 import auk.dialer.vroot.view.components.AukExpressiveCard
@@ -62,7 +63,7 @@ fun BottomNavScreen(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.settings_bottom_nav_title), fontWeight = FontWeight.Bold) },
+                title = { AukTopBarTitle(stringResource(R.string.settings_bottom_nav_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))

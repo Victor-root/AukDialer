@@ -20,9 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
@@ -108,9 +108,8 @@ fun CallLogFullScreen(
                 if (!isSelecting) {
                     TopAppBar(
                         title = {
-                            Text(
+                            AukTopBarTitle(
                                 if (contactName != null) stringResource(R.string.call_history_with_contact, contactName) else stringResource(R.string.call_history_title),
-                                fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium
                             )
                         },

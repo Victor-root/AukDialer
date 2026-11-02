@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.modal.data.Contact
@@ -106,16 +107,17 @@ fun ContactSelectionScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            // Title on its own row under the actions: some, like the private contacts picker's, are
+            // a whole sentence.
+            MediumTopAppBar(
                 colors = aukAccentTopAppBarColors(),
                 title = {
-                    Text(
+                    AukTopBarTitle(
                         text = if (isMultiSelect && totalSelectedCount > 0) {
                             stringResource(R.string.selection_count_selected, totalSelectedCount)
                         } else {
                             title
-                        },
-                        fontWeight = FontWeight.Bold
+                        }
                     )
                 },
                 navigationIcon = {

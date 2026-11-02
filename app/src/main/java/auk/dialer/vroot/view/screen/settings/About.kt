@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.GITHUB_URL
 import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.getAppVersion
 import auk.dialer.vroot.controller.util.openLink
@@ -53,7 +54,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { Text(stringResource(R.string.about_title), fontWeight = FontWeight.Bold) },
+                title = { AukTopBarTitle(stringResource(R.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
