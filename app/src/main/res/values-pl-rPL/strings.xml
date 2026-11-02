@@ -42,6 +42,8 @@
     </plurals>
     <string name="label_unknown">Nieznany</string>
     <string name="label_unknown_number">Nieznany numer</string>
+    <string name="label_private_number">Numer zastrzeżony</string>
+    <string name="label_payphone">Automat telefoniczny</string>
     <string name="label_mobile">Komórkowy</string>
     <string name="label_email">E-mail</string>
     <string name="label_address">Adres</string>

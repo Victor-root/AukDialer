@@ -42,6 +42,8 @@
     </plurals>
     <string name="label_unknown">Inconnu</string>
     <string name="label_unknown_number">Numéro inconnu</string>
+    <string name="label_private_number">Numéro masqué</string>
+    <string name="label_payphone">Cabine téléphonique</string>
     <string name="label_mobile">Mobile</string>
     <string name="label_email">E-mail</string>
     <string name="label_address">Adresse</string>

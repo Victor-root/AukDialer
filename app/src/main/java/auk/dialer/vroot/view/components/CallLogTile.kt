@@ -177,7 +177,8 @@ fun CallLogTile(
                             )
                         }
                     },
-                    avatarName = log.name ?: formatPhoneNumber(log.number),
+                    // No initial for a withheld caller: the generic silhouette, like any unknown number.
+                    avatarName = if (log.number.isEmpty()) "" else log.name ?: formatPhoneNumber(log.number),
                     photoUri = log.photoUri,
                     headlineColor = headlineColor,
                     trailingIcon = if (isFavorite) Icons.Default.Star else null,
@@ -187,7 +188,8 @@ fun CallLogTile(
                 )
             }
             
-            if (!selected) {
+            // A withheld number cannot be called back.
+            if (!selected && log.number.isNotEmpty()) {
                 // 40dp rather than the default 48dp touch target, and no trailing
                 // padding: the card and the screen already inset this edge, and
                 // every point reserved here is a point the name does not get.

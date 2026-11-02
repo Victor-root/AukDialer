@@ -45,7 +45,8 @@ class CallLogRepository(
             CallLog.Calls.CACHED_LOOKUP_URI,
             CallLog.Calls.TYPE,
             CallLog.Calls.DATE,
-            CallLog.Calls.DURATION
+            CallLog.Calls.DURATION,
+            CallLog.Calls.NUMBER_PRESENTATION
         )
 
         baseProjection.add("phone_account_label")
@@ -68,7 +69,8 @@ class CallLogRepository(
                     CallLog.Calls._ID, CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME,
                     CallLog.Calls.CACHED_PHOTO_URI, CallLog.Calls.CACHED_LOOKUP_URI,
                     CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION,
-                    CallLog.Calls.PHONE_ACCOUNT_ID, CallLog.Calls.PHONE_ACCOUNT_COMPONENT_NAME
+                    CallLog.Calls.PHONE_ACCOUNT_ID, CallLog.Calls.PHONE_ACCOUNT_COMPONENT_NAME,
+                    CallLog.Calls.NUMBER_PRESENTATION
                 )
                 val cursor = contentResolver.query(
                     CallLog.Calls.CONTENT_URI,
@@ -130,7 +132,8 @@ class CallLogRepository(
         val typeIdx = cursor.getColumnIndex(CallLog.Calls.TYPE)
         val dateIdx = cursor.getColumnIndex(CallLog.Calls.DATE)
         val durationIdx = cursor.getColumnIndex(CallLog.Calls.DURATION)
-        
+        val presentationIdx = cursor.getColumnIndex(CallLog.Calls.NUMBER_PRESENTATION)
+
         val labelIdx = cursor.getColumnIndex("phone_account_label")
         val accountIdIdx = cursor.getColumnIndex(CallLog.Calls.PHONE_ACCOUNT_ID)
         val componentNameIdx = cursor.getColumnIndex(CallLog.Calls.PHONE_ACCOUNT_COMPONENT_NAME)
@@ -140,7 +143,17 @@ class CallLogRepository(
 
         while (cursor.moveToNext()) {
             val callId = cursor.getLong(idIdx)
-            val number = cursor.getString(numberIdx) ?: unknownLabel
+            val presentation = if (presentationIdx != -1) cursor.getInt(presentationIdx) else CallLog.Calls.PRESENTATION_ALLOWED
+            // A withheld or unknown caller has no number to show, call back, save or block: keep it
+            // empty and name the row after the reason instead of leaving it blank.
+            val hiddenLabel = when {
+                presentation == CallLog.Calls.PRESENTATION_RESTRICTED -> context.getString(R.string.label_private_number)
+                presentation == CallLog.Calls.PRESENTATION_PAYPHONE -> context.getString(R.string.label_payphone)
+                presentation != CallLog.Calls.PRESENTATION_ALLOWED -> context.getString(R.string.label_unknown_number)
+                cursor.getString(numberIdx).isNullOrBlank() -> context.getString(R.string.label_unknown_number)
+                else -> null
+            }
+            val number = if (hiddenLabel != null) "" else cursor.getString(numberIdx) ?: unknownLabel
             val type = cursor.getInt(typeIdx)
             val date = cursor.getLong(dateIdx)
             val duration = cursor.getLong(durationIdx)
@@ -169,11 +182,11 @@ class CallLogRepository(
 
             if (simLabel?.isEmpty() == true) simLabel = null
 
-            val matchedContact = contactMap[phoneLookupKey(number)]
+            val matchedContact = if (number.isEmpty()) null else contactMap[phoneLookupKey(number)]
             
-            val displayName = matchedContact?.name ?: cursor.getString(cachedNameIdx)
-            val photoUri = matchedContact?.photoUri ?: cursor.getString(cachedPhotoIdx)
-            val contactId = matchedContact?.id ?: cursor.getString(cachedLookupIdx)?.let {
+            val displayName = hiddenLabel ?: matchedContact?.name ?: cursor.getString(cachedNameIdx)
+            val photoUri = if (hiddenLabel != null) null else matchedContact?.photoUri ?: cursor.getString(cachedPhotoIdx)
+            val contactId = if (hiddenLabel != null) null else matchedContact?.id ?: cursor.getString(cachedLookupIdx)?.let {
                 contactIdFromLookupUri(it)
             }
 

@@ -40,6 +40,8 @@
     </plurals>
     <string name="label_unknown">Unbekannt</string>
     <string name="label_unknown_number">Unbekannte Nummer</string>
+    <string name="label_private_number">Unterdrückte Nummer</string>
+    <string name="label_payphone">Münztelefon</string>
     <string name="label_mobile">Mobil</string>
     <string name="label_email">E-Mail</string>
     <string name="label_address">Adresse</string>

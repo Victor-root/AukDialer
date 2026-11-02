@@ -35,7 +35,7 @@ fun List<CallLogEntry>.groupedConsecutive(): List<CallLogEntry> {
     val grouped = mutableListOf<CallLogEntry>()
     for (call in this) {
         val last = grouped.lastOrNull()
-        if (last != null && last.number == call.number && dayOf(last) == dayOf(call)) {
+        if (last != null && last.number == call.number && last.name == call.name && dayOf(last) == dayOf(call)) {
             grouped[grouped.lastIndex] = last.copy(types = last.types + call.types, ids = last.ids + call.ids)
         } else {
             grouped += call

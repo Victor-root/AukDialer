@@ -42,6 +42,8 @@
     </plurals>
     <string name="label_unknown">Неизвестно</string>
     <string name="label_unknown_number">Неизвестный номер</string>
+    <string name="label_private_number">Скрытый номер</string>
+    <string name="label_payphone">Таксофон</string>
     <string name="label_mobile">Мобильный</string>
     <string name="label_email">Электронная почта</string>
     <string name="label_address">Адрес</string>

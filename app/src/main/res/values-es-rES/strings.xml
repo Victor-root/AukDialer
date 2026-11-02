@@ -40,6 +40,8 @@
     </plurals>
     <string name="label_unknown">Desconocido</string>
     <string name="label_unknown_number">Número desconocido</string>
+    <string name="label_private_number">Número oculto</string>
+    <string name="label_payphone">Teléfono público</string>
     <string name="label_mobile">Móvil</string>
     <string name="label_email">Correo</string>
     <string name="label_address">Dirección</string>

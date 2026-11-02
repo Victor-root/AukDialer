@@ -43,6 +43,8 @@
     </plurals>
     <string name="label_unknown">Unknown</string>
     <string name="label_unknown_number">Unknown Number</string>
+    <string name="label_private_number">Private number</string>
+    <string name="label_payphone">Payphone</string>
     <string name="label_mobile">Mobile</string>
     <string name="label_email">Email</string>
     <string name="label_address">Address</string>

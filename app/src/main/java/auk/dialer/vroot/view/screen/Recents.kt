@@ -116,7 +116,7 @@ fun RecentScreenContent(
     val isSelecting = selectedEntries.isNotEmpty()
     val copyToClipboard = rememberClipboardCopy()
     val singleSelected = if (selectedEntries.size == 1) selectedEntries.first() else null
-    val isUnsaved = singleSelected != null && (singleSelected.contactId == null || singleSelected.name == null || singleSelected.name == singleSelected.number)
+    val isUnsaved = singleSelected != null && singleSelected.number.isNotEmpty() && (singleSelected.contactId == null || singleSelected.name == null || singleSelected.name == singleSelected.number)
 
     val batchActionBar: @Composable () -> Unit = {
         BatchCallLogActionBar(
@@ -143,7 +143,7 @@ fun RecentScreenContent(
                     selectedEntries = emptySet()
                 }
             } else null,
-            onCopy = if (singleSelected != null) {
+            onCopy = if (singleSelected != null && singleSelected.number.isNotEmpty()) {
                 {
                     copyToClipboard(singleSelected.number)
                     Toast.makeText(context, context.getString(R.string.number_copied_toast), Toast.LENGTH_SHORT).show()
@@ -675,7 +675,7 @@ fun CallLogFullContent(
                                                 onTileClick = { log ->
                                                     if (selectedEntries.isNotEmpty()) {
                                                         onToggleSelection(log)
-                                                    } else {
+                                                    } else if (log.number.isNotEmpty()) {
                                                         navigator.navigate(
                                                             ContactDetailsScreenDestination(
                                                                 contactId = log.contactId ?: "null",
