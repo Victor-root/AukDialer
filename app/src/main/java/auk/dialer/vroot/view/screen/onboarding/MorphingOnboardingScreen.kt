@@ -36,6 +36,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -94,7 +96,10 @@ private val pages = listOf(
 
 @Composable
 fun MorphingOnboardingScreen(onFinished: () -> Unit) {
-    var currentPage by remember { mutableIntStateOf(0) }
+    // Saved, so turning the phone keeps the page; Back steps to the previous page instead of
+    // leaving the app halfway through.
+    var currentPage by rememberSaveable { mutableIntStateOf(0) }
+    BackHandler(enabled = currentPage > 0) { currentPage-- }
 
     AukPlainStatusBar()
     val roundness = LocalCardRoundness.current
