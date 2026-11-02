@@ -142,6 +142,11 @@ fun ContactDetailsScreen(
         isFullLoading = true
         fullContact = loadContact()
         isFullLoading = false
+        // Back from its edit screen, this screen starts afresh: a contact deleted there, or moved to
+        // other storage under a new id, is simply not found, and only an empty page would be left.
+        if (fullContact == null && phoneNumber == null && contactId != null && contactId != "null") {
+            navigator.navigateUp()
+        }
     }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
