@@ -22,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -401,41 +402,26 @@ fun ContactEditScreen(
                 AukSectionHeader(title = stringResource(R.string.contact_edit_identity_header))
                 AukExpressiveCard {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
+                        ContactTextField(
                             value = givenName,
                             onValueChange = { givenName = it },
                             label = { Text(stringResource(R.string.contact_edit_first_name)) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            leadingIcon = { Icon(Icons.Default.Person, null) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary
-                            )
+                            leadingIcon = { Icon(Icons.Default.Person, null) }
                         )
-                        OutlinedTextField(
+                        ContactTextField(
                             value = familyName,
                             onValueChange = { familyName = it },
                             label = { Text(stringResource(R.string.contact_edit_last_name)) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            leadingIcon = { Icon(Icons.Default.Badge, null) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary
-                            )
+                            leadingIcon = { Icon(Icons.Default.Badge, null) }
                         )
-                        OutlinedTextField(
+                        ContactTextField(
                             value = nickname,
                             onValueChange = { nickname = it },
                             label = { Text(stringResource(R.string.contact_edit_nickname)) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.Label, null) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary
-                            )
+                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.Label, null) }
                         )
                     }
                 }
@@ -553,18 +539,13 @@ fun ContactEditScreen(
             item {
                 AukSectionHeader(title = stringResource(R.string.contact_edit_notes_header))
                 AukExpressiveCard {
-                    OutlinedTextField(
+                    ContactTextField(
                         value = notes,
                         onValueChange = { notes = it },
                         label = { Text(stringResource(R.string.label_notes)) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
                         leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, null) },
-                        minLines = 3,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary
-                        )
+                        minLines = 3
                     )
                 }
             }
@@ -649,18 +630,13 @@ fun EditField(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        OutlinedTextField(
+        ContactTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            leadingIcon = { Icon(icon, null, tint = MaterialTheme.colorScheme.primary) },
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary
-            )
+            leadingIcon = { Icon(icon, null) },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
         IconButton(
             onClick = onDelete,
@@ -673,6 +649,41 @@ fun EditField(
             )
         }
     }
+}
+
+/**
+ * A field of the form: filled without an outline, so the card around it is the only frame, and
+ * tinted with the accent while it is being typed in.
+ */
+@Composable
+private fun ContactTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    leadingIcon: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    minLines: Int = 1
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        leadingIcon = leadingIcon,
+        modifier = modifier,
+        keyboardOptions = keyboardOptions,
+        minLines = minLines,
+        shape = RoundedCornerShape(16.dp),
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.primary
+        )
+    )
 }
 
 /** Why the contact was not saved; the screen stays open so nothing typed is lost. */
