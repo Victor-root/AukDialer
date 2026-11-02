@@ -232,6 +232,7 @@
     <string name="slide_to_answer">glisser pour répondre</string>
     <!-- Call notifications (CallService) -->
     <string name="notif_channel_calls">Appels</string>
+    <string name="notif_channel_blocked_calls">Appels bloqués</string>
     <string name="notif_channel_missed_calls">Appels manqués</string>
     <string name="notif_blocked_call_title">Appel bloqué</string>
     <string name="notif_blocked_call_text">Appel bloqué de %1$s</string>

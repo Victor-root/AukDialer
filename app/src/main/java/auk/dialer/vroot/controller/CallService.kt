@@ -8,7 +8,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import auk.dialer.vroot.controller.util.decodeSampledBitmap
 import android.graphics.Color
 import android.net.Uri
 import android.provider.BlockedNumberContract
@@ -58,18 +58,17 @@ class CallService : InCallService() {
 
     private fun getContactBitmap(photoUri: String?): Bitmap? {
         if (photoUri == null) return null
-        return try {
-            val uri = Uri.parse(photoUri)
-            val inputStream = contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) {
-            null
-        }
+        return decodeSampledBitmap(contentResolver, Uri.parse(photoUri), NOTIFICATION_PHOTO_SIZE)
     }
 
     companion object {
         private const val DEBUG_TAG = "AukCallDebug"
-        private const val CHANNEL_ID = "call_channel"
+        // Silent: Telecom already rings and vibrates for an incoming call, and a channel's sound is
+        // fixed once created, hence a new id for the old one that played the notification sound.
+        private const val CHANNEL_ID = "call_channel_silent"
+        private const val LEGACY_CHANNEL_ID = "call_channel"
+        private const val BLOCKED_CHANNEL_ID = "blocked_call_channel"
+        private const val NOTIFICATION_PHOTO_SIZE = 256
         private const val MISSED_CHANNEL_ID = "missed_call_channel"
         private const val NOTIFICATION_ID = 101
         private const val CALL_SCREEN_START_TIMEOUT_MS = 1500L
@@ -282,12 +281,18 @@ class CallService : InCallService() {
             if (redialCount < maxAttempts) {
                 redialCount++
                 redialNumber = number
+                val accountHandle = call.details.accountHandle
+                // Placed straight through Telecom, on the same SIM: a service in the background may
+                // not start an activity, which is how this redial used to go.
                 serviceScope.launch {
                     delay(delayMs)
-                    val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if (number.isNotBlank()) {
+                        try {
+                            auk.dialer.vroot.controller.util.makeCall(this@CallService, number, accountHandle)
+                        } catch (e: Exception) {
+                            if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "auto redial failed", e)
+                        }
                     }
-                    startActivity(intent)
                 }
             } else {
                 // Series over: a later call to that number starts a new one.
@@ -339,6 +344,13 @@ class CallService : InCallService() {
 
         if (method == 0) {
             call.reject(Call.REJECT_REASON_DECLINED)
+        } else {
+            // Left to ring out unanswered, without the ringtone Telecom would otherwise play.
+            try {
+                (getSystemService(Context.TELECOM_SERVICE) as TelecomManager).silenceRinger()
+            } catch (e: SecurityException) {
+                if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "silenceRinger refused", e)
+            }
         }
 
         if (preferenceManager.getBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, true)) {
@@ -348,8 +360,15 @@ class CallService : InCallService() {
 
     private fun showBlockedNotification(number: String) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                BLOCKED_CHANNEL_ID,
+                getString(R.string.notif_channel_blocked_calls),
+                NotificationManager.IMPORTANCE_LOW
+            )
+        )
+
+        val builder = NotificationCompat.Builder(this, BLOCKED_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
             .setContentTitle(getString(R.string.notif_blocked_call_title))
             .setContentText(getString(R.string.notif_blocked_call_text, number))
@@ -491,7 +510,9 @@ class CallService : InCallService() {
             redialCount = 0
             redialNumber = null
         }
-        if (isNumberBlocked(number)) {
+        // Only incoming calls are screened: one the user places to a blocked number is theirs to make.
+        val isIncoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING
+        if (isIncoming && isNumberBlocked(number)) {
             if (BuildConfig.DEBUG_TOOLS) Log.d(DEBUG_TAG, "onCallAdded: number $number is blocked, rejecting")
             handleBlockedCall(call, number)
             return
@@ -575,9 +596,11 @@ class CallService : InCallService() {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            enableVibration(true)
+            setSound(null, null)
+            enableVibration(false)
         }
         notificationManager.createNotificationChannel(channel)
+        notificationManager.deleteNotificationChannel(LEGACY_CHANNEL_ID)
 
         val handle = call.details.handle
         val number = handle?.schemeSpecificPart ?: ""
@@ -675,7 +698,6 @@ class CallService : InCallService() {
             .setAutoCancel(false)
             .setSilent(!alerts)
             .setOnlyAlertOnce(!isRinging)
-            .setDefaults(if (alerts) NotificationCompat.DEFAULT_ALL else 0)
             .setStyle(
                 if (isRinging) {
                     NotificationCompat.CallStyle.forIncomingCall(person, declinePendingIntent, answerPendingIntent)
@@ -687,6 +709,10 @@ class CallService : InCallService() {
         if (isRinging) {
             if (alerts) builder.setFullScreenIntent(fullScreenPendingIntent, true)
         } else {
+            // The call's running time rather than when the notification was last posted.
+            callStartTimes[call]?.let { startedAt ->
+                builder.setWhen(startedAt).setShowWhen(true).setUsesChronometer(true)
+            }
             builder.addAction(
                 NotificationCompat.Action.Builder(
                     android.R.drawable.stat_sys_speakerphone,

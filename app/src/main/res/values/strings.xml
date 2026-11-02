@@ -245,6 +245,7 @@
 
     <!-- Call notifications (CallService) -->
     <string name="notif_channel_calls">Calls</string>
+    <string name="notif_channel_blocked_calls">Blocked calls</string>
     <string name="notif_channel_missed_calls">Missed Calls</string>
     <string name="notif_blocked_call_title">Blocked Call</string>
     <string name="notif_blocked_call_text">Blocked call from %1$s</string>
