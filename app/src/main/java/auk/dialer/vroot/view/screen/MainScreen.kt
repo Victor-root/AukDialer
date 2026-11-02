@@ -30,6 +30,8 @@ import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.TopBar
+import auk.dialer.vroot.view.components.navigationTabLabel
+import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
@@ -99,6 +101,8 @@ fun MainScreen(
     }
 
     val statusBarSampler = rememberStatusBarSampler(scrollBehavior, enabled = edgeToEdge)
+    val headerSearch = rememberHeaderSearchState()
+    val headerTitle = navigationTabLabel(currentTab ?: defaultTab)
 
     Scaffold(
         modifier = if (edgeToEdge) {
@@ -122,13 +126,13 @@ fun MainScreen(
                         when (currentTab) {
                             PreferenceManager.TAB_RECENTS -> recentsActionBar?.invoke()
                             PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
-                            else -> TopBar(navigator)
+                            else -> TopBar(navigator, headerTitle, headerSearch)
                         }
                     } else {
                         Column {
-                            TopBar(navigator)
+                            TopBar(navigator, headerTitle, headerSearch)
                             AnimatedVisibility(
-                                visible = filtersVisible,
+                                visible = filtersVisible && !headerSearch.expanded,
                                 enter = fadeIn() + expandVertically(),
                                 exit = fadeOut() + shrinkVertically()
                             ) {
@@ -157,44 +161,46 @@ fun MainScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 1
-            ) { page ->
-                when (visibleTabs.getOrNull(page)) {
-                    PreferenceManager.TAB_RECENTS -> RecentScreenContent(
-                        navController = navController,
-                        navigator = navigator,
-                        onSelectionStateChange = { selecting, actionBar ->
-                            isSelectingRecents = selecting
-                            recentsActionBar = actionBar
-                        },
-                        onFilterBarChange = { filterBar -> recentsFilterBar = filterBar }
-                    )
-                    PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
-                        navController = navController,
-                        navigator = navigator,
-                        showTopBar = false
-                    )
-                    PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
-                        navController = navController,
-                        navigator = navigator,
-                        onSelectionStateChange = { selecting, actionBar ->
-                            isSelectingContacts = selecting
-                            contactsActionBar = actionBar
-                        },
-                        onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
-                    )
-                    PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
-                        navigator = navigator,
-                        showTopBar = false,
-                        isShown = pagerState.currentPage == page
-                    )
-                    PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
-                        isShown = pagerState.currentPage == page
-                    )
+        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    beyondViewportPageCount = 1
+                ) { page ->
+                    when (visibleTabs.getOrNull(page)) {
+                        PreferenceManager.TAB_RECENTS -> RecentScreenContent(
+                            navController = navController,
+                            navigator = navigator,
+                            onSelectionStateChange = { selecting, actionBar ->
+                                isSelectingRecents = selecting
+                                recentsActionBar = actionBar
+                            },
+                            onFilterBarChange = { filterBar -> recentsFilterBar = filterBar }
+                        )
+                        PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
+                            navController = navController,
+                            navigator = navigator,
+                            showTopBar = false
+                        )
+                        PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
+                            navController = navController,
+                            navigator = navigator,
+                            onSelectionStateChange = { selecting, actionBar ->
+                                isSelectingContacts = selecting
+                                contactsActionBar = actionBar
+                            },
+                            onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
+                        )
+                        PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
+                            navigator = navigator,
+                            showTopBar = false,
+                            isShown = pagerState.currentPage == page
+                        )
+                        PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
+                            isShown = pagerState.currentPage == page
+                        )
+                    }
                 }
             }
         }

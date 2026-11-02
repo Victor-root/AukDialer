@@ -49,6 +49,9 @@ import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.ScrollToTopButton
 import auk.dialer.vroot.view.components.TopBar
+import auk.dialer.vroot.view.components.rememberHeaderSearchState
+import auk.dialer.vroot.view.components.navigationTabLabel
+import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -132,6 +135,8 @@ fun ContactScreenContent(
         onFilterBarChange?.invoke(filterBar)
     }
 
+    val headerSearch = rememberHeaderSearchState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -148,9 +153,9 @@ fun ContactScreenContent(
                     ) { selecting ->
                         if (!selecting) {
                             Column {
-                                TopBar(navigator)
+                                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_CONTACTS), headerSearch)
                                 AnimatedVisibility(
-                                    visible = filtersVisible,
+                                    visible = filtersVisible && !headerSearch.expanded,
                                     enter = fadeIn() + expandVertically(),
                                     exit = fadeOut() + shrinkVertically()
                                 ) {
@@ -191,23 +196,23 @@ fun ContactScreenContent(
         },
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        Box (
-            modifier = Modifier.padding(innerPadding).fillMaxSize()
-        ) {
-            ContactContent(
-                navigator = navigator,
-                isGranted = permState.status == PermissionStatus.Granted,
-                onRequestPermission = { permState.launchPermissionRequest() },
-                listState = listState,
-                selectedIds = selectedIds,
-                onToggleSelection = { id ->
-                    selectedIds = if (selectedIds.contains(id)) {
-                        selectedIds - id
-                    } else {
-                        selectedIds + id
+        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                ContactContent(
+                    navigator = navigator,
+                    isGranted = permState.status == PermissionStatus.Granted,
+                    onRequestPermission = { permState.launchPermissionRequest() },
+                    listState = listState,
+                    selectedIds = selectedIds,
+                    onToggleSelection = { id ->
+                        selectedIds = if (selectedIds.contains(id)) {
+                            selectedIds - id
+                        } else {
+                            selectedIds + id
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

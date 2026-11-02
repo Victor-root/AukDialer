@@ -9,108 +9,74 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
-import auk.dialer.vroot.view.theme.AukPlainStatusBar
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
-import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.controller.util.numberMatchesQuery
 import auk.dialer.vroot.controller.util.withoutAccents
 
+/** The screen's own [content], or the contacts matching [search] while it is open. */
 @OptIn(ExperimentalPermissionsApi::class)
-@Destination<RootGraph>
 @Composable
-fun SearchScreen(
-    navController: NavController,
-    navigator: DestinationsNavigator
+fun HeaderSearchContent(
+    search: HeaderSearchState,
+    navigator: DestinationsNavigator,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ) {
-    val permState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val showButton by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 2
-        }
-    }
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        // The search field carries the status bar inset itself, so its accent band reaches behind
-        // the bar rather than starting under it.
-        contentWindowInsets = WindowInsets.safeDrawing
-            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-        floatingActionButton = {
-            ScrollToTopButton(
-                visible = showButton,
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0)
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding.aukExceptBottom()).fillMaxSize()) {
-            ContactSearchContent(
+    BackHandler(enabled = search.expanded) { search.close() }
+    AnimatedContent(
+        targetState = search.expanded,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        modifier = modifier,
+        label = "HeaderSearchContent"
+    ) { searching ->
+        if (searching) {
+            val permState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
+            ContactSearchResults(
+                query = search.query,
                 navigator = navigator,
                 isGranted = permState.status == PermissionStatus.Granted,
-                onRequestPermission = { permState.launchPermissionRequest() },
-                listState = listState,
-                bottomPadding = innerPadding.calculateBottomPadding()
+                onRequestPermission = { permState.launchPermissionRequest() }
             )
+        } else {
+            content()
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContactSearchContent(
+private fun ContactSearchResults(
+    query: String,
     navigator: DestinationsNavigator,
     isGranted: Boolean,
-    onRequestPermission: () -> Unit,
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    bottomPadding: Dp
+    onRequestPermission: () -> Unit
 ) {
     if (!isGranted) {
-        // No search field here, so nothing paints the accent behind the status bar.
-        AukPlainStatusBar()
-        Box(modifier = Modifier.statusBarsPadding()) {
-            PermissionDeniedView(
-                icon = Icons.Default.Person,
-                title = stringResource(R.string.search_contacts_permission_title),
-                description = stringResource(R.string.search_contacts_permission_description),
-                onGrantClick = onRequestPermission
-            )
-        }
+        PermissionDeniedView(
+            icon = Icons.Default.Person,
+            title = stringResource(R.string.search_contacts_permission_title),
+            description = stringResource(R.string.search_contacts_permission_description),
+            onGrantClick = onRequestPermission
+        )
         return
     }
 
@@ -123,20 +89,7 @@ fun ContactSearchContent(
     val callLauncher = rememberCallLauncher()
     val settingsState by prefs.settingsChanged.collectAsState()
     val roundness = remember(settingsState) { prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, 28) }
-
-    var query by remember { mutableStateOf("") }
-
-    BackHandler(enabled = query.isNotEmpty()) {
-        query = ""
-    }
-
-    val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
-    }
+    val listState = rememberLazyListState()
 
     val filteredContacts = remember(query, contacts) {
         if (query.isBlank()) emptyList()
@@ -152,46 +105,6 @@ fun ContactSearchContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        AukAccentHeader {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(roundness.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shadowElevation = 0.dp
-            ) {
-                TextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
-                    placeholder = { Text(stringResource(R.string.search_contacts_placeholder)) },
-                    leadingIcon = {
-                        IconButton(onClick = { navigator.navigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                        }
-                    },
-                    trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_clear))
-                            }
-                        }
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    singleLine = true
-                )
-            }
-        }
-
         Box(modifier = Modifier.weight(1f)) {
             AnimatedContent(
                 targetState = when {
@@ -260,7 +173,7 @@ fun ContactSearchContent(
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 100.dp + bottomPadding)
+                            contentPadding = PaddingValues(bottom = 100.dp)
                         ) {
                             item {
                                 AukSectionHeader(title = stringResource(R.string.search_results_header), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))

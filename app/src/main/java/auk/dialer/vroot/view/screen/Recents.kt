@@ -30,6 +30,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.view.components.*
+import auk.dialer.vroot.controller.util.PreferenceManager
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
@@ -163,6 +164,8 @@ fun RecentScreenContent(
         onFilterBarChange?.invoke(filterChipsRow)
     }
 
+    val headerSearch = rememberHeaderSearchState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0),
@@ -179,9 +182,9 @@ fun RecentScreenContent(
                 ) { selecting ->
                     if (!selecting) {
                         Column {
-                            TopBar(navigator)
+                            TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_RECENTS), headerSearch)
                             AnimatedVisibility(
-                                visible = filtersVisible,
+                                visible = filtersVisible && !headerSearch.expanded,
                                 enter = fadeIn() + expandVertically(),
                                 exit = fadeOut() + shrinkVertically()
                             ) {
@@ -218,23 +221,23 @@ fun RecentScreenContent(
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding).fillMaxSize()
-        ) {
-            CallLogFullContent(
-                navigator = navigator,
-                isGranted = permState.status == PermissionStatus.Granted,
-                onRequestPermission = { permState.launchPermissionRequest() },
-                listState = listState,
-                selectedEntries = selectedEntries,
-                onToggleSelection = { entry ->
-                    selectedEntries = if (selectedEntries.any { it.id == entry.id }) {
-                        selectedEntries.filter { it.id != entry.id }.toSet()
-                    } else {
-                        selectedEntries + entry
+        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CallLogFullContent(
+                    navigator = navigator,
+                    isGranted = permState.status == PermissionStatus.Granted,
+                    onRequestPermission = { permState.launchPermissionRequest() },
+                    listState = listState,
+                    selectedEntries = selectedEntries,
+                    onToggleSelection = { entry ->
+                        selectedEntries = if (selectedEntries.any { it.id == entry.id }) {
+                            selectedEntries.filter { it.id != entry.id }.toSet()
+                        } else {
+                            selectedEntries + entry
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

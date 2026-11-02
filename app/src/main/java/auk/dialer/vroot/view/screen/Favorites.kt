@@ -48,6 +48,8 @@ import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.view.components.PermissionDeniedView
 import auk.dialer.vroot.view.components.AukAvatar
 import auk.dialer.vroot.view.components.TopBar
+import auk.dialer.vroot.view.components.rememberHeaderSearchState
+import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberCallLauncher
 import auk.dialer.vroot.view.components.rememberGridDragDropState
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
@@ -75,25 +77,29 @@ fun FavoritesScreenContent(
     val permState = rememberPermissionState(Manifest.permission.READ_CONTACTS)
     val isGranted = permState.status == PermissionStatus.Granted
 
+    val headerSearch = rememberHeaderSearchState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (showTopBar) {
-                TopBar(navigator)
+                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_FAVORITES), headerSearch)
             }
         },
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            if (!isGranted) {
-                PermissionDeniedView(
-                    icon = Icons.Default.Star,
-                    title = stringResource(R.string.favorites_permission_title),
-                    description = stringResource(R.string.favorites_permission_description),
-                    onGrantClick = { permState.launchPermissionRequest() }
-                )
-            } else {
-                FavoritesGridContent(navigator)
+        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (!isGranted) {
+                    PermissionDeniedView(
+                        icon = Icons.Default.Star,
+                        title = stringResource(R.string.favorites_permission_title),
+                        description = stringResource(R.string.favorites_permission_description),
+                        onGrantClick = { permState.launchPermissionRequest() }
+                    )
+                } else {
+                    FavoritesGridContent(navigator)
+                }
             }
         }
     }

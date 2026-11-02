@@ -39,6 +39,9 @@ import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.PermissionDeniedView
 import auk.dialer.vroot.view.components.TopBar
+import auk.dialer.vroot.view.components.rememberHeaderSearchState
+import auk.dialer.vroot.view.components.navigationTabLabel
+import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import com.ramcosta.composedestinations.annotation.Destination
@@ -145,11 +148,13 @@ fun VoicemailScreenContent(
         }
     }
 
+    val headerSearch = rememberHeaderSearchState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (showTopBar) {
-                TopBar(navigator)
+                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_VOICEMAIL), headerSearch)
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -162,73 +167,75 @@ fun VoicemailScreenContent(
             WindowInsets(0)
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding.aukExceptBottom()).fillMaxSize()) {
-            when {
-                !isDefaultDialer -> PermissionDeniedView(
-                    icon = Icons.Outlined.Voicemail,
-                    title = stringResource(R.string.voicemail_needs_default_dialer_title),
-                    description = stringResource(R.string.voicemail_needs_default_dialer_description),
-                    buttonText = stringResource(R.string.default_dialer_set_as_default),
-                    onGrantClick = { context.startActivity(getDefaultDialerIntent(context)) }
-                )
+        HeaderSearchContent(headerSearch, navigator, Modifier.padding(padding.aukExceptBottom()).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    !isDefaultDialer -> PermissionDeniedView(
+                        icon = Icons.Outlined.Voicemail,
+                        title = stringResource(R.string.voicemail_needs_default_dialer_title),
+                        description = stringResource(R.string.voicemail_needs_default_dialer_description),
+                        buttonText = stringResource(R.string.default_dialer_set_as_default),
+                        onGrantClick = { context.startActivity(getDefaultDialerIntent(context)) }
+                    )
 
-                isLoading -> AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
+                    isLoading -> AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
 
-                else -> {
-                    val pullToRefreshState = rememberPullToRefreshState()
-                    PullToRefreshBox(
-                        isRefreshing = isSyncing,
-                        onRefresh = { viewModel.syncNow() },
-                        modifier = Modifier.fillMaxSize(),
-                        state = pullToRefreshState,
-                        indicator = {
-                            AukPullToRefreshIndicator(state = pullToRefreshState, isRefreshing = isSyncing)
-                        }
-                    ) {
-                        if (voicemails.isEmpty()) {
-                            VoicemailStatusState(
-                                status = status,
-                                onOpenSettings = { navigator.navigate(VoicemailScreenDestination) }
-                            )
-                        } else {
-                            val groupedVoicemails = remember(voicemails) {
-                                voicemails.groupBy { formatDateHeader(context, it.date) }
+                    else -> {
+                        val pullToRefreshState = rememberPullToRefreshState()
+                        PullToRefreshBox(
+                            isRefreshing = isSyncing,
+                            onRefresh = { viewModel.syncNow() },
+                            modifier = Modifier.fillMaxSize(),
+                            state = pullToRefreshState,
+                            indicator = {
+                                AukPullToRefreshIndicator(state = pullToRefreshState, isRefreshing = isSyncing)
                             }
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(
-                                    top = 8.dp,
-                                    bottom = 16.dp + padding.calculateBottomPadding()
+                        ) {
+                            if (voicemails.isEmpty()) {
+                                VoicemailStatusState(
+                                    status = status,
+                                    onOpenSettings = { navigator.navigate(VoicemailScreenDestination) }
                                 )
-                            ) {
-                                groupedVoicemails.forEach { (header, group) ->
-                                    item(key = header) {
-                                        AukSectionHeader(title = header)
-                                        Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                            AukExpressiveCard(isCompact = true) {
-                                                group.forEachIndexed { index, voicemail ->
-                                                    VoicemailRow(
-                                                        voicemail = voicemail,
-                                                        isCurrent = playback.playingId == voicemail.id,
-                                                        isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
-                                                        positionMs = playback.positionMs,
-                                                        durationMs = playback.durationMs,
-                                                        isSpeakerOn = isSpeakerOn,
-                                                        onToggle = { viewModel.togglePlayback(voicemail) },
-                                                        onSeek = { viewModel.seekTo(it) },
-                                                        onToggleSpeaker = { viewModel.toggleSpeaker() },
-                                                        onToggleRead = {
-                                                            viewModel.markAsRead(voicemail.id, !voicemail.isRead)
-                                                        },
-                                                        onDelete = { viewModel.delete(voicemail.id) }
-                                                    )
-                                                    if (index < group.size - 1) {
-                                                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                            } else {
+                                val groupedVoicemails = remember(voicemails) {
+                                    voicemails.groupBy { formatDateHeader(context, it.date) }
+                                }
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(
+                                        top = 8.dp,
+                                        bottom = 16.dp + padding.calculateBottomPadding()
+                                    )
+                                ) {
+                                    groupedVoicemails.forEach { (header, group) ->
+                                        item(key = header) {
+                                            AukSectionHeader(title = header)
+                                            Box(modifier = Modifier.padding(horizontal = 12.dp)) {
+                                                AukExpressiveCard(isCompact = true) {
+                                                    group.forEachIndexed { index, voicemail ->
+                                                        VoicemailRow(
+                                                            voicemail = voicemail,
+                                                            isCurrent = playback.playingId == voicemail.id,
+                                                            isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
+                                                            positionMs = playback.positionMs,
+                                                            durationMs = playback.durationMs,
+                                                            isSpeakerOn = isSpeakerOn,
+                                                            onToggle = { viewModel.togglePlayback(voicemail) },
+                                                            onSeek = { viewModel.seekTo(it) },
+                                                            onToggleSpeaker = { viewModel.toggleSpeaker() },
+                                                            onToggleRead = {
+                                                                viewModel.markAsRead(voicemail.id, !voicemail.isRead)
+                                                            },
+                                                            onDelete = { viewModel.delete(voicemail.id) }
+                                                        )
+                                                        if (index < group.size - 1) {
+                                                            AukDivider(Modifier.padding(horizontal = 16.dp))
+                                                        }
                                                     }
                                                 }
                                             }
+                                            Spacer(Modifier.height(8.dp))
                                         }
-                                        Spacer(Modifier.height(8.dp))
                                     }
                                 }
                             }
