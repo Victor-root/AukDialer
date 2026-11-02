@@ -32,6 +32,7 @@ import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import auk.dialer.vroot.controller.util.indexLetter
@@ -234,15 +235,17 @@ fun AlphabetSideBar(
                     val index = ((y - padding) / (lettersHeight / alphabet.size)).toInt()
                     return alphabet[index.coerceIn(0, alphabet.lastIndex)]
                 }
+                // Started at once: the first touch is what starts this block, and detectors launched
+                // the usual way only began listening after it had gone by, losing the first tap.
                 coroutineScope {
                     // A plain tap jumps too: a drag only starts once the finger has moved.
-                    launch {
+                    launch(start = CoroutineStart.UNDISPATCHED) {
                         detectTapGestures { offset ->
                             letterAt(offset.y)?.let(onLetterSelected)
                             onDragEnd()
                         }
                     }
-                    launch {
+                    launch(start = CoroutineStart.UNDISPATCHED) {
                         detectVerticalDragGestures(
                             onDragStart = { offset -> letterAt(offset.y)?.let(onLetterSelected) },
                             onDragEnd = { onDragEnd() },
