@@ -169,6 +169,14 @@ class CallService : InCallService() {
             }
         }
 
+        /** Clears the missed-call notifications this service posted, once the call history is seen. */
+        fun cancelMissedCallNotifications(context: Context) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.activeNotifications
+                .filter { it.notification.channelId == MISSED_CHANNEL_ID }
+                .forEach { notificationManager.cancel(it.tag, it.id) }
+        }
+
         fun answerCall() {
             _currentCallSession.value?.call?.answer(VideoProfile.STATE_AUDIO_ONLY)
         }

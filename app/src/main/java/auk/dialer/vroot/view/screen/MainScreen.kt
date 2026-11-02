@@ -176,7 +176,8 @@ fun MainScreen(
                                 isSelectingRecents = selecting
                                 recentsActionBar = actionBar
                             },
-                            onFilterBarChange = { filterBar -> recentsFilterBar = filterBar }
+                            onFilterBarChange = { filterBar -> recentsFilterBar = filterBar },
+                            isShown = pagerState.currentPage == page
                         )
                         PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
                             navController = navController,

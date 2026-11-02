@@ -501,9 +501,12 @@ fun ExpressiveCallScreen(
                 if (hasBluetooth) showAudioPicker = true else CallService.cycleAudioRoute()
             },
             // Telecom holds this call itself once the second one is placed: holding it here left it
-            // on hold whenever the user came back without dialing.
+            // on hold whenever the user came back without dialing. The dialer opens in the app's own
+            // task, the call screen keeping a task of its own.
             onAddCall = {
-                try { context.startActivity(Intent(Intent.ACTION_DIAL)) } catch (e: Exception) {}
+                try {
+                    context.startActivity(Intent(Intent.ACTION_DIAL).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (e: Exception) {}
             },
             onToggleHold = {
                 try {

@@ -29,6 +29,8 @@ import com.google.accompanist.permissions.rememberPermissionState
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.CallLogViewModel
+import auk.dialer.vroot.controller.CallService
+import androidx.lifecycle.compose.currentStateAsState
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.controller.util.PreferenceManager
@@ -80,7 +82,8 @@ fun RecentScreenContent(
     navController: NavController,
     navigator: DestinationsNavigator,
     onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null,
-    onFilterBarChange: ((@Composable () -> Unit) -> Unit)? = null
+    onFilterBarChange: ((@Composable () -> Unit) -> Unit)? = null,
+    isShown: Boolean = true
 ) {
     val permState = rememberPermissionState(Manifest.permission.READ_CALL_LOG)
     val listState = rememberLazyListState()
@@ -94,6 +97,13 @@ fun RecentScreenContent(
 
     BackHandler(enabled = selectedEntries.isNotEmpty()) {
         selectedEntries = emptySet()
+    }
+
+    // The history in sight answers the missed-call notifications: they go once it is seen.
+    val lifecycleState by androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val isSeen = isShown && lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+    LaunchedEffect(isSeen) {
+        if (isSeen) CallService.cancelMissedCallNotifications(context)
     }
 
     val showButton by remember {
