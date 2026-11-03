@@ -2,6 +2,10 @@ package auk.dialer.vroot.view.theme
 
 import android.app.WallpaperManager
 import android.content.Context
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -17,10 +21,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,12 +64,7 @@ private const val OemColorSaturationFloor = 0.15f
 fun aukDynamicColorScheme(context: Context, darkTheme: Boolean): ColorScheme {
     val platformScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
-    val wallpaperSeed = runCatching {
-        WallpaperManager.getInstance(context)
-            .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
-            ?.primaryColor
-            ?.toArgb()
-    }.getOrNull() ?: return platformScheme
+    val wallpaperSeed = wallpaperSeedColor(context) ?: return platformScheme
 
     val platformHsv = FloatArray(3)
     android.graphics.Color.colorToHSV(platformScheme.primary.toArgb(), platformHsv)
@@ -77,6 +79,60 @@ fun aukDynamicColorScheme(context: Context, darkTheme: Boolean): ColorScheme {
     } else {
         platformScheme
     }
+}
+
+/**
+ * Where ColorOS keeps the wallpaper's colour, as "<ARGB int>&…&…". Its glass wallpaper effect is a
+ * live wallpaper reporting no WallpaperColors at all, while the platform palette it leaves behind
+ * stays on a stale blue: this record is then the only trace of the real colour.
+ */
+private const val ColorOsWallpaperSeedKey = "wall_paper_seed_color"
+
+/** The wallpaper's dominant colour, from WallpaperColors or else from ColorOS's own record of it. */
+private fun wallpaperSeedColor(context: Context): Int? =
+    runCatching {
+        WallpaperManager.getInstance(context)
+            .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
+            ?.primaryColor
+            ?.toArgb()
+    }.getOrNull() ?: runCatching {
+        Settings.System.getString(context.contentResolver, ColorOsWallpaperSeedKey)
+            ?.substringBefore('&')
+            ?.toIntOrNull()
+    }.getOrNull()
+
+/**
+ * Counts the wallpaper colour changes while [enabled], so a scheme keyed on it is worked out again.
+ * ColorOS's record changes without the platform palette doing so, which would otherwise recreate
+ * the activity, hence the observer on it next to the usual listener.
+ */
+@Composable
+private fun rememberWallpaperColorsVersion(context: Context, enabled: Boolean): Int {
+    var version by remember { mutableIntStateOf(0) }
+    DisposableEffect(context, enabled) {
+        if (!enabled) return@DisposableEffect onDispose {}
+        val handler = Handler(Looper.getMainLooper())
+        val wallpaperManager = WallpaperManager.getInstance(context)
+        val colorsListener = WallpaperManager.OnColorsChangedListener { _, which ->
+            if (which and WallpaperManager.FLAG_SYSTEM != 0) version++
+        }
+        val seedObserver = object : ContentObserver(handler) {
+            override fun onChange(selfChange: Boolean) {
+                version++
+            }
+        }
+        runCatching { wallpaperManager.addOnColorsChangedListener(colorsListener, handler) }
+        context.contentResolver.registerContentObserver(
+            Settings.System.getUriFor(ColorOsWallpaperSeedKey),
+            false,
+            seedObserver
+        )
+        onDispose {
+            runCatching { wallpaperManager.removeOnColorsChangedListener(colorsListener) }
+            context.contentResolver.unregisterContentObserver(seedObserver)
+        }
+    }
+    return version
 }
 
 @Composable
@@ -106,7 +162,9 @@ fun AukTheme(
     }
     val edgeToEdge by prefs.edgeToEdge.collectAsState()
 
-    val baseScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt) {
+    val wallpaperColorsVersion = rememberWallpaperColorsVersion(context, enabled = dynamicColor)
+
+    val baseScheme = remember(darkTheme, dynamicColor, amoledMode, customPrimaryInt, wallpaperColorsVersion) {
         val base = when {
             dynamicColor -> aukDynamicColorScheme(context, darkTheme)
             customPrimaryInt != CUSTOM_PRIMARY_COLOR_UNSET ->
