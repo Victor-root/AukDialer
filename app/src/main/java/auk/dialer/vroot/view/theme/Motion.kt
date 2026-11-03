@@ -68,6 +68,14 @@ object AukStaticMotion {
     fun <T> screenExitEffects(): FiniteAnimationSpec<T> =
         tween(AukDurations.Short4, easing = AukEasing.EmphasizedAccelerate)
 
+    /**
+     * A tab picked from the bottom bar. The pager's own default is a soft spring that leaves at
+     * full speed and then creeps the last pixels in over many frames, which reads as a stutter
+     * rather than the glide a finger gives.
+     */
+    fun <T> pageSwitch(): FiniteAnimationSpec<T> =
+        tween(AukDurations.Medium2, easing = AukEasing.Emphasized)
+
     fun <T> ambientLoop(durationMillis: Int): FiniteAnimationSpec<T> =
         tween(durationMillis, easing = AukEasing.Linear)
 }

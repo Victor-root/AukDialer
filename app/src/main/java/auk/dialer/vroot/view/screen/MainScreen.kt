@@ -38,6 +38,7 @@ import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
+import auk.dialer.vroot.view.theme.AukStaticMotion
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import auk.dialer.vroot.view.theme.aukCollapsingHeader
 import auk.dialer.vroot.view.theme.aukSampleStatusBarContent
@@ -92,6 +93,7 @@ fun MainScreen(
     // Only real page changes update it: the page restored on coming back may now hold another tab.
     LaunchedEffect(visibleTabs) {
         snapshotFlow { pagerState.currentPage }.drop(1).collect { page ->
+            PerfLog.d("current page now $page")
             visibleTabs.getOrNull(page)?.let { shownTab = it }
         }
     }
@@ -178,7 +180,7 @@ fun MainScreen(
                 onPageSelected = { page ->
                     PerfLog.d("tab tapped: page $page")
                     scope.launch {
-                        pagerState.animateScrollToPage(page)
+                        pagerState.animateScrollToPage(page, animationSpec = AukStaticMotion.pageSwitch())
                     }
                 }
             )
