@@ -4,8 +4,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
+import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.PreferenceManager
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -18,11 +18,11 @@ import kotlinx.coroutines.flow.drop
 @Composable
 fun ListScrollHaptics(listState: LazyListState, prefs: PreferenceManager) {
     if (!prefs.getBoolean(PreferenceManager.KEY_HAPTIC_LIST_SCROLL, false)) return
-    val haptic = LocalHapticFeedback.current
-    LaunchedEffect(listState, haptic) {
+    val context = LocalContext.current
+    LaunchedEffect(listState, context) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
             .drop(1)
-            .collect { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+            .collect { AukHaptics.play(context, AukHaptics.Effect.Tick) }
     }
 }

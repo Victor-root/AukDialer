@@ -62,6 +62,7 @@ import coil.compose.rememberAsyncImagePainter
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
+import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
 import auk.dialer.vroot.controller.util.formatPhoneNumber
@@ -684,7 +685,6 @@ fun DialPadKey(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val prefs = koinInject<PreferenceManager>()
-    val haptic = LocalHapticFeedback.current
 
     val cornerRadius by animateDpAsState(
         targetValue = if (isPressed) 16.dp else 28.dp,
@@ -709,7 +709,7 @@ fun DialPadKey(
                         playDtmf(number, toneGenerator)
                     }
                     if (prefs.getBoolean(PreferenceManager.KEY_DIALPAD_VIBRATION, true)) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        AukHaptics.play(context, AukHaptics.Effect.Click)
                     }
                     onClick(number)
                 },

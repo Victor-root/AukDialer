@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.telecom.Call
 import android.telecom.CallAudioState
-import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -36,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.CallBackgroundStore
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
@@ -124,9 +124,7 @@ class CallActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     CallService.connectedCallEnded.collect {
                         if (preferenceManager.getBoolean(PreferenceManager.KEY_VIBRATE_ON_HANGUP, false)) {
-                            this@CallActivity.window?.decorView?.performHapticFeedback(
-                                HapticFeedbackConstants.REJECT
-                            )
+                            AukHaptics.play(this@CallActivity, AukHaptics.Effect.DoubleClick)
                         }
                     }
                 }
@@ -155,9 +153,7 @@ class CallActivity : ComponentActivity() {
                                     true
                                 )
                             ) {
-                                this@CallActivity.window?.decorView?.performHapticFeedback(
-                                    HapticFeedbackConstants.CONFIRM
-                                )
+                                AukHaptics.play(this@CallActivity, AukHaptics.Effect.HeavyClick)
                             }
                         }
 
