@@ -645,6 +645,7 @@
     <string name="settings_group_work_in_progress">Work in Progress</string>
     <string name="settings_call_recording">Call recording</string>
     <string name="call_recording_microphone_denied">Recording needs access to the microphone</string>
+    <string name="settings_call_recording_entry_supporting">Recording options, Shizuku and saved recordings</string>
     <string name="settings_call_recording_supporting">Show a record button during calls</string>
     <string name="settings_call_recording_auto">Record every call</string>
     <string name="settings_call_recording_auto_supporting">Start recording automatically when a call connects</string>

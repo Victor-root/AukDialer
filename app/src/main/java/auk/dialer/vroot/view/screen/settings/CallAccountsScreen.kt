@@ -40,19 +40,13 @@ import android.content.Intent
 import android.telecom.TelecomManager
 import androidx.compose.material.icons.automirrored.outlined.PhoneCallback
 
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import auk.dialer.vroot.controller.CallRecorder
-import auk.dialer.vroot.controller.ShizukuBridge
 import auk.dialer.vroot.controller.util.makeCall
-import com.ramcosta.composedestinations.generated.destinations.CallRecordingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SpeedDialScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.VoicemailScreenDestination
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun CallAccountsScreen(
@@ -77,12 +71,6 @@ fun CallAccountsScreen(
     var redialAttempts by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_REDIAL_ATTEMPTS, 3)) }
     var redialDelay by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_REDIAL_DELAY, 3000)) }
     var defaultSim by remember(settingsState) { mutableStateOf(prefs.getInt("default_sim", 0)) }
-    var callRecording by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_CALL_RECORDING, false)) }
-    var autoRecord by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, false)) }
-
-    val recordAudioPermission = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
-    val shizukuStatus by ShizukuBridge.status.collectAsState()
-    LaunchedEffect(Unit) { ShizukuBridge.refresh() }
 
     var defaultCallBg by remember(settingsState) { mutableStateOf(CallBackgroundStore.defaultModel(context)) }
     var savingCallBg by remember { mutableStateOf(false) }
@@ -297,74 +285,6 @@ fun CallAccountsScreen(
                 AukExpressiveCard(
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
                 ) {
-                    AukSwitchListItem(
-                        headline = stringResource(R.string.settings_call_recording),
-                        supporting = stringResource(R.string.settings_call_recording_supporting),
-                        leadingIcon = Icons.Outlined.FiberManualRecord,
-                        checked = callRecording,
-                        onCheckedChange = { enabled ->
-                            if (enabled && !CallRecorder.hasPermission(context)) {
-                                recordAudioPermission.launchPermissionRequest()
-                            }
-                            callRecording = enabled
-                            prefs.setBoolean(PreferenceManager.KEY_CALL_RECORDING, enabled)
-                            if (!enabled) {
-                                autoRecord = false
-                                prefs.setBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, false)
-                            }
-                        }
-                    )
-                    if (callRecording) {
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        AukSwitchListItem(
-                            headline = stringResource(R.string.settings_call_recording_auto),
-                            supporting = stringResource(R.string.settings_call_recording_auto_supporting),
-                            leadingIcon = Icons.Outlined.Autorenew,
-                            checked = autoRecord,
-                            onCheckedChange = {
-                                if (it && !CallRecorder.hasPermission(context)) {
-                                    recordAudioPermission.launchPermissionRequest()
-                                }
-                                autoRecord = it
-                                prefs.setBoolean(PreferenceManager.KEY_CALL_RECORDING_AUTO, it)
-                            }
-                        )
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        AukListItem(
-                            headline = stringResource(R.string.settings_call_recording_shizuku),
-                            supporting = stringResource(
-                                when (shizukuStatus) {
-                                    ShizukuBridge.Status.Unavailable -> R.string.settings_call_recording_shizuku_unavailable
-                                    ShizukuBridge.Status.NeedsPermission -> R.string.settings_call_recording_shizuku_needs_permission
-                                    ShizukuBridge.Status.Denied -> R.string.settings_call_recording_shizuku_denied
-                                    ShizukuBridge.Status.Ready -> R.string.settings_call_recording_shizuku_ready
-                                }
-                            ),
-                            leadingIcon = Icons.Outlined.Security,
-                            onClick = {
-                                if (shizukuStatus == ShizukuBridge.Status.NeedsPermission) {
-                                    ShizukuBridge.requestPermission()
-                                } else {
-                                    ShizukuBridge.openShizuku(context)
-                                }
-                            }
-                        )
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        AukListItem(
-                            headline = stringResource(R.string.call_recordings_title),
-                            supporting = stringResource(R.string.call_recordings_supporting),
-                            leadingIcon = Icons.Outlined.LibraryMusic,
-                            onClick = { navigator.navigate(CallRecordingsScreenDestination) }
-                        )
-                    }
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    AukListItem(
-                        headline = stringResource(R.string.settings_call_voicemail),
-                        supporting = stringResource(R.string.settings_call_voicemail_supporting),
-                        leadingIcon = Icons.Outlined.Voicemail,
-                        onClick = { navigator.navigate(VoicemailScreenDestination) }
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     AukListItem(
                         headline = stringResource(R.string.settings_call_waiting),
                         supporting = stringResource(R.string.settings_call_waiting_supporting),

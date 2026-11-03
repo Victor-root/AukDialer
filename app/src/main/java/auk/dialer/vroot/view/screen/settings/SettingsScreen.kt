@@ -111,6 +111,18 @@ fun SettingsScreen(
                         onClick = { navigator.navigate(CallAccountsScreenDestination) }
                     )
                     AukListItem(
+                        headline = stringResource(R.string.settings_call_recording),
+                        supporting = stringResource(R.string.settings_call_recording_entry_supporting),
+                        leadingIcon = Icons.Outlined.FiberManualRecord,
+                        onClick = { navigator.navigate(CallRecordingSettingsScreenDestination) }
+                    )
+                    AukListItem(
+                        headline = stringResource(R.string.settings_call_voicemail),
+                        supporting = stringResource(R.string.settings_call_voicemail_supporting),
+                        leadingIcon = Icons.Outlined.Voicemail,
+                        onClick = { navigator.navigate(VoicemailScreenDestination) }
+                    )
+                    AukListItem(
                         headline = stringResource(R.string.settings_blocked_numbers_headline),
                         supporting = stringResource(R.string.settings_blocked_numbers_supporting),
                         leadingIcon = Icons.Outlined.Block,
