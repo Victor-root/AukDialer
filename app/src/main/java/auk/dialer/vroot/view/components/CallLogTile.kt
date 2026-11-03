@@ -143,9 +143,10 @@ fun CallLogTile(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.weight(1f)) {
-                val displayName = remember(log.name, displayOrder, formattedNumber) {
-                    log.name?.let { 
-                        if (it.isNotEmpty()) auk.dialer.vroot.controller.util.ContactUtils.formatContactName(it, displayOrder) else null
+                // A caller with no name is listed under their number, which is then shown formatted.
+                val displayName = remember(log.name, log.number, displayOrder, formattedNumber) {
+                    log.name?.takeIf { it.isNotEmpty() && it != log.number }?.let {
+                        auk.dialer.vroot.controller.util.ContactUtils.formatContactName(it, displayOrder)
                     } ?: formattedNumber
                 }
 
