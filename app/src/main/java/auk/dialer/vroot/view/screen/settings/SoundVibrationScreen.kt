@@ -181,8 +181,8 @@ fun SoundVibrationScreen(
 }
 
 /**
- * One slider per vibration, and one above them that sets them all at once. Letting go of a slider
- * plays its vibration at the new strength, so it can be felt rather than guessed.
+ * One slider per vibration, and one above them that sets them all at once. Each step of a slider
+ * plays its vibration at the new strength, so it can be felt while sliding rather than guessed.
  */
 @Composable
 private fun VibrationIntensityDialog(prefs: PreferenceManager, onDismissRequest: () -> Unit) {
@@ -211,10 +211,10 @@ private fun VibrationIntensityDialog(prefs: PreferenceManager, onDismissRequest:
             onValueChange = { value ->
                 all = value
                 AukHaptics.Vibration.entries.forEach { intensities[it] = value }
+                AukHaptics.play(context, AukHaptics.Vibration.Dialpad, value)
             },
             onValueChangeFinished = {
                 AukHaptics.Vibration.entries.forEach { prefs.setInt(it.intensityKey, all) }
-                AukHaptics.play(context, AukHaptics.Vibration.Dialpad, all)
             }
         )
         AukHaptics.Vibration.entries.forEach { vibration ->
@@ -222,10 +222,12 @@ private fun VibrationIntensityDialog(prefs: PreferenceManager, onDismissRequest:
             IntensitySlider(
                 label = stringResource(vibration.labelRes()),
                 value = value,
-                onValueChange = { intensities[vibration] = it },
+                onValueChange = {
+                    intensities[vibration] = it
+                    AukHaptics.play(context, vibration, it)
+                },
                 onValueChangeFinished = {
                     prefs.setInt(vibration.intensityKey, intensities.getValue(vibration))
-                    AukHaptics.play(context, vibration, intensities.getValue(vibration))
                 }
             )
         }
@@ -250,7 +252,8 @@ private fun IntensitySlider(
         }
         Slider(
             value = value.toFloat(),
-            onValueChange = { onValueChange(it.roundToInt()) },
+            // Called on every move of the thumb: only a new step counts.
+            onValueChange = { it.roundToInt().let { step -> if (step != value) onValueChange(step) } },
             valueRange = IntensityRange,
             steps = IntensitySteps,
             onValueChangeFinished = onValueChangeFinished,
