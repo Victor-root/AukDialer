@@ -112,10 +112,9 @@ class CallActivity : ComponentActivity() {
                     null
                 }
 
-                val darkTheme = isSystemInDarkTheme()
-                val lightSystemBarIcons = darkTheme ||
-                        identity?.backgroundUri != null ||
-                        identity?.photoUri != null
+                // A photo or custom background sits under a scrim of the theme's surface at the top,
+                // so the status bar always lies on that surface: its icons follow the theme alone.
+                val lightSystemBarIcons = isSystemInDarkTheme()
 
                 DisposableEffect(lightSystemBarIcons) {
                     applySystemBarStyle(lightSystemBarIcons)
