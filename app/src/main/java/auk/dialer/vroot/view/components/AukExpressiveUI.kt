@@ -172,6 +172,18 @@ fun AukLeadingIconTile(
  * The card itself stays plain and legible, and its edge is what ties it to the accent, rather than
  * tinting the card or dropping a shadow under it.
  */
+/**
+ * A switch turned on in the app's accent, as the header and the icon tiles are. Material's own
+ * checked track is primary, which the dark theme lightens to a pale pink next to them.
+ */
+@Composable
+fun aukSwitchColors(): SwitchColors = SwitchDefaults.colors(
+    checkedTrackColor = LocalAccentBarColor.current,
+    checkedThumbColor = LocalOnAccentBarColor.current,
+    checkedIconColor = LocalAccentBarColor.current,
+    checkedBorderColor = LocalAccentBarColor.current
+)
+
 @Composable
 fun aukAccentCardBorder(width: Dp = 1.dp): BorderStroke =
     BorderStroke(width, MaterialTheme.colorScheme.primary)
@@ -673,7 +685,8 @@ fun AukSwitchListItem(
             Switch(
                 checked = checked,
                 onCheckedChange = null,
-                enabled = enabled
+                enabled = enabled,
+                colors = aukSwitchColors()
             )
         }
     )

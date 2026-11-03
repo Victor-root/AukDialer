@@ -19,6 +19,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukDivider
+import auk.dialer.vroot.view.components.aukSwitchColors
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.navigationTabIcon
 import auk.dialer.vroot.view.components.navigationTabLabel
@@ -187,7 +188,8 @@ fun BottomNavScreen(
                                 onCheckedChange = { checked ->
                                     val newHidden = if (checked) hidden - tabId else hidden + tabId
                                     persist(order, newHidden)
-                                }
+                                },
+                                colors = aukSwitchColors()
                             )
                         }
                         if (index < order.lastIndex) {
