@@ -91,8 +91,8 @@ fun ContactVisibilityScreen(
                     accounts.forEach { account ->
                         val key = "${account.type}|${account.name}"
                         AukSwitchListItem(
-                            headline = ContactUtils.getFriendlyAccountName(LocalContext.current, account),
-                            supporting = account.name,
+                            headline = ContactUtils.getAccountTitle(LocalContext.current, account),
+                            supporting = ContactUtils.getAccountSubtitle(LocalContext.current, account),
                             leadingIcon = ContactUtils.getAccountIcon(account),
                             checked = currentVisible.contains(key),
                             onCheckedChange = { isChecked: Boolean -> toggleAccount(key, isChecked) }
