@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.drop
+import kotlin.math.abs
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -184,11 +186,21 @@ fun MainScreen(
     ) { innerPadding ->
         HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
             Box(modifier = Modifier.fillMaxSize()) {
+                // Every page is kept, but only filled once it comes within a page of the current one,
+                // as before. Dropping a page when it went out of reach meant building it again each
+                // time it came back, which on a phone took a whole tab's worth of work in one frame,
+                // in the middle of the page animation.
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 1
+                    beyondViewportPageCount = visibleTabs.size
                 ) { page ->
+                    val inReach by remember(page) {
+                        derivedStateOf { abs(pagerState.currentPage - page) <= 1 }
+                    }
+                    var built by remember(page) { mutableStateOf(false) }
+                    LaunchedEffect(inReach) { if (inReach) built = true }
+                    if (!inReach && !built) return@HorizontalPager
                     LaunchedEffect(Unit) { PerfLog.d("page $page built") }
                     when (visibleTabs.getOrNull(page)) {
                         PreferenceManager.TAB_RECENTS -> RecentScreenContent(
