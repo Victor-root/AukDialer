@@ -124,7 +124,7 @@ class CallActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     CallService.connectedCallEnded.collect {
                         if (preferenceManager.getBoolean(PreferenceManager.KEY_VIBRATE_ON_HANGUP, false)) {
-                            AukHaptics.play(this@CallActivity, AukHaptics.Effect.DoubleClick)
+                            AukHaptics.play(this@CallActivity, AukHaptics.Vibration.Hangup, preferenceManager)
                         }
                     }
                 }
@@ -153,7 +153,7 @@ class CallActivity : ComponentActivity() {
                                     true
                                 )
                             ) {
-                                AukHaptics.play(this@CallActivity, AukHaptics.Effect.HeavyClick)
+                                AukHaptics.play(this@CallActivity, AukHaptics.Vibration.Answer, preferenceManager)
                             }
                         }
 

@@ -354,6 +354,10 @@
     <string name="settings_sound_vibrate_on_hangup_supporting">Vibrer lorsque l’appel se termine</string>
     <string name="settings_sound_haptic_scroll">Retour haptique au défilement</string>
     <string name="settings_sound_haptic_scroll_supporting">Vibrer discrètement lors du défilement des listes</string>
+    <string name="settings_sound_vibration_intensity">Intensité des vibrations</string>
+    <string name="settings_sound_vibration_intensity_supporting">Régler la force de chaque vibration</string>
+    <string name="settings_sound_vibration_intensity_all">Toutes les vibrations</string>
+    <string name="settings_sound_vibration_intensity_value">%1$d %%</string>
     <string name="settings_sound_missed_call_notifications">Notifications d’appels manqués</string>
     <string name="settings_sound_missed_call_notifications_supporting">Afficher une notification pour les appels manqués</string>
     <string name="settings_sound_ringtone_settings">Paramètres de sonnerie</string>

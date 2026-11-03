@@ -709,7 +709,7 @@ fun DialPadKey(
                         playDtmf(number, toneGenerator)
                     }
                     if (prefs.getBoolean(PreferenceManager.KEY_DIALPAD_VIBRATION, true)) {
-                        AukHaptics.play(context, AukHaptics.Effect.Click)
+                        AukHaptics.play(context, AukHaptics.Vibration.Dialpad, prefs)
                     }
                     onClick(number)
                 },

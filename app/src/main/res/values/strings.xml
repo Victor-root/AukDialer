@@ -385,6 +385,10 @@
     <string name="settings_sound_vibrate_on_hangup_supporting">Vibrate when the call ends</string>
     <string name="settings_sound_haptic_scroll">Haptic Scrolling feedback</string>
     <string name="settings_sound_haptic_scroll_supporting">Vibrate subtly when scrolling lists</string>
+    <string name="settings_sound_vibration_intensity">Vibration strength</string>
+    <string name="settings_sound_vibration_intensity_supporting">Set how strong each vibration feels</string>
+    <string name="settings_sound_vibration_intensity_all">All vibrations</string>
+    <string name="settings_sound_vibration_intensity_value">%1$d%%</string>
     <string name="settings_sound_missed_call_notifications">Missed call notifications</string>
     <string name="settings_sound_missed_call_notifications_supporting">Show notifications for missed calls</string>
     <string name="settings_sound_ringtone_settings">Ringtone Settings</string>

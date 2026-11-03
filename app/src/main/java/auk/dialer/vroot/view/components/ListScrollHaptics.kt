@@ -23,6 +23,6 @@ fun ListScrollHaptics(listState: LazyListState, prefs: PreferenceManager) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
             .drop(1)
-            .collect { AukHaptics.play(context, AukHaptics.Effect.Tick) }
+            .collect { AukHaptics.play(context, AukHaptics.Vibration.Scroll, prefs) }
     }
 }
