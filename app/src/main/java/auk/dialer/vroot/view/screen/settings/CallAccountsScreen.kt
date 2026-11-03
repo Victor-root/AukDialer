@@ -277,14 +277,7 @@ fun CallAccountsScreen(
             }
 
             item {
-                AukSectionHeader(
-                    title = stringResource(R.string.settings_group_work_in_progress),
-                    icon = Icons.Outlined.Construction
-                )
-                Spacer(Modifier.height(8.dp))
-                AukExpressiveCard(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
-                ) {
+                AukExpressiveCard {
                     AukListItem(
                         headline = stringResource(R.string.settings_call_waiting),
                         supporting = stringResource(R.string.settings_call_waiting_supporting),
