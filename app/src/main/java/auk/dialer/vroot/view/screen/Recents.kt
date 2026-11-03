@@ -32,6 +32,7 @@ import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.CallService
 import androidx.lifecycle.compose.currentStateAsState
 import auk.dialer.vroot.controller.util.formatDateHeader
+import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.controller.util.PreferenceManager
 import com.ramcosta.composedestinations.annotation.Destination
@@ -356,7 +357,7 @@ fun AddFavoriteDialog(
                 availableContacts.take(40).forEach { contact ->
                     AukListItem(
                         headline = contact.name,
-                        supporting = contact.phoneNumbers.firstOrNull() ?: "",
+                        supporting = contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: "",
                         headlineMaxLines = 2,
                         supportingMaxLines = 2,
                         avatarName = contact.name,

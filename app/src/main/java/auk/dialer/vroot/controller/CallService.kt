@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import auk.dialer.vroot.controller.util.decodeSampledBitmap
+import auk.dialer.vroot.controller.util.formatPhoneNumber
 import android.graphics.Color
 import android.net.Uri
 import android.provider.BlockedNumberContract
@@ -410,7 +411,7 @@ class CallService : InCallService() {
         val builder = NotificationCompat.Builder(this, BLOCKED_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
             .setContentTitle(getString(R.string.notif_blocked_call_title))
-            .setContentText(getString(R.string.notif_blocked_call_text, number))
+            .setContentText(getString(R.string.notif_blocked_call_text, formatPhoneNumber(number)))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
 
@@ -444,7 +445,9 @@ class CallService : InCallService() {
             } catch (e: Exception) { null }
         } else null
 
-        val contactName = contact?.name ?: number.ifEmpty { getString(R.string.label_unknown_number) }
+        val contactName = contact?.name
+            ?: number.ifEmpty { null }?.let { formatPhoneNumber(it) }
+            ?: getString(R.string.label_unknown_number)
         val contactPhoto = getContactBitmap(contact?.photoUri)
 
         val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
@@ -660,7 +663,7 @@ class CallService : InCallService() {
 
         val contactName = when {
             contact != null -> contact.name
-            number.isNotEmpty() -> number
+            number.isNotEmpty() -> formatPhoneNumber(number)
             else -> getString(R.string.label_unknown_number)
         }
         

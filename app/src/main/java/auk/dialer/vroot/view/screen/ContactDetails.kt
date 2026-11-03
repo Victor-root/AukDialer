@@ -542,7 +542,8 @@ fun ContactDetailsScreen(
                             )
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
-                                text = displayName,
+                                // A number with no contact behind it is the title: in its national form.
+                                text = if (fullContact?.name == null) formatPhoneNumber(displayName) else displayName,
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold
                             )

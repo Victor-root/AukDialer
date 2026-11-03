@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.controller.util.formatPhoneNumber
 import coil.compose.AsyncImage
 import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.CallService
@@ -126,6 +127,9 @@ fun ExpressiveCallScreen(
     val contactsRepo = koinInject<IContactsRepository>()
 
     val recordingLabel = contactName.ifBlank { phoneNumber }
+    // An unknown caller is named by their number: both read in the familiar national form.
+    val shownNumber = remember(phoneNumber) { formatPhoneNumber(phoneNumber) }
+    val shownName = if (contactName == phoneNumber) shownNumber else contactName
     val microphoneDeniedText = stringResource(R.string.call_recording_microphone_denied)
     // Asked when recording is tapped without the microphone and without Shizuku to capture instead.
     val microphonePermissionLauncher = rememberLauncherForActivityResult(
@@ -389,7 +393,7 @@ fun ExpressiveCallScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = contactName,
+                    text = shownName,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -425,7 +429,7 @@ fun ExpressiveCallScreen(
                 }
 
                 Text(
-                    text = contactName,
+                    text = shownName,
                     style = if (isLandscape) MaterialTheme.typography.headlineMediumEmphasized else MaterialTheme.typography.displaySmallEmphasized,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -435,7 +439,7 @@ fun ExpressiveCallScreen(
 
                 if (phoneNumber.isNotEmpty() && phoneNumber != contactName) {
                     Text(
-                        text = phoneNumber,
+                        text = shownNumber,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center,
