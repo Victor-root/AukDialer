@@ -17,7 +17,6 @@ import auk.dialer.vroot.controller.ShizukuBridge
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
-import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
@@ -69,14 +68,7 @@ fun CallRecordingSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                AukSectionHeader(
-                    title = stringResource(R.string.settings_group_work_in_progress),
-                    icon = Icons.Outlined.Construction
-                )
-                Spacer(Modifier.height(8.dp))
-                AukExpressiveCard(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
-                ) {
+                AukExpressiveCard {
                     AukSwitchListItem(
                         headline = stringResource(R.string.settings_call_recording),
                         supporting = stringResource(R.string.settings_call_recording_supporting),
