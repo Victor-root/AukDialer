@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.LocalAukAvatarStyle
 import auk.dialer.vroot.view.components.LocalAukSurfaceStyle
@@ -64,7 +65,9 @@ private const val OemColorSaturationFloor = 0.15f
 fun aukDynamicColorScheme(context: Context, darkTheme: Boolean): ColorScheme {
     val platformScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
-    val wallpaperSeed = wallpaperSeedColor(context) ?: return platformScheme
+    val wallpaperSeed = wallpaperColor(context) ?: return colorOsWallpaperColor(context)
+        ?.let { aukColorSchemeFromSeed(it, darkTheme) }
+        ?: platformScheme
 
     val platformHsv = FloatArray(3)
     android.graphics.Color.colorToHSV(platformScheme.primary.toArgb(), platformHsv)
@@ -84,22 +87,23 @@ fun aukDynamicColorScheme(context: Context, darkTheme: Boolean): ColorScheme {
 /**
  * Where ColorOS keeps the wallpaper's colour, as "<ARGB int>&…&…". Its glass wallpaper effect is a
  * live wallpaper reporting no WallpaperColors at all, while the platform palette it leaves behind
- * stays on a stale blue: this record is then the only trace of the real colour.
+ * stays on a stale blue: this record is then the only trace of the real colour, and is taken as it
+ * is. Weighed against that stale palette, a wallpaper near blue, a violet say, would lose to it.
  */
 private const val ColorOsWallpaperSeedKey = "wall_paper_seed_color"
 
-/** The wallpaper's dominant colour, from WallpaperColors or else from ColorOS's own record of it. */
-private fun wallpaperSeedColor(context: Context): Int? =
-    runCatching {
-        WallpaperManager.getInstance(context)
-            .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
-            ?.primaryColor
-            ?.toArgb()
-    }.getOrNull() ?: runCatching {
-        Settings.System.getString(context.contentResolver, ColorOsWallpaperSeedKey)
-            ?.substringBefore('&')
-            ?.toIntOrNull()
-    }.getOrNull()
+private fun wallpaperColor(context: Context): Int? = runCatching {
+    WallpaperManager.getInstance(context)
+        .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
+        ?.primaryColor
+        ?.toArgb()
+}.getOrNull()
+
+private fun colorOsWallpaperColor(context: Context): Int? = runCatching {
+    Settings.System.getString(context.contentResolver, ColorOsWallpaperSeedKey)
+        ?.substringBefore('&')
+        ?.toIntOrNull()
+}.getOrNull().also { PerfLog.d("ColorOS wallpaper colour: ${it?.let(Integer::toHexString)}") }
 
 /**
  * Counts the wallpaper colour changes while [enabled], so a scheme keyed on it is worked out again.
