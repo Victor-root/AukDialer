@@ -12,9 +12,6 @@ import auk.dialer.vroot.BuildConfig
 object PerfLog {
     const val TAG = "AukPerf"
 
-    // A frame at 60 Hz has about 16.7 ms; past this one has visibly been late.
-    private const val SLOW_FRAME_MS = 17.0
-
     fun d(message: String) {
         if (BuildConfig.DEBUG_TOOLS) Log.d(TAG, message)
     }
@@ -28,17 +25,20 @@ object PerfLog {
         return result
     }
 
-    /** Logs every late frame of [window], with where its time went. */
+    /** Logs every frame of [window] that missed its deadline, with where its time went. */
     fun watchFrames(window: Window) {
         if (!BuildConfig.DEBUG_TOOLS) return
         val thread = HandlerThread("AukPerfFrames").apply { start() }
         window.addOnFrameMetricsAvailableListener({ _, metrics, _ ->
             fun ms(id: Int) = metrics.getMetric(id) / 1_000_000.0
             val total = ms(FrameMetrics.TOTAL_DURATION)
-            if (total > SLOW_FRAME_MS) {
+            // The deadline the system gave the frame, which follows the screen's refresh rate.
+            val deadline = ms(FrameMetrics.DEADLINE)
+            if (total > deadline + 1) {
                 d(
-                    "slow frame %.1f ms: input %.1f, animation %.1f, layout %.1f, draw %.1f, sync %.1f, gpu %.1f, delay %.1f".format(
+                    "late frame %.1f ms for %.1f: input %.1f, animation %.1f, layout %.1f, draw %.1f, sync %.1f, gpu %.1f, delay %.1f".format(
                         total,
+                        deadline,
                         ms(FrameMetrics.INPUT_HANDLING_DURATION),
                         ms(FrameMetrics.ANIMATION_DURATION),
                         ms(FrameMetrics.LAYOUT_MEASURE_DURATION),
