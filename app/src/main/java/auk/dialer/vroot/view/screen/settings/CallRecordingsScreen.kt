@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallRecorder
+import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.SpeechPlayer
 import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.formatDateHeader
@@ -120,8 +121,12 @@ fun CallRecordingsContent(
     }
 
     LaunchedEffect(refreshKey) {
+        // The first read comes with the ON_RESUME the observer receives as soon as it is added.
+        if (refreshKey == 0) return@LaunchedEffect
         recordings = withContext(Dispatchers.IO) {
-            identifyCallers(CallRecorder.loadRecordings(context), contactsRepo, callLogRepo, unknownLabel)
+            PerfLog.timed("recordings read") {
+                identifyCallers(CallRecorder.loadRecordings(context), contactsRepo, callLogRepo, unknownLabel)
+            }
         }
     }
 

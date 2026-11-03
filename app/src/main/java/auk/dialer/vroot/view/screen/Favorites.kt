@@ -112,7 +112,7 @@ private fun FavoritesGridContent(navigator: DestinationsNavigator) {
     val view = LocalView.current
 
     LaunchedEffect(Unit) {
-        contactsVM.fetchContacts()
+        contactsVM.loadContacts()
     }
 
     val displayOrder = remember(settingsState) {

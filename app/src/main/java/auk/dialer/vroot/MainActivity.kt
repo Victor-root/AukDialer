@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
+import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
 import auk.dialer.vroot.controller.util.makeCall
@@ -91,6 +92,8 @@ class MainActivity : ComponentActivity() {
         if (BuildConfig.DEBUG_TOOLS) {
             Log.d("AukIconDebug", "launched via component=${intent?.component}")
         }
+
+        PerfLog.watchFrames(window)
 
         setContent {
             AukTheme {

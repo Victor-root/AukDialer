@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
+import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.TopBar
@@ -173,6 +174,7 @@ fun MainScreen(
                 pagerState = pagerState,
                 visibleTabs = visibleTabs,
                 onPageSelected = { page ->
+                    PerfLog.d("tab tapped: page $page")
                     scope.launch {
                         pagerState.animateScrollToPage(page)
                     }
@@ -187,6 +189,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize(),
                     beyondViewportPageCount = 1
                 ) { page ->
+                    LaunchedEffect(Unit) { PerfLog.d("page $page built") }
                     when (visibleTabs.getOrNull(page)) {
                         PreferenceManager.TAB_RECENTS -> RecentScreenContent(
                             navController = navController,

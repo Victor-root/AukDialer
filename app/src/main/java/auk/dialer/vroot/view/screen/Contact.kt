@@ -450,7 +450,7 @@ fun ContactContent(
 
     LaunchedEffect(isGranted) {
         if (isGranted) {
-            contactsVM.fetchContacts()
+            contactsVM.loadContacts()
         }
     }
 

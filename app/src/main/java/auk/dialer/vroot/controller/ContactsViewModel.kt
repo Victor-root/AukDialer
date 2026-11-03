@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import auk.dialer.vroot.controller.util.indexLetter
 import auk.dialer.vroot.controller.util.nameCollator
+import auk.dialer.vroot.controller.util.PerfLog
 
 class ContactsViewModel(
     private val contactsRepo: IContactsRepository,
@@ -170,10 +171,19 @@ class ContactsViewModel(
             if (_allContacts.value.isEmpty()) {
                 _isLoading.value = true
             }
-            val result = contactsRepo.getContacts()
+            val result = PerfLog.timed("contacts read") { contactsRepo.getContacts() }
             _allContacts.value = result
             _isLoading.value = false
         }
+    }
+
+    /**
+     * For a tab coming into view. Once there are contacts, [contactsObserver] keeps them current,
+     * and reading the whole address book again on every tab change cost frames of its animation.
+     * An empty list is read again: it can be a permission granted since.
+     */
+    fun loadContacts() {
+        if (_allContacts.value.isEmpty()) fetchContacts()
     }
 
     suspend fun getFullContactById(contactId: String): Contact? {

@@ -11,9 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.net.Uri
 import android.os.PowerManager
-import android.os.SystemClock
-import android.util.Log
-import auk.dialer.vroot.BuildConfig
 
 /**
  * Single-instance MediaPlayer wrapper for spoken audio, voicemails and call recordings, that can
@@ -315,17 +312,15 @@ class SpeechPlayer<K : Any>(
     private fun restoreAudioMode() {
         if (!inCommunicationMode) return
         inCommunicationMode = false
-        val startedAt = SystemClock.elapsedRealtime()
         try {
             val audioManager = context.getSystemService(AudioManager::class.java) ?: return
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                audioManager.clearCommunicationDevice()
+            PerfLog.timed("audio mode restored") {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    audioManager.clearCommunicationDevice()
+                }
+                audioManager.mode = AudioManager.MODE_NORMAL
             }
-            audioManager.mode = AudioManager.MODE_NORMAL
         } catch (_: Exception) {
-        }
-        if (BuildConfig.DEBUG_TOOLS) {
-            Log.d("AukPerf", "audio mode restored in ${SystemClock.elapsedRealtime() - startedAt} ms")
         }
     }
 

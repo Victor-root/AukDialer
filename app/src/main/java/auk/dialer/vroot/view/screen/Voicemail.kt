@@ -82,12 +82,9 @@ fun VoicemailScreenContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val audioUnavailableText = stringResource(R.string.voicemail_audio_unavailable)
 
+    // The list itself is read on ON_RESUME below, which the observer receives as soon as it is added.
     LaunchedEffect(Unit) {
-        isDefaultDialer = viewModel.isDefaultDialer()
-        if (isDefaultDialer) {
-            viewModel.registerSmsFilter()
-            viewModel.fetchVoicemails()
-        }
+        if (isDefaultDialer) viewModel.registerSmsFilter()
     }
 
     // Re-read on every return to the screen. The provider does notify us of new

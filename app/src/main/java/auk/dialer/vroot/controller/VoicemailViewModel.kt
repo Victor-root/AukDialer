@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.SpeechPlayer
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
 import auk.dialer.vroot.modal.data.Voicemail
@@ -161,7 +162,7 @@ class VoicemailViewModel(
      */
     private suspend fun load() {
         val (status, rows) = withContext(Dispatchers.IO) {
-            voicemailRepo.getStatus() to voicemailRepo.getVoicemails()
+            PerfLog.timed("voicemails read") { voicemailRepo.getStatus() to voicemailRepo.getVoicemails() }
         }
         _status.value = status
         _voicemails.value = rows

@@ -391,7 +391,7 @@ fun CallLogFullContent(
 
         LaunchedEffect(Unit) {
             viewModel.fetchLogs()
-            contactsVM.fetchContacts()
+            contactsVM.loadContacts()
         }
 
         // Single calls, filtered before they are folded: a row of back-to-back calls can mix a missed
