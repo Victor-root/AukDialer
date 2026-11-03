@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,8 +37,7 @@ import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.view.components.AudioMessageRow
 import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukConfirmationDialog
-import auk.dialer.vroot.view.components.AukDivider
-import auk.dialer.vroot.view.components.AukExpressiveCard
+import auk.dialer.vroot.view.components.AukExpressiveCardSegment
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
@@ -154,40 +154,46 @@ fun CallRecordingsContent(
                         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + padding.calculateBottomPadding())
                     ) {
                         grouped.forEach { (header, group) ->
-                            item(key = header) {
+                            item(key = "header:$header", contentType = "header") {
                                 AukSectionHeader(title = header)
-                                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                    AukExpressiveCard(isCompact = true) {
-                                        group.forEachIndexed { index, entry ->
-                                            val recording = entry.recording
-                                            val path = recording.file.absolutePath
-                                            val isCurrent = playingPath == path
-                                            RecordingRow(
-                                                entry = entry,
-                                                isCurrent = isCurrent,
-                                                isPlaying = isCurrent && isPlaying,
-                                                positionMs = positionMs,
-                                                durationMs = durationMs,
-                                                isSpeakerOn = isSpeakerOn,
-                                                onToggle = { player.toggle(path, Uri.fromFile(recording.file)) },
-                                                onSeek = { player.seekTo(it) },
-                                                onToggleSpeaker = {
-                                                    isSpeakerOn = !isSpeakerOn
-                                                    player.setSpeakerOn(isSpeakerOn)
-                                                },
-                                                onShare = { CallRecorder.share(context, recording.file, shareTitle) },
-                                                onDelete = {
-                                                    if (isCurrent) player.release()
-                                                    pendingDelete = recording
-                                                }
-                                            )
-                                            if (index < group.size - 1) {
-                                                AukDivider(Modifier.padding(horizontal = 16.dp))
-                                            }
+                            }
+                            itemsIndexed(
+                                group,
+                                key = { _, entry -> entry.recording.file.absolutePath },
+                                contentType = { _, _ -> "recording" }
+                            ) { index, entry ->
+                                val isLast = index == group.lastIndex
+                                val recording = entry.recording
+                                val path = recording.file.absolutePath
+                                val isCurrent = playingPath == path
+                                AukExpressiveCardSegment(
+                                    isFirst = index == 0,
+                                    isLast = isLast,
+                                    isCompact = true,
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                        .padding(bottom = if (isLast) 8.dp else 0.dp)
+                                ) {
+                                    RecordingRow(
+                                        entry = entry,
+                                        isCurrent = isCurrent,
+                                        isPlaying = isCurrent && isPlaying,
+                                        positionMs = positionMs,
+                                        durationMs = durationMs,
+                                        isSpeakerOn = isSpeakerOn,
+                                        onToggle = { player.toggle(path, Uri.fromFile(recording.file)) },
+                                        onSeek = { player.seekTo(it) },
+                                        onToggleSpeaker = {
+                                            isSpeakerOn = !isSpeakerOn
+                                            player.setSpeakerOn(isSpeakerOn)
+                                        },
+                                        onShare = { CallRecorder.share(context, recording.file, shareTitle) },
+                                        onDelete = {
+                                            if (isCurrent) player.release()
+                                            pendingDelete = recording
                                         }
-                                    }
+                                    )
                                 }
-                                Spacer(Modifier.height(8.dp))
                             }
                         }
                     }

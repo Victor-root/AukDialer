@@ -11,6 +11,9 @@ import android.os.Handler
 import android.os.Looper
 import android.net.Uri
 import android.os.PowerManager
+import android.os.SystemClock
+import android.util.Log
+import auk.dialer.vroot.BuildConfig
 
 /**
  * Single-instance MediaPlayer wrapper for spoken audio, voicemails and call recordings, that can
@@ -33,6 +36,8 @@ class SpeechPlayer<K : Any>(
     private var proximityWakeLock: PowerManager.WakeLock? = null
     private var proximityLockArmedAt = 0L
     private var speakerOn = true
+    // Set while this player holds the phone in call mode: only then is there a mode to hand back.
+    private var inCommunicationMode = false
     private val handler = Handler(Looper.getMainLooper())
 
     private val progressRunnable = object : Runnable {
@@ -298,11 +303,19 @@ class SpeechPlayer<K : Any>(
         try {
             val audioManager = context.getSystemService(AudioManager::class.java) ?: return
             audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+            inCommunicationMode = true
         } catch (_: Exception) {
         }
     }
 
+    /**
+     * Skipped when this player never entered call mode: each call goes through the audio server
+     * and blocks the main thread, and release runs on every tab change, mid swipe.
+     */
     private fun restoreAudioMode() {
+        if (!inCommunicationMode) return
+        inCommunicationMode = false
+        val startedAt = SystemClock.elapsedRealtime()
         try {
             val audioManager = context.getSystemService(AudioManager::class.java) ?: return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -310,6 +323,9 @@ class SpeechPlayer<K : Any>(
             }
             audioManager.mode = AudioManager.MODE_NORMAL
         } catch (_: Exception) {
+        }
+        if (BuildConfig.DEBUG_TOOLS) {
+            Log.d("AukPerf", "audio mode restored in ${SystemClock.elapsedRealtime() - startedAt} ms")
         }
     }
 

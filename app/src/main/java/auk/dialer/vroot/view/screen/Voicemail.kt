@@ -3,6 +3,7 @@ package auk.dialer.vroot.view.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -32,8 +33,7 @@ import auk.dialer.vroot.modal.data.Voicemail
 import auk.dialer.vroot.modal.data.VoicemailStatus
 import auk.dialer.vroot.view.components.AudioMessageRow
 import auk.dialer.vroot.view.components.AudioRowAction
-import auk.dialer.vroot.view.components.AukDivider
-import auk.dialer.vroot.view.components.AukExpressiveCard
+import auk.dialer.vroot.view.components.AukExpressiveCardSegment
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.AukSectionHeader
@@ -208,33 +208,39 @@ fun VoicemailScreenContent(
                                     )
                                 ) {
                                     groupedVoicemails.forEach { (header, group) ->
-                                        item(key = header) {
+                                        item(key = "header:$header", contentType = "header") {
                                             AukSectionHeader(title = header)
-                                            Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                                AukExpressiveCard(isCompact = true) {
-                                                    group.forEachIndexed { index, voicemail ->
-                                                        VoicemailRow(
-                                                            voicemail = voicemail,
-                                                            isCurrent = playback.playingId == voicemail.id,
-                                                            isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
-                                                            positionMs = playback.positionMs,
-                                                            durationMs = playback.durationMs,
-                                                            isSpeakerOn = isSpeakerOn,
-                                                            onToggle = { viewModel.togglePlayback(voicemail) },
-                                                            onSeek = { viewModel.seekTo(it) },
-                                                            onToggleSpeaker = { viewModel.toggleSpeaker() },
-                                                            onToggleRead = {
-                                                                viewModel.markAsRead(voicemail.id, !voicemail.isRead)
-                                                            },
-                                                            onDelete = { viewModel.delete(voicemail.id) }
-                                                        )
-                                                        if (index < group.size - 1) {
-                                                            AukDivider(Modifier.padding(horizontal = 16.dp))
-                                                        }
-                                                    }
-                                                }
+                                        }
+                                        itemsIndexed(
+                                            group,
+                                            key = { _, voicemail -> voicemail.id },
+                                            contentType = { _, _ -> "voicemail" }
+                                        ) { index, voicemail ->
+                                            val isLast = index == group.lastIndex
+                                            AukExpressiveCardSegment(
+                                                isFirst = index == 0,
+                                                isLast = isLast,
+                                                isCompact = true,
+                                                modifier = Modifier
+                                                    .padding(horizontal = 12.dp)
+                                                    .padding(bottom = if (isLast) 8.dp else 0.dp)
+                                            ) {
+                                                VoicemailRow(
+                                                    voicemail = voicemail,
+                                                    isCurrent = playback.playingId == voicemail.id,
+                                                    isPlaying = playback.isPlaying && playback.playingId == voicemail.id,
+                                                    positionMs = playback.positionMs,
+                                                    durationMs = playback.durationMs,
+                                                    isSpeakerOn = isSpeakerOn,
+                                                    onToggle = { viewModel.togglePlayback(voicemail) },
+                                                    onSeek = { viewModel.seekTo(it) },
+                                                    onToggleSpeaker = { viewModel.toggleSpeaker() },
+                                                    onToggleRead = {
+                                                        viewModel.markAsRead(voicemail.id, !voicemail.isRead)
+                                                    },
+                                                    onDelete = { viewModel.delete(voicemail.id) }
+                                                )
                                             }
-                                            Spacer(Modifier.height(8.dp))
                                         }
                                     }
                                 }
