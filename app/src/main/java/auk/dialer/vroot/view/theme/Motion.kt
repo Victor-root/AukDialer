@@ -69,12 +69,14 @@ object AukStaticMotion {
         tween(AukDurations.Short4, easing = AukEasing.EmphasizedAccelerate)
 
     /**
-     * A tab picked from the bottom bar. The pager's own default is a soft spring that leaves at
-     * full speed and then creeps the last pixels in over many frames, which reads as a stutter
-     * rather than the glide a finger gives.
+     * A tab picked from the bottom bar fades through rather than slides: a whole screen width in a
+     * fraction of a second jumps visibly between frames, where a finger-driven swipe does not.
      */
-    fun <T> pageSwitch(): FiniteAnimationSpec<T> =
-        tween(AukDurations.Medium2, easing = AukEasing.Emphasized)
+    fun <T> tabFadeOut(): FiniteAnimationSpec<T> =
+        tween(AukDurations.Short2, easing = AukEasing.EmphasizedAccelerate)
+
+    fun <T> tabFadeIn(): FiniteAnimationSpec<T> =
+        tween(AukDurations.Short4, easing = AukEasing.EmphasizedDecelerate)
 
     fun <T> ambientLoop(durationMillis: Int): FiniteAnimationSpec<T> =
         tween(durationMillis, easing = AukEasing.Linear)

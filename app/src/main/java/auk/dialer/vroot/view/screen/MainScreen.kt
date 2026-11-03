@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.screen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PerfLog
@@ -72,6 +74,8 @@ fun MainScreen(
 
     val pagerState = rememberPagerState(initialPage = startPage) { visibleTabs.size }
     val scope = rememberCoroutineScope()
+    // Fades the pages through when a tab is picked from the bottom bar.
+    val pagerAlpha = remember { Animatable(1f) }
 
     var isSelectingRecents by remember { mutableStateOf(false) }
     var recentsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
@@ -179,15 +183,19 @@ fun MainScreen(
                 visibleTabs = visibleTabs,
                 onPageSelected = { page ->
                     PerfLog.d("tab tapped: page $page")
-                    scope.launch {
-                        pagerState.animateScrollToPage(page, animationSpec = AukStaticMotion.pageSwitch())
+                    if (page != pagerState.currentPage) {
+                        scope.launch {
+                            pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
+                            pagerState.scrollToPage(page)
+                            pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
+                        }
                     }
                 }
             )
         }
     ) { innerPadding ->
         HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = pagerAlpha.value }) {
                 // Every page is kept, but only filled once it comes within a page of the current one,
                 // as before. Dropping a page when it went out of reach meant building it again each
                 // time it came back, which on a phone took a whole tab's worth of work in one frame,
