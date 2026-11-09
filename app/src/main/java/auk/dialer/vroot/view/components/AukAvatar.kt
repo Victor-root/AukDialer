@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,8 +32,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -87,6 +90,30 @@ object AukAvatarDefaults {
 
 val LocalAukAvatarStyle: ProvidableCompositionLocal<AukAvatarStyle?> =
     staticCompositionLocalOf { null }
+
+/**
+ * The icons avatars fall back on, shared app wide. A painter turns its vector into a bitmap the first
+ * time it draws: one per avatar meant doing that again for every row scrolling into a list. Only
+ * used at the usual icon size, so one bitmap fits every avatar drawing it.
+ */
+@Stable
+class AukAvatarIcons(val person: Painter, val voicemail: Painter)
+
+val LocalAukAvatarIcons: ProvidableCompositionLocal<AukAvatarIcons?> =
+    staticCompositionLocalOf { null }
+
+@Composable
+fun rememberAukAvatarIcons(): AukAvatarIcons {
+    val person = rememberVectorPainter(Icons.Default.Person)
+    val voicemail = rememberVectorPainter(Icons.Outlined.Voicemail)
+    return remember(person, voicemail) { AukAvatarIcons(person, voicemail) }
+}
+
+@Composable
+private fun avatarFallbackIcon(vector: ImageVector, iconSize: Dp, shared: (AukAvatarIcons) -> Painter): Painter {
+    val icons = LocalAukAvatarIcons.current
+    return if (icons != null && iconSize == AukAvatarDefaults.IconSize) shared(icons) else rememberVectorPainter(vector)
+}
 
 @Composable
 fun rememberAukAvatarStyle(prefs: PreferenceManager = koinInject()): AukAvatarStyle {
@@ -308,7 +335,7 @@ fun AukAvatar(
                 )
             } else if (photoUri == "voicemail://icon" || name.equals("Voicemail", ignoreCase = true) || name.equals("Messagerie vocale", ignoreCase = true) || name.equals("Poczta głosowa", ignoreCase = true)) {
                 Icon(
-                    imageVector = Icons.Outlined.Voicemail,
+                    painter = avatarFallbackIcon(Icons.Outlined.Voicemail, iconSize) { it.voicemail },
                     contentDescription = null,
                     tint = colors.content,
                     modifier = Modifier.size(iconSize)
@@ -321,7 +348,7 @@ fun AukAvatar(
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    painter = avatarFallbackIcon(Icons.Default.Person, iconSize) { it.person },
                     contentDescription = null,
                     tint = colors.content,
                     modifier = Modifier.size(iconSize)

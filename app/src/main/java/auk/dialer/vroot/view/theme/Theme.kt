@@ -36,8 +36,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.components.LocalAukAvatarIcons
 import auk.dialer.vroot.view.components.LocalAukAvatarStyle
 import auk.dialer.vroot.view.components.LocalAukSurfaceStyle
+import auk.dialer.vroot.view.components.rememberAukAvatarIcons
 import auk.dialer.vroot.view.components.rememberAukAvatarStyle
 import auk.dialer.vroot.view.components.rememberAukSurfaceStyle
 import org.koin.compose.koinInject
@@ -211,6 +213,7 @@ fun AukTheme(
         ) {
             CompositionLocalProvider(
                 LocalAukAvatarStyle provides rememberAukAvatarStyle(prefs),
+                LocalAukAvatarIcons provides rememberAukAvatarIcons(),
                 LocalAukSurfaceStyle provides rememberAukSurfaceStyle(prefs)
             ) {
                 if (systemBars) {
