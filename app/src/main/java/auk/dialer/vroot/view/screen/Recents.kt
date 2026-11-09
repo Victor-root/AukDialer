@@ -667,9 +667,16 @@ fun CallLogFullContent(
                                         .padding(horizontal = 12.dp)
                                         .padding(bottom = if (isLast) 8.dp else 0.dp)
                                 ) {
+                                    // Worked out here, where the settings are already followed, rather than
+                                    // each row following them on its own.
+                                    val isFavorite = remember(lg.contactId, lg.number, settingsState) {
+                                        val favoriteNumber = lg.contactId?.let { prefs.getFavoriteNumber(it) }
+                                        auk.dialer.vroot.controller.util.areNumbersEqual(lg.number, favoriteNumber)
+                                    }
                                     CallLogTile(
                                         log = lg,
                                         displayOrder = displayOrder,
+                                        isFavorite = isFavorite,
                                         icons = callLogIcons,
                                         onTileClick = { log ->
                                             if (selectedEntries.isNotEmpty()) {

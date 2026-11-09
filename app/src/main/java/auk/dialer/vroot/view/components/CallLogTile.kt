@@ -136,11 +136,9 @@ fun CallLogTile(
     onLongClick: (CallLogEntry) -> Unit = {},
     selected: Boolean = false,
     displayOrder: Int = 0,
+    isFavorite: Boolean = false,
     icons: CallLogTileIcons = rememberCallLogTileIcons()
 ) {
-    val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
-    val settingsState by prefs.settingsChanged.collectAsState()
-
     val icon = when (log.type) {
         CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> icons.missed
         CallLog.Calls.INCOMING_TYPE -> icons.received
@@ -151,10 +149,6 @@ fun CallLogTile(
     val badgeColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val headlineColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else Color.Unspecified
     
-    val isFavorite = remember(log.contactId, log.number, settingsState) {
-        val favNum = log.contactId?.let { prefs.getFavoriteNumber(it) }
-        auk.dialer.vroot.controller.util.areNumbersEqual(log.number, favNum)
-    }
     val context = LocalContext.current
     val time = remember(log.date) { formatTime(context, log.date) }
     val formattedNumber = remember(log.number) { formatPhoneNumber(log.number) }
