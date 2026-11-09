@@ -21,6 +21,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -55,6 +58,7 @@ import auk.dialer.vroot.view.theme.AukShapeDefaults
 import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import auk.dialer.vroot.view.theme.aukCornerDp
 import org.koin.compose.koinInject
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /** Opacity of an unselected filter chip sitting on the accent band. */
@@ -273,26 +277,47 @@ fun AukExpressiveCardSegment(
     if (aukSurfaceStyle().showCards) {
         val shape = MaterialTheme.shapes.extraLarge
         val border = aukAccentCardBorder()
-        Box(modifier = modifier.fillMaxWidth().clipToBounds()) {
-            // The whole card's background and border, run on past the edges this row shares with
-            // its neighbours so only the ends of the card are rounded.
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .layout { measurable, constraints ->
-                        val overflow = constraints.maxWidth
-                        val top = if (isFirst) 0 else overflow
-                        val bottom = if (isLast) 0 else overflow
-                        val placeable = measurable.measure(
-                            Constraints.fixed(constraints.maxWidth, constraints.maxHeight + top + bottom)
-                        )
-                        layout(constraints.maxWidth, constraints.maxHeight) {
-                            placeable.place(0, -top)
+        val isEnd = isFirst || isLast
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .then(
+                    if (isEnd) {
+                        Modifier.clipToBounds()
+                    } else {
+                        // A row in the middle of the card shows none of its corners: a fill and the
+                        // two side edges draw it, rather than a whole rounded card clipped down to it.
+                        Modifier.drawBehind {
+                            drawRect(containerColor)
+                            // Rounded up to whole pixels, as Modifier.border draws the card's ends.
+                            val edge = if (border.width == Dp.Hairline) 1f else ceil(border.width.toPx())
+                            drawRect(border.brush, size = Size(edge, size.height))
+                            drawRect(border.brush, topLeft = Offset(size.width - edge, 0f), size = Size(edge, size.height))
                         }
                     }
-                    .background(containerColor, shape)
-                    .border(border, shape)
-            )
+                )
+        ) {
+            if (isEnd) {
+                // The whole card's background and border, run on past the edge this row shares with
+                // its neighbour so only the end of the card is rounded.
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .layout { measurable, constraints ->
+                            val overflow = constraints.maxWidth
+                            val top = if (isFirst) 0 else overflow
+                            val bottom = if (isLast) 0 else overflow
+                            val placeable = measurable.measure(
+                                Constraints.fixed(constraints.maxWidth, constraints.maxHeight + top + bottom)
+                            )
+                            layout(constraints.maxWidth, constraints.maxHeight) {
+                                placeable.place(0, -top)
+                            }
+                        }
+                        .background(containerColor, shape)
+                        .border(border, shape)
+                )
+            }
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Column(
                     modifier = Modifier.padding(

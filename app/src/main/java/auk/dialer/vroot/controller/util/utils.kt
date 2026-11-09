@@ -57,6 +57,23 @@ private fun dateHeaderFormat(locale: Locale, skeleton: String): SimpleDateFormat
     }
 }
 
+// The same for every call: getTimeFormat works its pattern out again each time, from the locale's
+// pattern generator, which cost more than anything else in a call log row. Kept per thread, as a
+// SimpleDateFormat is not safe to share, and per 12/24 hour setting and time zone, which a format
+// keeps from when it was made while the user can change them.
+private data class TimeFormatKey(val locale: Locale, val is24Hour: Boolean, val timeZone: String)
+
+private val timeFormatCache = ThreadLocal.withInitial { mutableMapOf<TimeFormatKey, java.text.DateFormat>() }
+
+private fun timeFormat(context: Context): java.text.DateFormat {
+    val key = TimeFormatKey(
+        Locale.getDefault(),
+        android.text.format.DateFormat.is24HourFormat(context),
+        java.util.TimeZone.getDefault().id
+    )
+    return timeFormatCache.get()!!.getOrPut(key) { android.text.format.DateFormat.getTimeFormat(context) }
+}
+
 fun formatDateHeader(context: Context, timestamp: Long): String {
     val relative = getRelativeDay(context, timestamp)
     if (relative != null) return relative
@@ -71,15 +88,12 @@ fun formatDateHeader(context: Context, timestamp: Long): String {
 
 fun formatDate(context: Context, timestamp: Long): String {
     val relative = getRelativeDay(context, timestamp)
-    val time = android.text.format.DateFormat.getTimeFormat(context).format(Date(timestamp))
+    val time = timeFormat(context).format(Date(timestamp))
 
     return if (relative != null) "$relative, $time" else "${formatDateHeader(context, timestamp)}, $time"
 }
 
-fun formatTime(context: Context, timestamp: Long): String {
-    val time = android.text.format.DateFormat.getTimeFormat(context).format(Date(timestamp))
-    return "$time"
-}
+fun formatTime(context: Context, timestamp: Long): String = timeFormat(context).format(Date(timestamp))
 
 fun formatDuration(durationSeconds: Long): String {
     return DateUtils.formatElapsedTime(durationSeconds)
@@ -93,8 +107,17 @@ fun formatDuration(durationSeconds: Long): String {
  * A genuinely foreign number has no +33 to fold and keeps its own country code, as it should.
  */
 fun formatPhoneNumber(number: String): String {
-    return PhoneNumberUtils.formatNumber(toNationalFrenchNumber(number), Locale.getDefault().country) ?: number
+    val country = Locale.getDefault().country
+    val key = "$country|$number"
+    formattedNumbers.get(key)?.let { return it }
+    val formatted = PhoneNumberUtils.formatNumber(toNationalFrenchNumber(number), country) ?: number
+    formattedNumbers.put(key, formatted)
+    return formatted
 }
+
+// Every call log, contact and voicemail row formats its number, and the same few numbers come back
+// over and over: formatNumber parses each one in full, and logs it, every time.
+private val formattedNumbers = android.util.LruCache<String, String>(512)
 
 private fun toNationalFrenchNumber(number: String): String {
     val stripped = number.filterNot { it.isWhitespace() || it in "()-." }
