@@ -503,6 +503,7 @@ fun CallLogFullContent(
                 EmptyCallLogsState()
             } else {
                 val showFavorites = favorites.isNotEmpty() && selectedFilter == CallLogFilter.All
+                val callLogIcons = rememberCallLogTileIcons()
                 Column(modifier = Modifier.fillMaxSize()) {
 
                     LazyColumn(
@@ -669,6 +670,7 @@ fun CallLogFullContent(
                                     CallLogTile(
                                         log = lg,
                                         displayOrder = displayOrder,
+                                        icons = callLogIcons,
                                         onTileClick = { log ->
                                             if (selectedEntries.isNotEmpty()) {
                                                 onToggleSelection(log)

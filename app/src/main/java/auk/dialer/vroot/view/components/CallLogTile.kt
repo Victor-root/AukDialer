@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -102,6 +104,30 @@ fun CallLogTileSimple(
     }
 }
 
+/**
+ * The icons every call log row draws, to be shared by all the rows of a list. A painter turns its
+ * vector into a bitmap the first time it draws: one per row meant doing that again for each row
+ * scrolling in, where the rows draw the same icons at the same size.
+ */
+@Stable
+class CallLogTileIcons(
+    val missed: Painter,
+    val received: Painter,
+    val made: Painter,
+    val other: Painter,
+    val call: Painter
+)
+
+@Composable
+fun rememberCallLogTileIcons(): CallLogTileIcons {
+    val missed = rememberVectorPainter(Icons.AutoMirrored.Filled.CallMissed)
+    val received = rememberVectorPainter(Icons.AutoMirrored.Filled.CallReceived)
+    val made = rememberVectorPainter(Icons.AutoMirrored.Filled.CallMade)
+    val other = rememberVectorPainter(Icons.Default.Call)
+    val call = rememberVectorPainter(Icons.Rounded.Call)
+    return remember(missed, received, made, other, call) { CallLogTileIcons(missed, received, made, other, call) }
+}
+
 @Composable
 fun CallLogTile(
     log: CallLogEntry,
@@ -109,16 +135,17 @@ fun CallLogTile(
     onButtonClick: (CallLogEntry) -> Unit,
     onLongClick: (CallLogEntry) -> Unit = {},
     selected: Boolean = false,
-    displayOrder: Int = 0
+    displayOrder: Int = 0,
+    icons: CallLogTileIcons = rememberCallLogTileIcons()
 ) {
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val settingsState by prefs.settingsChanged.collectAsState()
 
     val icon = when (log.type) {
-        CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
-        CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
-        CallLog.Calls.OUTGOING_TYPE -> Icons.AutoMirrored.Filled.CallMade
-        else -> Icons.Default.Call
+        CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> icons.missed
+        CallLog.Calls.INCOMING_TYPE -> icons.received
+        CallLog.Calls.OUTGOING_TYPE -> icons.made
+        else -> icons.other
     }
     
     val badgeColor = if (log.type == CallLog.Calls.MISSED_TYPE) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
@@ -165,7 +192,7 @@ fun CallLogTile(
                             modifier = Modifier.padding(top = 2.dp)
                         ) {
                             Icon(
-                                imageVector = icon,
+                                painter = icon,
                                 contentDescription = null,
                                 tint = badgeColor,
                                 modifier = Modifier.size(16.dp)
@@ -201,7 +228,7 @@ fun CallLogTile(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Call,
+                        painter = icons.call,
                         contentDescription = stringResource(R.string.action_call),
                         tint = MaterialTheme.colorScheme.primary
                     )
