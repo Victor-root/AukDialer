@@ -365,7 +365,7 @@ fun ExpressiveCallScreen(
         Surface(
             color = when (callState) {
                 Call.STATE_ACTIVE -> MaterialTheme.colorScheme.primaryContainer
-                Call.STATE_HOLDING -> MaterialTheme.colorScheme.tertiaryContainer
+                Call.STATE_HOLDING -> MaterialTheme.callColors.holdContainer
                 else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f)
             },
             shape = CircleShape
@@ -375,7 +375,7 @@ fun ExpressiveCallScreen(
                 style = MaterialTheme.typography.titleSmallEmphasized,
                 color = when (callState) {
                     Call.STATE_ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
-                    Call.STATE_HOLDING -> MaterialTheme.colorScheme.onTertiaryContainer
+                    Call.STATE_HOLDING -> MaterialTheme.callColors.onHoldContainer
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)

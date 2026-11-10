@@ -187,7 +187,7 @@ fun AukTheme(
 
     val shapes = remember(cardRoundness) { aukShapes(cardRoundness) }
 
-    val callColors = remember(colorScheme, darkTheme) { aukCallColors(colorScheme, darkTheme) }
+    val callColors = remember(colorScheme, darkTheme, vividColors) { aukCallColors(colorScheme, darkTheme, vividColors) }
 
     val barColor = colorScheme.accentBarColor(darkTheme)
     val onBarColor = contentColorOnAccent(barColor)

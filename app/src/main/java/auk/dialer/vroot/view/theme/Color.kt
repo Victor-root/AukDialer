@@ -425,7 +425,10 @@ data class CallColors(
     val hold: Color,
     val onHold: Color,
     val holdContainer: Color,
-    val onHoldContainer: Color
+    val onHoldContainer: Color,
+    /** A call control switched on: speaker, mute, hold. */
+    val action: Color,
+    val onAction: Color
 )
 
 private val ANSWER_SEED_LCH = colorToLch(Color(0xFF1B8B3A))
@@ -433,7 +436,26 @@ private const val ANSWER_CHROMA = 52f
 private const val ANSWER_MAX_HUE_SHIFT = 15f
 private const val MIN_MEANINGFUL_CHROMA = 4f
 
-fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean): CallColors {
+/**
+ * The call screen's own colours. With [vivid], its pale fills are made full like the app's
+ * containers: a control switched on takes the accent, the hang-up button in the dark theme its
+ * deep red rather than a pink, and the on hold pill in the light theme its full colour.
+ */
+fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean, vivid: Boolean): CallColors {
+    val colors = aukBaseCallColors(colorScheme, darkTheme)
+    if (!vivid) return colors
+    val accent = colorScheme.accentBarColor(darkTheme)
+    return colors.copy(
+        action = accent,
+        onAction = contentColorOnAccent(accent),
+        decline = if (darkTheme) colorScheme.errorContainer else colors.decline,
+        onDecline = if (darkTheme) colorScheme.onErrorContainer else colors.onDecline,
+        holdContainer = if (darkTheme) colors.holdContainer else colorScheme.tertiary,
+        onHoldContainer = if (darkTheme) colors.onHoldContainer else colorScheme.onTertiary
+    )
+}
+
+private fun aukBaseCallColors(colorScheme: ColorScheme, darkTheme: Boolean): CallColors {
     val primaryLch = colorToLch(colorScheme.primary)
     val baseHue = ANSWER_SEED_LCH[2]
     val hue = if (primaryLch[1] < MIN_MEANINGFUL_CHROMA) {
@@ -455,7 +477,9 @@ fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean): CallColors {
             hold = colorScheme.tertiary,
             onHold = colorScheme.onTertiary,
             holdContainer = colorScheme.tertiaryContainer,
-            onHoldContainer = colorScheme.onTertiaryContainer
+            onHoldContainer = colorScheme.onTertiaryContainer,
+            action = colorScheme.primary,
+            onAction = colorScheme.onPrimary
         )
     } else {
         CallColors(
@@ -470,13 +494,15 @@ fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean): CallColors {
             hold = colorScheme.tertiary,
             onHold = colorScheme.onTertiary,
             holdContainer = colorScheme.tertiaryContainer,
-            onHoldContainer = colorScheme.onTertiaryContainer
+            onHoldContainer = colorScheme.onTertiaryContainer,
+            action = colorScheme.primary,
+            onAction = colorScheme.onPrimary
         )
     }
 }
 
 val LocalCallColors: ProvidableCompositionLocal<CallColors> = staticCompositionLocalOf {
-    aukCallColors(AukLightColorScheme, darkTheme = false)
+    aukCallColors(AukLightColorScheme, darkTheme = false, vivid = false)
 }
 
 val MaterialTheme.callColors: CallColors

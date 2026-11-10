@@ -105,7 +105,7 @@ fun CallActionButton(
         targetValue = when {
             !enabled -> scheme.surfaceContainerHigh.copy(alpha = 0.4f)
             isDanger && isActive -> MaterialTheme.callColors.decline
-            isActive -> scheme.primary
+            isActive -> MaterialTheme.callColors.action
             else -> scheme.surfaceContainerHigh
         },
         label = "CallActionContainer"
@@ -115,7 +115,7 @@ fun CallActionButton(
         targetValue = when {
             !enabled -> scheme.onSurface.copy(alpha = 0.38f)
             isDanger && isActive -> MaterialTheme.callColors.onDecline
-            isActive -> scheme.onPrimary
+            isActive -> MaterialTheme.callColors.onAction
             else -> scheme.onSurfaceVariant
         },
         label = "CallActionContent"
