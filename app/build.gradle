@@ -9,7 +9,15 @@ plugins {
 // so it only ever goes up. It restarts at 1 here because the application id
 // changed: to a device this is a new app, not an update of the old one.
 def baseVersionCode = 1
-def buildNumber = (System.getenv("BUILD_NUMBER") ?: System.getenv("GITHUB_RUN_NUMBER") ?: "0") as int
+def buildNumberEnv = System.getenv("BUILD_NUMBER") ?: System.getenv("GITHUB_RUN_NUMBER")
+def buildNumber = (buildNumberEnv ?: "0") as int
+// With no build number, as when a build is shipped to the F-Droid repository, the
+// minutes since 2024: every build is above the last, which the signer requires.
+// Counting from 2024 keeps it far below the largest version code Android takes.
+def minutesTo2024 = 28_401_120L
+def versionCodeValue = buildNumberEnv != null
+    ? baseVersionCode + buildNumber
+    : (int) (System.currentTimeMillis().intdiv(60_000) - minutesTo2024)
 def isPreviewBuild = System.getenv("PREVIEW_BUILD") == "true"
 def baseVersionName = "1.0"
 
@@ -40,7 +48,7 @@ android {
         applicationId = "auk.dialer.vroot"
         minSdk = 31
         targetSdk = 36
-        versionCode = baseVersionCode + buildNumber
+        versionCode = versionCodeValue
         versionName = isPreviewBuild ? "${baseVersionName}.${buildNumber}-preview" : baseVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
