@@ -4,9 +4,7 @@ import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -21,9 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -58,7 +53,6 @@ import auk.dialer.vroot.view.theme.AukShapeDefaults
 import auk.dialer.vroot.view.theme.rememberAukMorphShape
 import auk.dialer.vroot.view.theme.aukCornerDp
 import org.koin.compose.koinInject
-import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /** Opacity of an unselected filter chip sitting on the accent band. */
@@ -171,12 +165,6 @@ fun AukLeadingIconTile(
 }
 
 /**
- * The thin accent edge every card carries.
- *
- * The card itself stays plain and legible, and its edge is what ties it to the accent, rather than
- * tinting the card or dropping a shadow under it.
- */
-/**
  * A switch turned on in the app's accent, as the header and the icon tiles are. Material's own
  * checked track is primary, which the dark theme lightens to a pale pink next to them.
  */
@@ -187,10 +175,6 @@ fun aukSwitchColors(): SwitchColors = SwitchDefaults.colors(
     checkedIconColor = LocalAccentBarColor.current,
     checkedBorderColor = LocalAccentBarColor.current
 )
-
-@Composable
-fun aukAccentCardBorder(width: Dp = 1.dp): BorderStroke =
-    BorderStroke(width, MaterialTheme.colorScheme.primary)
 
 @Composable
 fun AukExpressiveCard(
@@ -218,8 +202,8 @@ fun AukExpressiveCard(
                 containerColor = containerColor,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat),
-            border = aukAccentCardBorder()
+            // No edge: the card stands out from the background by its own shade alone.
+            elevation = CardDefaults.cardElevation(defaultElevation = AukElevation.Flat)
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = horizontalPadding, vertical = padding),
@@ -276,7 +260,6 @@ fun AukExpressiveCardSegment(
 ) {
     if (aukSurfaceStyle().showCards) {
         val shape = MaterialTheme.shapes.extraLarge
-        val border = aukAccentCardBorder()
         val isEnd = isFirst || isLast
         Box(
             modifier = modifier
@@ -285,21 +268,15 @@ fun AukExpressiveCardSegment(
                     if (isEnd) {
                         Modifier.clipToBounds()
                     } else {
-                        // A row in the middle of the card shows none of its corners: a fill and the
-                        // two side edges draw it, rather than a whole rounded card clipped down to it.
-                        Modifier.drawBehind {
-                            drawRect(containerColor)
-                            // Rounded up to whole pixels, as Modifier.border draws the card's ends.
-                            val edge = if (border.width == Dp.Hairline) 1f else ceil(border.width.toPx())
-                            drawRect(border.brush, size = Size(edge, size.height))
-                            drawRect(border.brush, topLeft = Offset(size.width - edge, 0f), size = Size(edge, size.height))
-                        }
+                        // A row in the middle of the card shows none of its corners: a plain fill
+                        // draws it, rather than a whole rounded card clipped down to it.
+                        Modifier.background(containerColor)
                     }
                 )
         ) {
             if (isEnd) {
-                // The whole card's background and border, run on past the edge this row shares with
-                // its neighbour so only the end of the card is rounded.
+                // The whole card's background, run on past the edge this row shares with its
+                // neighbour so only the end of the card is rounded.
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -315,7 +292,6 @@ fun AukExpressiveCardSegment(
                             }
                         }
                         .background(containerColor, shape)
-                        .border(border, shape)
                 )
             }
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
