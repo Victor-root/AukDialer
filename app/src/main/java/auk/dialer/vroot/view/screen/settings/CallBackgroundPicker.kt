@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Wallpaper
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,8 +94,8 @@ fun CallBackgroundPickerDialog(
 
     AukDialog(
         onDismissRequest = onDismissRequest,
+        // No header icon: the room goes to the preview.
         title = stringResource(R.string.settings_call_background_style),
-        icon = Icons.Outlined.Wallpaper,
         confirmAction = AukDialogAction(
             label = stringResource(R.string.settings_call_background_style_choose),
             onClick = {
@@ -153,16 +153,17 @@ private val PreviewScreenHeight = 760.dp
 private val PreviewMaxHeight = 380.dp
 private val PreviewMinHeight = 200.dp
 
-// What the rest of the dialog takes around the preview: its header, the style's name, the page
-// dots, the buttons and the dialog's own margins.
-private val PickerChromeHeight = 420.dp
+// What the rest of the dialog takes around the preview at the default font size: its title, the
+// style's name, the page dots, the buttons and the dialog's own margins. It grows with the font.
+private val PickerChromeHeight = 360.dp
 
 /** A sample active call on [style]'s background, at a phone's layout shrunk to fit the dialog. */
 @Composable
 private fun CallScreenPreview(style: Int) {
     // As tall as the screen leaves room for, so the whole dialog fits without scrolling.
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val previewHeight = (screenHeight - PickerChromeHeight).coerceIn(PreviewMinHeight, PreviewMaxHeight)
+    val chromeHeight = PickerChromeHeight * LocalDensity.current.fontScale.coerceAtLeast(1f)
+    val previewHeight = (screenHeight - chromeHeight).coerceIn(PreviewMinHeight, PreviewMaxHeight)
     val scale = previewHeight / PreviewScreenHeight
     val shape = RoundedCornerShape(22.dp)
     Box(
