@@ -202,6 +202,7 @@ fun AukTheme(
         LocalAccentBarColor provides barColor,
         LocalOnAccentBarColor provides onBarColor,
         LocalEdgeToEdge provides edgeToEdge,
+        LocalVividColors provides vividColors,
         LocalStatusBarBackground provides statusBarBackground,
         LocalPlainStatusBar provides plainStatusBar
     ) {

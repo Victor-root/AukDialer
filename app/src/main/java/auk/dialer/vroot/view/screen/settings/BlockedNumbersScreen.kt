@@ -41,6 +41,8 @@ import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
+import auk.dialer.vroot.view.theme.aukOnTint
+import auk.dialer.vroot.view.theme.aukTint
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
@@ -135,8 +137,8 @@ fun BlockedNumbersScreen(
                             Surface(
                                 modifier = Modifier.size(48.dp),
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                contentColor = MaterialTheme.colorScheme.primary
+                                color = aukTint(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                contentColor = aukOnTint(MaterialTheme.colorScheme.primary)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(Icons.Outlined.Shield, contentDescription = null, modifier = Modifier.size(24.dp))

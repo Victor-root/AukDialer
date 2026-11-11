@@ -438,20 +438,23 @@ private const val MIN_MEANINGFUL_CHROMA = 4f
 
 /**
  * The call screen's own colours. With [vivid], its pale fills are made full like the app's
- * containers: a control switched on takes the accent, the hang-up button in the dark theme its
- * deep red rather than a pink, and the on hold pill in the light theme its full colour.
+ * containers: a control switched on takes the accent, and the answer and hang-up buttons in the dark
+ * theme a full green and a deep red rather than pastels. The on hold pill follows the theme's
+ * tertiary container, which vivid colours already fill.
  */
 fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean, vivid: Boolean): CallColors {
     val colors = aukBaseCallColors(colorScheme, darkTheme)
     if (!vivid) return colors
     val accent = colorScheme.accentBarColor(darkTheme)
+    // The dark theme's answer green is a pastel: the light theme's full green replaces it.
+    val fullAnswer = if (darkTheme) aukBaseCallColors(colorScheme, darkTheme = false) else colors
     return colors.copy(
+        answer = fullAnswer.answer,
+        onAnswer = fullAnswer.onAnswer,
         action = accent,
         onAction = contentColorOnAccent(accent),
         decline = if (darkTheme) colorScheme.errorContainer else colors.decline,
-        onDecline = if (darkTheme) colorScheme.onErrorContainer else colors.onDecline,
-        holdContainer = if (darkTheme) colors.holdContainer else colorScheme.tertiary,
-        onHoldContainer = if (darkTheme) colors.onHoldContainer else colorScheme.onTertiary
+        onDecline = if (darkTheme) colorScheme.onErrorContainer else colors.onDecline
     )
 }
 
@@ -539,18 +542,44 @@ val MaterialTheme.softAccentColors: SoftAccentColors
 
 /**
  * Vivid colours: the pale tinted containers (icon tiles, selected tab, tonal buttons, chips) take the
- * full accent of the app bars instead, with white or black content depending on its brightness.
+ * full accent of the app bars instead, with white or black content depending on its brightness. In
+ * the light theme the error and tertiary containers are pale too, and take their full colour; in the
+ * dark theme those are already deep, but primary itself is a pastel (buttons, card edges, icons,
+ * links), and takes the accent.
  */
 fun ColorScheme.withVividContainers(dark: Boolean): ColorScheme {
     val accent = accentBarColor(dark)
     val onAccent = contentColorOnAccent(accent)
-    return copy(
+    val vivid = copy(
         primaryContainer = accent,
         onPrimaryContainer = onAccent,
         secondaryContainer = accent,
         onSecondaryContainer = onAccent
     )
+    return if (dark) {
+        vivid.copy(primary = accent, onPrimary = onAccent)
+    } else {
+        vivid.copy(
+            errorContainer = error,
+            onErrorContainer = onError,
+            tertiaryContainer = tertiary,
+            onTertiaryContainer = onTertiary
+        )
+    }
 }
+
+/** Whether vivid colours are on, for the few fills a screen tints by hand. Provided by AukTheme. */
+val LocalVividColors: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
+
+/** A pale tint a screen fills something with by hand: the full accent instead with vivid colours. */
+@Composable
+@ReadOnlyComposable
+fun aukTint(pale: Color): Color = if (LocalVividColors.current) LocalAccentBarColor.current else pale
+
+/** What goes on an [aukTint]. */
+@Composable
+@ReadOnlyComposable
+fun aukOnTint(onPale: Color): Color = if (LocalVividColors.current) LocalOnAccentBarColor.current else onPale
 
 /**
  * One shade for the app bars and the system bars in both themes. Material lightens primary in dark

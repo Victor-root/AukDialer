@@ -34,6 +34,8 @@ import auk.dialer.vroot.view.components.AukSectionHeader
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import auk.dialer.vroot.view.theme.aukOnTint
+import auk.dialer.vroot.view.theme.aukTint
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import androidx.compose.ui.graphics.Color
 import org.koin.compose.koinInject
@@ -108,8 +110,8 @@ fun AboutScreen(navigator: DestinationsNavigator) {
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = aukTint(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        contentColor = aukOnTint(MaterialTheme.colorScheme.onPrimaryContainer)
                     ) {
                         Text(
                             text = "v${appInfo.first} (${appInfo.second})",

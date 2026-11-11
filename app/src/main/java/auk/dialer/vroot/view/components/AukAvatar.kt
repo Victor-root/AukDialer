@@ -61,7 +61,9 @@ data class AukAvatarStyle(
     val colorful: Boolean,
     val gradient: Boolean,
     val shapeIndex: Int,
-    val shape: Shape
+    val shape: Shape,
+    /** Vivid colours: full tints with white letters rather than pastel ones, in both themes. */
+    val vivid: Boolean
 )
 
 @Immutable
@@ -86,6 +88,9 @@ object AukAvatarDefaults {
     const val DarkContainerLightness: Float = 0.26f
     const val DarkContentSaturation: Float = 0.80f
     const val DarkContentLightness: Float = 0.88f
+
+    const val VividContainerSaturation: Float = 0.62f
+    const val VividContainerLightness: Float = 0.40f
 }
 
 val LocalAukAvatarStyle: ProvidableCompositionLocal<AukAvatarStyle?> =
@@ -133,9 +138,12 @@ fun rememberAukAvatarStyle(prefs: PreferenceManager = koinInject()): AukAvatarSt
     val shapeIndex = remember(settingsVersion) {
         prefs.getInt(PreferenceManager.KEY_AVATAR_SHAPE, AUK_AVATAR_SHAPE_SQUIRCLE)
     }
+    val vivid = remember(settingsVersion) {
+        prefs.getBoolean(PreferenceManager.KEY_VIVID_COLORS, true)
+    }
     val shape = aukAvatarShape(shapeIndex)
-    return remember(showPicture, showFirstLetter, colorful, gradient, shapeIndex, shape) {
-        AukAvatarStyle(showPicture, showFirstLetter, colorful, gradient, shapeIndex, shape)
+    return remember(showPicture, showFirstLetter, colorful, gradient, shapeIndex, shape, vivid) {
+        AukAvatarStyle(showPicture, showFirstLetter, colorful, gradient, shapeIndex, shape, vivid)
     }
 }
 
@@ -152,9 +160,18 @@ fun aukAvatarHueIndex(name: String): Int =
 private fun hslColor(hue: Float, saturation: Float, lightness: Float): Color =
     Color(ColorUtils.HSLToColor(floatArrayOf(hue, saturation, lightness)))
 
-private fun aukTintedAvatarColors(name: String, dark: Boolean): AukAvatarColors {
+private fun aukTintedAvatarColors(name: String, dark: Boolean, vivid: Boolean): AukAvatarColors {
     val hue = aukAvatarHueIndex(name) * (360f / AukAvatarDefaults.HueCount)
-    return if (dark) {
+    return if (vivid) {
+        AukAvatarColors(
+            container = hslColor(
+                hue,
+                AukAvatarDefaults.VividContainerSaturation,
+                AukAvatarDefaults.VividContainerLightness
+            ),
+            content = Color.White
+        )
+    } else if (dark) {
         AukAvatarColors(
             container = hslColor(
                 hue,
@@ -184,15 +201,15 @@ private fun aukTintedAvatarColors(name: String, dark: Boolean): AukAvatarColors 
 }
 
 @Composable
-fun aukAvatarColors(name: String, colorful: Boolean = true): AukAvatarColors {
+fun aukAvatarColors(name: String, colorful: Boolean = true, vivid: Boolean = aukAvatarStyle().vivid): AukAvatarColors {
     val scheme = MaterialTheme.colorScheme
     val tinted = colorful && name.any { it.isLetter() }
     val dark = scheme.surface.luminance() < 0.5f
     val neutralContainer = scheme.secondaryContainer
     val neutralContent = scheme.onSecondaryContainer
-    return remember(name, tinted, dark, neutralContainer, neutralContent) {
+    return remember(name, tinted, dark, vivid, neutralContainer, neutralContent) {
         if (tinted) {
-            aukTintedAvatarColors(name, dark)
+            aukTintedAvatarColors(name, dark, vivid)
         } else {
             AukAvatarColors(neutralContainer, neutralContent)
         }
@@ -274,7 +291,7 @@ fun AukAvatar(
         else -> style.shape
     }
 
-    val colors = aukAvatarColors(name, style.colorful)
+    val colors = aukAvatarColors(name, style.colorful, style.vivid)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val gradientBrush = if (style.gradient) {
         remember(name, dark) { gradientAvatarBrush(name, dark) }
