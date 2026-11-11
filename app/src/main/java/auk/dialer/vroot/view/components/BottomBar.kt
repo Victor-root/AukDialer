@@ -1,9 +1,7 @@
 package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
@@ -16,19 +14,19 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Voicemail
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.ShortNavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
@@ -129,6 +127,19 @@ fun BottomBar(
         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
+    BoxWithConstraints {
+    // Every label takes the size the longest one needs to fit its slot, so they stay alike.
+    val labelStyle = MaterialTheme.typography.labelMedium
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val slotWidthPx = with(density) { (maxWidth / tabs.size.coerceAtLeast(1) - LabelSideMargin * 2).toPx() }
+    val labelFontSize = remember(tabs, labelStyle, slotWidthPx) {
+        val baseSize = if (labelStyle.fontSize.isSpecified) labelStyle.fontSize else LabelMaxFontSize
+        val widest = tabs.maxOfOrNull { textMeasurer.measure(it.label, labelStyle, maxLines = 1, softWrap = false).size.width } ?: 0
+        val ratio = if (widest > slotWidthPx) slotWidthPx / widest else 1f
+        (baseSize.value * ratio).coerceAtLeast(LabelMinFontSize.value).sp
+    }
+
     ShortNavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface
@@ -162,22 +173,16 @@ fun BottomBar(
                     )
                 },
                 label = if (iconOnly) null else ({
-                    // A label too long for its slot shrinks until it fits, rather than losing its
-                    // end: the others keep the bar's own size.
-                    val style = LocalTextStyle.current
-                    BasicText(
+                    Text(
                         text = tab.label,
-                        style = style.copy(color = LocalContentColor.current),
+                        fontSize = labelFontSize,
                         maxLines = 1,
-                        modifier = Modifier.padding(horizontal = LabelSideMargin),
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = LabelMinFontSize,
-                            maxFontSize = if (style.fontSize.isSpecified) style.fontSize else LabelMaxFontSize
-                        )
+                        softWrap = false
                     )
                 }),
                 colors = itemColors
             )
         }
+    }
     }
 }
