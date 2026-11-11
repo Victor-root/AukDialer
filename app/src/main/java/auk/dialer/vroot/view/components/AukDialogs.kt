@@ -85,6 +85,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.theme.LocalCardRoundness
+import auk.dialer.vroot.view.theme.callColors
 import auk.dialer.vroot.view.theme.AukMaterialShapes
 import auk.dialer.vroot.view.theme.AukMorphShape
 import auk.dialer.vroot.view.theme.AukMotion
@@ -348,10 +349,12 @@ private fun AukDialogActionButton(
             shapes = buttonShapes,
             modifier = modifier.heightIn(min = DialogActionHeight),
             enabled = action.enabled,
+            // The same red as hanging up a call: full even in the dark theme with vivid colours,
+            // where error itself is a pastel.
             colors = if (action.destructive) {
                 ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
+                    containerColor = MaterialTheme.callColors.decline,
+                    contentColor = MaterialTheme.callColors.onDecline
                 )
             } else {
                 ButtonDefaults.buttonColors()
@@ -366,11 +369,16 @@ private fun AukDialogActionButton(
             )
         }
     } else {
+        // Grey, so the one coloured button is the action the dialog is for.
         FilledTonalButton(
             onClick = action.onClick,
             shapes = buttonShapes,
             modifier = modifier.heightIn(min = DialogActionHeight),
-            enabled = action.enabled
+            enabled = action.enabled,
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
         ) {
             Text(
                 text = action.label,

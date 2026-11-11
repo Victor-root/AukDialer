@@ -778,7 +778,7 @@ fun ContactDetailsScreen(
                                         onLongClick = { showMenu = true }
                                     )
 
-                                    DropdownMenu(
+                                    AukDropdownMenu(
                                         expanded = showMenu,
                                         onDismissRequest = { showMenu = false }
                                     ) {
@@ -877,7 +877,7 @@ fun ContactDetailsScreen(
                                         style = MaterialTheme.typography.bodyLarge
                                     )
 
-                                    DropdownMenu(
+                                    AukDropdownMenu(
                                         expanded = showNotesMenu,
                                         onDismissRequest = { showNotesMenu = false }
                                     ) {

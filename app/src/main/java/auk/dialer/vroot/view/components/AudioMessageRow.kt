@@ -21,8 +21,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -157,9 +155,9 @@ fun AudioMessageRow(
                         contentDescription = stringResource(R.string.playback_more_options)
                     )
                 }
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                AukDropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     actions.forEach { action ->
-                        DropdownMenuItem(
+                        AukDropdownMenuItem(
                             text = { Text(action.label) },
                             leadingIcon = { Icon(action.icon, contentDescription = null) },
                             onClick = {
