@@ -244,47 +244,22 @@ fun BatchCallLogActionBar(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showBlockConfirm by remember { mutableStateOf(false) }
 
-    AukAccentHeader {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onClearSelection) {
-                    Icon(Icons.Default.Close, stringResource(R.string.action_clear_selection))
-                }
-                Text(
-                    text = pluralStringResource(R.plurals.selection_count_selected, selectedCount, selectedCount),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f).padding(start = 8.dp)
-                )
-                if (onAddContact != null) {
-                    IconButton(onClick = onAddContact) {
-                        Icon(Icons.Default.PersonAdd, stringResource(R.string.contact_add_to_contacts))
-                    }
-                }
-                if (onCopy != null) {
-                    IconButton(onClick = onCopy) {
-                        Icon(Icons.Default.ContentCopy, stringResource(R.string.action_copy_number))
-                    }
-                }
-                IconButton(onClick = { showBlockConfirm = true }) {
-                    Icon(Icons.Default.Block, stringResource(R.string.action_block_number))
-                }
-                IconButton(onClick = { showDeleteConfirm = true }) {
-                    Icon(Icons.Default.Delete, stringResource(R.string.content_desc_delete_selected))
-                }
+    AukSelectionActionBar(selectedCount, onClearSelection) {
+        if (onAddContact != null) {
+            IconButton(onClick = onAddContact) {
+                Icon(Icons.Default.PersonAdd, stringResource(R.string.contact_add_to_contacts))
             }
+        }
+        if (onCopy != null) {
+            IconButton(onClick = onCopy) {
+                Icon(Icons.Default.ContentCopy, stringResource(R.string.action_copy_number))
+            }
+        }
+        IconButton(onClick = { showBlockConfirm = true }) {
+            Icon(Icons.Default.Block, stringResource(R.string.action_block_number))
+        }
+        IconButton(onClick = { showDeleteConfirm = true }) {
+            Icon(Icons.Default.Delete, stringResource(R.string.content_desc_delete_selected))
         }
     }
 

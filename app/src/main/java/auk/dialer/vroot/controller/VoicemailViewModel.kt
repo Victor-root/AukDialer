@@ -227,12 +227,13 @@ class VoicemailViewModel(
         }
     }
 
-    fun delete(id: Long) {
+    /** Deletes [ids], then reads the list again once. */
+    fun delete(ids: Set<Long>) {
         viewModelScope.launch {
-            if (_playback.value.playingId == id) {
+            if (_playback.value.playingId in ids) {
                 player.release()
             }
-            withContext(Dispatchers.IO) { voicemailRepo.delete(id) }
+            withContext(Dispatchers.IO) { ids.forEach { voicemailRepo.delete(it) } }
             fetchVoicemails()
         }
     }

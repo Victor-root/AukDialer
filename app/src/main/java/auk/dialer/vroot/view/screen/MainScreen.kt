@@ -77,6 +77,10 @@ fun MainScreen(
     // Fades the pages through when a tab is picked from the bottom bar.
     val pagerAlpha = remember { Animatable(1f) }
 
+    var isSelectingVoicemail by remember { mutableStateOf(false) }
+    var voicemailActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+    var isSelectingRecordings by remember { mutableStateOf(false) }
+    var recordingsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
     var isSelectingRecents by remember { mutableStateOf(false) }
     var recentsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
     var recentsFilterBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
@@ -87,6 +91,8 @@ fun MainScreen(
     val currentTab = visibleTabs.getOrNull(pagerState.currentPage)
     val isSelecting = when (currentTab) {
         PreferenceManager.TAB_RECENTS -> isSelectingRecents
+        PreferenceManager.TAB_VOICEMAIL -> isSelectingVoicemail
+        PreferenceManager.TAB_RECORDINGS -> isSelectingRecordings
         PreferenceManager.TAB_CONTACTS -> isSelectingContacts
         else -> false
     }
@@ -153,6 +159,8 @@ fun MainScreen(
                     if (selecting) {
                         when (currentTab) {
                             PreferenceManager.TAB_RECENTS -> recentsActionBar?.invoke()
+                            PreferenceManager.TAB_VOICEMAIL -> voicemailActionBar?.invoke()
+                            PreferenceManager.TAB_RECORDINGS -> recordingsActionBar?.invoke()
                             PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
                             else -> TopBar(navigator, headerTitle, headerSearch)
                         }
@@ -240,10 +248,18 @@ fun MainScreen(
                         PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
                             navigator = navigator,
                             showTopBar = false,
-                            isShown = pagerState.currentPage == page
+                            isShown = pagerState.currentPage == page,
+                            onSelectionStateChange = { selecting, actionBar ->
+                                isSelectingVoicemail = selecting
+                                voicemailActionBar = actionBar
+                            }
                         )
                         PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
-                            isShown = pagerState.currentPage == page
+                            isShown = pagerState.currentPage == page,
+                            onSelectionStateChange = { selecting, actionBar ->
+                                isSelectingRecordings = selecting
+                                recordingsActionBar = actionBar
+                            }
                         )
                     }
                 }

@@ -683,6 +683,18 @@
     <string name="call_recordings_empty_description">Les enregistrements réalisés pendant vos appels apparaîtront ici.</string>
     <string name="call_recordings_playback_failed">Cet enregistrement n’a pas pu être lu.</string>
     <string name="call_recordings_share">Partager l’enregistrement</string>
+    <plurals name="call_recordings_delete_selected_title">
+        <item quantity="one">Supprimer %d enregistrement ?</item>
+        <item quantity="many">Supprimer %d enregistrements ?</item>
+        <item quantity="other">Supprimer %d enregistrements ?</item>
+    </plurals>
+    <string name="call_recordings_delete_selected_message">Ces enregistrements seront définitivement supprimés de votre appareil.</string>
+    <plurals name="voicemail_delete_selected_title">
+        <item quantity="one">Supprimer %d message vocal ?</item>
+        <item quantity="many">Supprimer %d messages vocaux ?</item>
+        <item quantity="other">Supprimer %d messages vocaux ?</item>
+    </plurals>
+    <string name="voicemail_delete_selected_message">Ces messages vocaux seront définitivement supprimés.</string>
     <string name="call_recordings_delete_title">Supprimer l’enregistrement ?</string>
     <string name="call_recordings_delete_message">Cet enregistrement sera définitivement supprimé de votre appareil.</string>
     <string name="settings_call_default_background_none">Non défini, les appels utilisent le thème de l’application</string>

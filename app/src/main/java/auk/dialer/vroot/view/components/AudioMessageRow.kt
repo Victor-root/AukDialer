@@ -1,6 +1,14 @@
 package auk.dialer.vroot.view.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +49,7 @@ data class AudioRowAction(val label: String, val icon: ImageVector, val onClick:
  * A playable message in a list, voicemail or call recording: who it is from, its details, a play
  * button and a menu, then a seek bar and the speaker / earpiece switch while it is the one playing.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AudioMessageRow(
     title: String,
@@ -58,18 +67,53 @@ fun AudioMessageRow(
     onToggle: () -> Unit,
     onSeek: (Int) -> Unit,
     onToggleSpeaker: () -> Unit,
-    actions: List<AudioRowAction>
+    actions: List<AudioRowAction>,
+    // Selecting several rows, as in the call log: a long press starts it, then a tap adds or
+    // removes a row. Playback and the menu step aside meanwhile.
+    selected: Boolean = false,
+    selectionMode: Boolean = false,
+    onToggleSelection: (() -> Unit)? = null
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AukAvatar(
-                name = avatarName,
-                photoUri = photoUri,
-                icon = avatarIcon,
-                modifier = Modifier.size(48.dp)
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (selected) MaterialTheme.softAccentColors.selection else Color.Transparent)
+            .then(
+                if (onToggleSelection != null) {
+                    Modifier.combinedClickable(
+                        onClick = { if (selectionMode) onToggleSelection() },
+                        onLongClick = onToggleSelection
+                    )
+                } else {
+                    Modifier
+                }
             )
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (selected) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(MaterialTheme.colorScheme.primary, aukAvatarStyle().shape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = stringResource(R.string.content_desc_selected_item),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            } else {
+                AukAvatar(
+                    name = avatarName,
+                    photoUri = photoUri,
+                    icon = avatarIcon,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
 
             Spacer(Modifier.width(16.dp))
 
@@ -90,7 +134,7 @@ fun AudioMessageRow(
                 )
             }
 
-            if (canPlay) {
+            if (canPlay && !selectionMode) {
                 IconButton(onClick = onToggle) {
                     Icon(
                         // Rounded variants: same glyphs with softened corners.
@@ -106,7 +150,7 @@ fun AudioMessageRow(
                 }
             }
 
-            Box {
+            if (!selectionMode) Box {
                 IconButton(onClick = { showMenu = true }) {
                     Icon(
                         Icons.Default.MoreVert,

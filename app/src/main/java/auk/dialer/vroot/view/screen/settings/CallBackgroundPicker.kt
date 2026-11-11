@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -149,16 +150,24 @@ fun CallBackgroundPickerDialog(
 // The call screen is laid out at a phone's size and shrunk, so the preview is the screen itself.
 private val PreviewScreenWidth = 360.dp
 private val PreviewScreenHeight = 760.dp
-private val PreviewWidth = 200.dp
+private val PreviewMaxHeight = 380.dp
+private val PreviewMinHeight = 200.dp
+
+// What the rest of the dialog takes around the preview: its header, the style's name, the page
+// dots, the buttons and the dialog's own margins.
+private val PickerChromeHeight = 420.dp
 
 /** A sample active call on [style]'s background, at a phone's layout shrunk to fit the dialog. */
 @Composable
 private fun CallScreenPreview(style: Int) {
-    val scale = PreviewWidth / PreviewScreenWidth
+    // As tall as the screen leaves room for, so the whole dialog fits without scrolling.
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val previewHeight = (screenHeight - PickerChromeHeight).coerceIn(PreviewMinHeight, PreviewMaxHeight)
+    val scale = previewHeight / PreviewScreenHeight
     val shape = RoundedCornerShape(22.dp)
     Box(
         modifier = Modifier
-            .size(PreviewWidth, PreviewScreenHeight * scale)
+            .size(PreviewScreenWidth * scale, previewHeight)
             .clip(shape)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
     ) {

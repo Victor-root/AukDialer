@@ -2,6 +2,8 @@ package auk.dialer.vroot.view.screen.settings
 
 import android.content.Context
 import android.net.Uri
+import androidx.activity.compose.BackHandler
+import java.io.File
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +44,7 @@ import auk.dialer.vroot.view.components.AukConfirmationDialog
 import auk.dialer.vroot.view.components.AukExpressiveCardSegment
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukSectionHeader
+import auk.dialer.vroot.view.components.SelectionDeleteActionBar
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import com.ramcosta.composedestinations.annotation.Destination
@@ -67,7 +71,9 @@ fun CallRecordingsScreen(
 fun CallRecordingsContent(
     onNavigateUp: (() -> Unit)? = null,
     // False while another tab of the main screen is shown: the pager keeps this one composed.
-    isShown: Boolean = true
+    isShown: Boolean = true,
+    // Hosted by the main screen, which shows the selection header in its own collapsing header.
+    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null
 ) {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
@@ -130,9 +136,37 @@ fun CallRecordingsContent(
         }
     }
 
+    var selectedPaths by remember { mutableStateOf(setOf<String>()) }
+    val isSelecting = selectedPaths.isNotEmpty()
+    // A recording deleted or gone from the folder leaves the selection.
+    LaunchedEffect(recordings) {
+        val present = recordings.orEmpty().map { it.recording.file.absolutePath }.toSet()
+        selectedPaths = selectedPaths.filter { it in present }.toSet()
+    }
+    BackHandler(enabled = isSelecting) { selectedPaths = emptySet() }
+    val selectionActionBar: @Composable () -> Unit = {
+        SelectionDeleteActionBar(
+            selectedCount = selectedPaths.size,
+            onClearSelection = { selectedPaths = emptySet() },
+            confirmTitle = pluralStringResource(R.plurals.call_recordings_delete_selected_title, selectedPaths.size, selectedPaths.size),
+            confirmMessage = stringResource(R.string.call_recordings_delete_selected_message),
+            onDelete = {
+                if (playingPath in selectedPaths) player.release()
+                selectedPaths.forEach { CallRecorder.delete(File(it)) }
+                selectedPaths = emptySet()
+                refreshKey++
+            }
+        )
+    }
+    LaunchedEffect(isSelecting, selectedPaths.size) {
+        onSelectionStateChange?.invoke(isSelecting, if (isSelecting) selectionActionBar else null)
+    }
+
     Scaffold(
         topBar = {
-            if (onNavigateUp != null) {
+            if (onNavigateUp != null && isSelecting) {
+                selectionActionBar()
+            } else if (onNavigateUp != null) {
                 TopAppBar(
                     colors = aukAccentTopAppBarColors(),
                     title = { AukTopBarTitle(stringResource(R.string.call_recordings_title)) },
@@ -196,6 +230,11 @@ fun CallRecordingsContent(
                                         onDelete = {
                                             if (isCurrent) player.release()
                                             pendingDelete = recording
+                                        },
+                                        selected = path in selectedPaths,
+                                        selectionMode = isSelecting,
+                                        onToggleSelection = {
+                                            selectedPaths = if (path in selectedPaths) selectedPaths - path else selectedPaths + path
                                         }
                                     )
                                 }
@@ -272,7 +311,10 @@ private fun RecordingRow(
     onSeek: (Int) -> Unit,
     onToggleSpeaker: () -> Unit,
     onShare: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    selected: Boolean,
+    selectionMode: Boolean,
+    onToggleSelection: () -> Unit
 ) {
     val context = LocalContext.current
     val recording = entry.recording
@@ -297,7 +339,10 @@ private fun RecordingRow(
             actions = listOf(
                 AudioRowAction(stringResource(R.string.call_recordings_share), Icons.Outlined.Share, onShare),
                 AudioRowAction(stringResource(R.string.action_delete), Icons.Outlined.Delete, onDelete)
-            )
+            ),
+            selected = selected,
+            selectionMode = selectionMode,
+            onToggleSelection = onToggleSelection
         )
     }
 }

@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +40,7 @@ import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.PermissionDeniedView
+import auk.dialer.vroot.view.components.SelectionDeleteActionBar
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.components.navigationTabLabel
@@ -62,7 +65,9 @@ fun VoicemailScreenContent(
     navigator: DestinationsNavigator,
     showTopBar: Boolean = true,
     // False while another tab of the main screen is shown: the pager keeps this one composed.
-    isShown: Boolean = true
+    isShown: Boolean = true,
+    // Hosted by the main screen, which shows the selection header in its own collapsing header.
+    onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val viewModel: VoicemailViewModel = koinActivityViewModel()
@@ -77,6 +82,30 @@ fun VoicemailScreenContent(
     val status by viewModel.status.collectAsState()
     val syncFailed by viewModel.syncFailed.collectAsState()
     val syncFoundNothing by viewModel.syncFoundNothing.collectAsState()
+
+    var selectedIds by remember { mutableStateOf(setOf<Long>()) }
+    val isSelecting = selectedIds.isNotEmpty()
+    // A message deleted or gone from the mailbox leaves the selection.
+    LaunchedEffect(voicemails) {
+        val present = voicemails.map { it.id }.toSet()
+        selectedIds = selectedIds.filter { it in present }.toSet()
+    }
+    BackHandler(enabled = isSelecting) { selectedIds = emptySet() }
+    val selectionActionBar: @Composable () -> Unit = {
+        SelectionDeleteActionBar(
+            selectedCount = selectedIds.size,
+            onClearSelection = { selectedIds = emptySet() },
+            confirmTitle = pluralStringResource(R.plurals.voicemail_delete_selected_title, selectedIds.size, selectedIds.size),
+            confirmMessage = stringResource(R.string.voicemail_delete_selected_message),
+            onDelete = {
+                viewModel.delete(selectedIds)
+                selectedIds = emptySet()
+            }
+        )
+    }
+    LaunchedEffect(isSelecting, selectedIds.size) {
+        onSelectionStateChange?.invoke(isSelecting, if (isSelecting) selectionActionBar else null)
+    }
 
     var isDefaultDialer by remember { mutableStateOf(viewModel.isDefaultDialer()) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -151,7 +180,11 @@ fun VoicemailScreenContent(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (showTopBar) {
-                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_VOICEMAIL), headerSearch)
+                if (isSelecting) {
+                    selectionActionBar()
+                } else {
+                    TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_VOICEMAIL), headerSearch)
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -235,7 +268,16 @@ fun VoicemailScreenContent(
                                                     onToggleRead = {
                                                         viewModel.markAsRead(voicemail.id, !voicemail.isRead)
                                                     },
-                                                    onDelete = { viewModel.delete(voicemail.id) }
+                                                    onDelete = { viewModel.delete(setOf(voicemail.id)) },
+                                                    selected = voicemail.id in selectedIds,
+                                                    selectionMode = isSelecting,
+                                                    onToggleSelection = {
+                                                        selectedIds = if (voicemail.id in selectedIds) {
+                                                            selectedIds - voicemail.id
+                                                        } else {
+                                                            selectedIds + voicemail.id
+                                                        }
+                                                    }
                                                 )
                                             }
                                         }
@@ -262,7 +304,10 @@ private fun VoicemailRow(
     onSeek: (Int) -> Unit,
     onToggleSpeaker: () -> Unit,
     onToggleRead: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    selected: Boolean,
+    selectionMode: Boolean,
+    onToggleSelection: () -> Unit
 ) {
     val context = LocalContext.current
     val displayName = voicemail.contactName
@@ -299,7 +344,10 @@ private fun VoicemailRow(
                     icon = Icons.Outlined.Delete,
                     onClick = onDelete
                 )
-            )
+            ),
+            selected = selected,
+            selectionMode = selectionMode,
+            onToggleSelection = onToggleSelection
         )
     }
 }

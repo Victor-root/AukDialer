@@ -683,6 +683,16 @@
     <string name="call_recordings_playback_failed">This recording could not be played.</string>
     <string name="call_recordings_share">Share recording</string>
     <string name="call_recordings_delete_title">Delete recording?</string>
+    <plurals name="call_recordings_delete_selected_title">
+        <item quantity="one">Delete %d recording?</item>
+        <item quantity="other">Delete %d recordings?</item>
+    </plurals>
+    <string name="call_recordings_delete_selected_message">These recordings will be permanently removed from your device.</string>
+    <plurals name="voicemail_delete_selected_title">
+        <item quantity="one">Delete %d voicemail?</item>
+        <item quantity="other">Delete %d voicemails?</item>
+    </plurals>
+    <string name="voicemail_delete_selected_message">These voicemails will be permanently deleted.</string>
     <string name="call_recordings_delete_message">This recording will be permanently removed from your device.</string>
 
     <!-- Visual voicemail -->
