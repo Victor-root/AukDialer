@@ -656,8 +656,13 @@
     <string name="settings_call_recording_shizuku_ready">Active, calls are recorded from the phone line</string>
     <string name="settings_call_recording_notice">Recording calls may be restricted by your device or by law in your region. Make sure you are allowed to record before using this feature.</string>
     <string name="settings_call_background_style">Call screen background</string>
-    <string name="settings_call_background_style_supporting">What the call screen shows behind it when no image is set</string>
-    <string name="settings_call_background_style_animated">Animated</string>
+    <string name="settings_call_background_style_animated">Floating circles</string>
+    <string name="settings_call_background_style_waves">Waves</string>
+    <string name="settings_call_background_style_rings">Signal rings</string>
+    <string name="settings_call_background_style_bubbles">Bubbles</string>
+    <string name="settings_call_background_style_aurora">Aurora</string>
+    <string name="settings_call_background_style_choose">Choose</string>
+    <string name="settings_call_background_preview_caller" translatable="false">Alice Martin</string>
     <string name="settings_call_background_style_plain">Plain</string>
     <string name="settings_call_background_style_gradient">Gradient</string>
     <string name="settings_call_background_style_photo">Contact photo</string>

@@ -98,6 +98,7 @@ fun CallAccountsScreen(
 
     var showSimDialog by remember { mutableStateOf(false) }
     var showCallWaitingDialog by remember { mutableStateOf(false) }
+    var showCallBackgroundPicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -292,22 +293,11 @@ fun CallAccountsScreen(
 
             item {
                 AukExpressiveCard {
-                    AukSelectListItem(
+                    AukListItem(
                         headline = stringResource(R.string.settings_call_background_style),
-                        supporting = stringResource(R.string.settings_call_background_style_supporting),
+                        supporting = callBackgroundStyleLabel(callBackgroundStyle),
                         leadingIcon = Icons.Outlined.Gradient,
-                        options = listOf(
-                            stringResource(R.string.settings_call_background_style_animated) to PreferenceManager.CALL_BACKGROUND_ANIMATED,
-                            stringResource(R.string.settings_call_background_style_plain) to PreferenceManager.CALL_BACKGROUND_PLAIN,
-                            stringResource(R.string.settings_call_background_style_gradient) to PreferenceManager.CALL_BACKGROUND_GRADIENT,
-                            stringResource(R.string.settings_call_background_style_photo) to PreferenceManager.CALL_BACKGROUND_PHOTO
-                        ),
-                        selectedValue = callBackgroundStyle,
-                        onValueChange = {
-                            callBackgroundStyle = it
-                            prefs.setInt(PreferenceManager.KEY_CALL_BACKGROUND_STYLE, it)
-                        },
-                        preview = { value -> CallBackgroundPreview(value) }
+                        onClick = { showCallBackgroundPicker = true }
                     )
                     AukListItem(
                         headline = stringResource(R.string.settings_call_default_background),
@@ -393,6 +383,17 @@ fun CallAccountsScreen(
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
+    }
+
+    if (showCallBackgroundPicker) {
+        CallBackgroundPickerDialog(
+            selected = callBackgroundStyle,
+            onSelect = {
+                callBackgroundStyle = it
+                prefs.setInt(PreferenceManager.KEY_CALL_BACKGROUND_STYLE, it)
+            },
+            onDismissRequest = { showCallBackgroundPicker = false }
+        )
     }
 
     if (showCallWaitingDialog) {

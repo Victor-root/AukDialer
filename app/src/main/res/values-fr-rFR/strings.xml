@@ -662,8 +662,12 @@
     <string name="settings_bottom_nav_move_down">Descendre</string>
     <string name="settings_bottom_nav_reset">Réinitialiser</string>
     <string name="settings_call_background_style">Fond de l’écran d’appel</string>
-    <string name="settings_call_background_style_supporting">Ce que l’écran d’appel affiche en fond quand aucune image n’est choisie</string>
-    <string name="settings_call_background_style_animated">Animé</string>
+    <string name="settings_call_background_style_animated">Cercles flottants</string>
+    <string name="settings_call_background_style_waves">Vagues</string>
+    <string name="settings_call_background_style_rings">Ondes</string>
+    <string name="settings_call_background_style_bubbles">Bulles</string>
+    <string name="settings_call_background_style_aurora">Aurore</string>
+    <string name="settings_call_background_style_choose">Choisir</string>
     <string name="settings_call_background_style_plain">Uni</string>
     <string name="settings_call_background_style_gradient">Dégradé</string>
     <string name="settings_call_background_style_photo">Photo du contact</string>

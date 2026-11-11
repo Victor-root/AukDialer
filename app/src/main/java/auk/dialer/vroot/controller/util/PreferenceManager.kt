@@ -317,6 +317,10 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
         const val CALL_BACKGROUND_PLAIN = 1
         const val CALL_BACKGROUND_GRADIENT = 2
         const val CALL_BACKGROUND_PHOTO = 3
+        const val CALL_BACKGROUND_WAVES = 4
+        const val CALL_BACKGROUND_RINGS = 5
+        const val CALL_BACKGROUND_BUBBLES = 6
+        const val CALL_BACKGROUND_AURORA = 7
         const val KEY_SHOW_CARDS = "show_cards"
         const val KEY_SHOW_CALL_SCREEN_AVATAR = "show_call_screen_avatar"
         const val KEY_CARD_ROUNDNESS = "card_roundness"

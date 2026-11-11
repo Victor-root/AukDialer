@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A stand-in contact photo for the call background picker's preview of the photo style:
+     a sunset over hills, colourful enough to show what a blurred photo looks like behind a call. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="180dp"
+    android:height="380dp"
+    android:viewportWidth="180"
+    android:viewportHeight="380">
+    <path android:pathData="M0,0h180v380h-180z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="90" android:startY="0"
+                android:endX="90" android:endY="380"
+                android:startColor="#FF3A2A6B"
+                android:centerColor="#FFE07A5F"
+                android:endColor="#FFF2C14E" />
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FFFFE29A"
+        android:pathData="M90,190m-34,0a34,34 0,1 1,68 0a34,34 0,1 1,-68 0" />
+    <path
+        android:fillColor="#FF2F5D62"
+        android:pathData="M0,250 C40,210 80,225 110,245 C140,262 160,240 180,232 L180,380 L0,380 Z" />
+    <path
+        android:fillColor="#FF1B3A3F"
+        android:pathData="M0,300 C50,270 90,290 130,300 C150,306 170,296 180,290 L180,380 L0,380 Z" />
+</vector>
