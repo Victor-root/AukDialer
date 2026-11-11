@@ -439,7 +439,7 @@ private const val MIN_MEANINGFUL_CHROMA = 4f
 /**
  * The call screen's own colours. With [vivid], its pale fills are made full like the app's
  * containers: a control switched on takes the accent, and the answer and hang-up buttons in the dark
- * theme a full green and a deep red rather than pastels. The on hold pill follows the theme's
+ * theme a full green and a full red rather than pastels. The on hold pill follows the theme's
  * tertiary container, which vivid colours already fill.
  */
 fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean, vivid: Boolean): CallColors {
@@ -453,10 +453,14 @@ fun aukCallColors(colorScheme: ColorScheme, darkTheme: Boolean, vivid: Boolean):
         onAnswer = fullAnswer.onAnswer,
         action = accent,
         onAction = contentColorOnAccent(accent),
-        decline = if (darkTheme) colorScheme.errorContainer else colors.decline,
-        onDecline = if (darkTheme) colorScheme.onErrorContainer else colors.onDecline
+        decline = if (darkTheme) FullDecline else colors.decline,
+        onDecline = if (darkTheme) Color.White else colors.onDecline
     )
 }
+
+// The light theme's full red: the dark theme's error is a pastel and its container too dull next
+// to the accent.
+private val FullDecline = Color(0xFFB3261E)
 
 private fun aukBaseCallColors(colorScheme: ColorScheme, darkTheme: Boolean): CallColors {
     val primaryLch = colorToLch(colorScheme.primary)

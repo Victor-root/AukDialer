@@ -186,12 +186,12 @@ fun AukDialog(
         ) {
             val destructive = confirmAction?.destructive == true
             val headerContainer = if (destructive) {
-                MaterialTheme.colorScheme.errorContainer
+                MaterialTheme.callColors.decline
             } else {
                 MaterialTheme.colorScheme.primaryContainer
             }
             val headerContent = if (destructive) {
-                MaterialTheme.colorScheme.onErrorContainer
+                MaterialTheme.callColors.onDecline
             } else {
                 MaterialTheme.colorScheme.onPrimaryContainer
             }
@@ -743,12 +743,12 @@ fun AukBottomSheet(
                         modifier = Modifier.size(DialogHeaderTileSize),
                         shape = sheetHeaderMorph,
                         color = if (destructive) {
-                            MaterialTheme.colorScheme.errorContainer
+                            MaterialTheme.callColors.decline
                         } else {
                             MaterialTheme.colorScheme.primaryContainer
                         },
                         contentColor = if (destructive) {
-                            MaterialTheme.colorScheme.onErrorContainer
+                            MaterialTheme.callColors.onDecline
                         } else {
                             MaterialTheme.colorScheme.onPrimaryContainer
                         },

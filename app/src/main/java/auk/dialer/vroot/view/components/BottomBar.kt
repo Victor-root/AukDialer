@@ -1,6 +1,7 @@
 package auk.dialer.vroot.view.components
 
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -44,6 +47,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
 
 private val LabelMinFontSize = 8.sp
+private val LabelSideMargin = 6.dp
 private val LabelMaxFontSize = 12.sp
 
 data class NavigationTab(
@@ -165,6 +169,7 @@ fun BottomBar(
                         text = tab.label,
                         style = style.copy(color = LocalContentColor.current),
                         maxLines = 1,
+                        modifier = Modifier.padding(horizontal = LabelSideMargin),
                         autoSize = TextAutoSize.StepBased(
                             minFontSize = LabelMinFontSize,
                             maxFontSize = if (style.fontSize.isSpecified) style.fontSize else LabelMaxFontSize
