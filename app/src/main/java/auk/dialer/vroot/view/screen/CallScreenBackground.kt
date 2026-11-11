@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -66,14 +68,29 @@ private fun rememberLoop(label: String, periodMillis: Int): State<Float> =
 
 private const val TwoPi = (2 * PI).toFloat()
 
+/** The accent itself, lighter and darker: the only colours the animated backgrounds use. */
+private class AccentShades(val base: Color, val light: Color, val dark: Color)
+
+@Composable
+private fun rememberAccentShades(): AccentShades {
+    val accent = LocalAccentBarColor.current
+    return remember(accent) {
+        AccentShades(
+            base = accent,
+            light = lerp(accent, Color.White, 0.45f),
+            dark = lerp(accent, Color.Black, 0.35f)
+        )
+    }
+}
+
 /**
  * The animated style: three wide halos of the theme's colours drifting across the whole screen.
  * Each follows a closed curve, whole turns per loop, so the drift never jumps.
  */
 @Composable
 private fun AmbientBlobs() {
-    val scheme = MaterialTheme.colorScheme
-    val colors = listOf(scheme.primaryContainer, scheme.tertiaryContainer, LocalAccentBarColor.current)
+    val shades = rememberAccentShades()
+    val colors = listOf(shades.light, shades.dark, shades.base)
     val loop by rememberLoop("halos", 48000)
     Canvas(modifier = Modifier.fillMaxSize()) {
         val radius = size.maxDimension * 0.55f
@@ -100,9 +117,8 @@ private fun AmbientBlobs() {
 /** Waves stacked from the top of the screen to the bottom, each rolling slowly along. */
 @Composable
 private fun Waves() {
-    val scheme = MaterialTheme.colorScheme
-    val accent = LocalAccentBarColor.current
-    val colors = listOf(scheme.tertiaryContainer, scheme.primaryContainer, accent, scheme.tertiaryContainer, accent)
+    val shades = rememberAccentShades()
+    val colors = listOf(shades.light, shades.base, shades.dark, shades.light, shades.base)
     val loop by rememberLoop("waves", 36000)
     Canvas(modifier = Modifier.fillMaxSize()) {
         colors.forEachIndexed { index, color ->
@@ -129,8 +145,9 @@ private fun Waves() {
 /** Rings spreading from behind the caller's tile out past the edges of the screen. */
 @Composable
 private fun Rings() {
-    val accent = LocalAccentBarColor.current
-    val tint = MaterialTheme.colorScheme.tertiaryContainer
+    val shades = rememberAccentShades()
+    val accent = shades.base
+    val tint = shades.light
     val loop by rememberLoop("rings", 14000)
     Canvas(modifier = Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height * RingsCenterFraction)
@@ -157,9 +174,8 @@ private fun Rings() {
 /** Large bubbles rising slowly up the whole screen. */
 @Composable
 private fun Bubbles() {
-    val scheme = MaterialTheme.colorScheme
-    val accent = LocalAccentBarColor.current
-    val colors = listOf(scheme.primaryContainer, scheme.tertiaryContainer, accent)
+    val shades = rememberAccentShades()
+    val colors = listOf(shades.light, shades.dark, shades.base)
     val bubbles = remember {
         val random = java.util.Random(7)
         List(BubbleCount) {
@@ -193,9 +209,8 @@ private class Bubble(val x: Float, val radius: Float, val laps: Int, val start: 
 /** Broad diagonal bands of the theme's colours sliding slowly across the whole screen. */
 @Composable
 private fun Aurora() {
-    val scheme = MaterialTheme.colorScheme
-    val accent = LocalAccentBarColor.current
-    val colors = listOf(accent, scheme.tertiaryContainer, scheme.primaryContainer, scheme.tertiary, accent)
+    val shades = rememberAccentShades()
+    val colors = listOf(shades.base, shades.light, shades.dark, shades.light, shades.base)
     val loop by rememberLoop("aurora", 45000)
     Canvas(modifier = Modifier.fillMaxSize()) {
         // The gradient repeats every period and slides by exactly one, so the loop is seamless.
