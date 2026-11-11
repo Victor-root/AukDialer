@@ -310,6 +310,13 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
         const val KEY_SEARCH_MATCH_MODE = "search_match_mode"
         const val KEY_QUICK_RESPONSE_ENABLED = "quick_response_enabled"
         const val KEY_INCOMING_CALL_UI_MODE = "incoming_call_ui_mode"
+        const val KEY_CALL_BACKGROUND_STYLE = "call_background_style"
+
+        // What the call screen shows behind it when no image is set for the call.
+        const val CALL_BACKGROUND_ANIMATED = 0
+        const val CALL_BACKGROUND_PLAIN = 1
+        const val CALL_BACKGROUND_GRADIENT = 2
+        const val CALL_BACKGROUND_PHOTO = 3
         const val KEY_SHOW_CARDS = "show_cards"
         const val KEY_SHOW_CALL_SCREEN_AVATAR = "show_call_screen_avatar"
         const val KEY_CARD_ROUNDNESS = "card_roundness"

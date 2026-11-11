@@ -38,6 +38,8 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.CallBackgroundStore
 import auk.dialer.vroot.controller.util.PreferenceManager
+import androidx.compose.ui.graphics.luminance
+import auk.dialer.vroot.view.theme.LocalAccentBarColor
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.view.screen.ExpressiveCallScreen
 import auk.dialer.vroot.view.theme.AukTheme
@@ -114,7 +116,21 @@ class CallActivity : ComponentActivity() {
 
                 // A photo or custom background sits under a scrim of the theme's surface at the top,
                 // so the status bar always lies on that surface: its icons follow the theme alone.
-                val lightSystemBarIcons = isSystemInDarkTheme()
+                // Except the gradient style, which puts the accent itself under the bar when no image
+                // is set for the call.
+                val backgroundStyle = remember(settingsState) {
+                    preferenceManager.getInt(
+                        PreferenceManager.KEY_CALL_BACKGROUND_STYLE,
+                        PreferenceManager.CALL_BACKGROUND_ANIMATED
+                    )
+                }
+                val accentUnderBar = backgroundStyle == PreferenceManager.CALL_BACKGROUND_GRADIENT &&
+                    identity?.backgroundUri == null
+                val lightSystemBarIcons = if (accentUnderBar) {
+                    LocalAccentBarColor.current.luminance() < 0.5f
+                } else {
+                    isSystemInDarkTheme()
+                }
 
                 DisposableEffect(lightSystemBarIcons) {
                     applySystemBarStyle(lightSystemBarIcons)

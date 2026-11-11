@@ -254,6 +254,9 @@ fun ExpressiveCallScreen(
         )
     }
 
+    val backgroundStyle = remember(settingsState) {
+        preferenceManager.getInt(PreferenceManager.KEY_CALL_BACKGROUND_STYLE, PreferenceManager.CALL_BACKGROUND_ANIMATED)
+    }
     val recordingEnabled = remember(settingsState) {
         preferenceManager.getBoolean(PreferenceManager.KEY_CALL_RECORDING, false)
     }
@@ -624,7 +627,7 @@ fun ExpressiveCallScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        ExpressiveBackground(photoUri, backgroundUri)
+        ExpressiveBackground(photoUri, backgroundUri, backgroundStyle)
 
         if (isLandscape) {
             Row(

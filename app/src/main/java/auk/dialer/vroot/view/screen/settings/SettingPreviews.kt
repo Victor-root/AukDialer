@@ -34,7 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.theme.LocalAccentBarColor
 import auk.dialer.vroot.view.theme.aukAvatarShape
 import auk.dialer.vroot.view.theme.callColors
 
@@ -171,4 +175,64 @@ fun CardRoundnessPreview(roundnessDp: Int) {
             .background(scheme.surfaceContainerHighest, RoundedCornerShape(cornerRadius))
             .border(1.dp, scheme.outlineVariant, RoundedCornerShape(cornerRadius))
     )
+}
+
+/**
+ * A tiny call screen for each background style, so the choice shows what it looks like: the
+ * caller's tile on the style's background, with the photo style using a stand-in picture.
+ */
+@Composable
+fun CallBackgroundPreview(style: Int) {
+    val scheme = MaterialTheme.colorScheme
+    val accent = LocalAccentBarColor.current
+    val background = when (style) {
+        PreferenceManager.CALL_BACKGROUND_GRADIENT -> Brush.verticalGradient(
+            0f to accent,
+            0.3f to accent.copy(alpha = 0.6f),
+            0.7f to scheme.surface
+        )
+        PreferenceManager.CALL_BACKGROUND_PHOTO -> Brush.linearGradient(
+            listOf(scheme.tertiary, scheme.primary, scheme.secondary)
+        )
+        else -> SolidColor(scheme.surface)
+    }
+    Box(
+        modifier = Modifier
+            .width(28.dp)
+            .height(48.dp)
+            .clip(RoundedCornerShape(7.dp))
+            .background(background)
+            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(7.dp))
+    ) {
+        if (style == PreferenceManager.CALL_BACKGROUND_ANIMATED) {
+            Box(
+                modifier = Modifier
+                    .offset(x = (-6).dp, y = (-6).dp)
+                    .size(20.dp)
+                    .background(scheme.primaryContainer.copy(alpha = 0.5f), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 6.dp, y = 6.dp)
+                    .size(22.dp)
+                    .background(scheme.tertiaryContainer.copy(alpha = 0.5f), CircleShape)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = 10.dp)
+                .size(12.dp)
+                .background(accent, RoundedCornerShape(4.dp))
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = (-6).dp)
+                .width(14.dp)
+                .height(5.dp)
+                .background(MaterialTheme.callColors.decline, RoundedCornerShape(3.dp))
+        )
+    }
 }

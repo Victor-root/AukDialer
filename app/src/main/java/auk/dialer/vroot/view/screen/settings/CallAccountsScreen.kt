@@ -66,6 +66,9 @@ fun CallAccountsScreen(
     var speedDial by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SPEED_DIAL, true)) }
     var t9Dialing by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_T9_DIALING, true)) }
     var proximitySensor by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_PROXIMITY_SENSOR, true)) }
+    var callBackgroundStyle by remember(settingsState) {
+        mutableStateOf(prefs.getInt(PreferenceManager.KEY_CALL_BACKGROUND_STYLE, PreferenceManager.CALL_BACKGROUND_ANIMATED))
+    }
     var incomingCallUI by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_INCOMING_CALL_UI_MODE, 0)) }
     var autoRedial by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_AUTO_REDIAL_BUSY, false)) }
     var redialAttempts by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_REDIAL_ATTEMPTS, 3)) }
@@ -289,6 +292,23 @@ fun CallAccountsScreen(
 
             item {
                 AukExpressiveCard {
+                    AukSelectListItem(
+                        headline = stringResource(R.string.settings_call_background_style),
+                        supporting = stringResource(R.string.settings_call_background_style_supporting),
+                        leadingIcon = Icons.Outlined.Gradient,
+                        options = listOf(
+                            stringResource(R.string.settings_call_background_style_animated) to PreferenceManager.CALL_BACKGROUND_ANIMATED,
+                            stringResource(R.string.settings_call_background_style_plain) to PreferenceManager.CALL_BACKGROUND_PLAIN,
+                            stringResource(R.string.settings_call_background_style_gradient) to PreferenceManager.CALL_BACKGROUND_GRADIENT,
+                            stringResource(R.string.settings_call_background_style_photo) to PreferenceManager.CALL_BACKGROUND_PHOTO
+                        ),
+                        selectedValue = callBackgroundStyle,
+                        onValueChange = {
+                            callBackgroundStyle = it
+                            prefs.setInt(PreferenceManager.KEY_CALL_BACKGROUND_STYLE, it)
+                        },
+                        preview = { value -> CallBackgroundPreview(value) }
+                    )
                     AukListItem(
                         headline = stringResource(R.string.settings_call_default_background),
                         supporting = if (defaultCallBg != null) {

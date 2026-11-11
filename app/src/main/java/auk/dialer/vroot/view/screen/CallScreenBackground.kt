@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,23 +42,21 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.theme.LocalAccentBarColor
 import auk.dialer.vroot.view.theme.AukDurations
 
 private const val TopScrimFraction = 0.36f
 private const val BottomScrimFraction = 0.54f
 
+// The gradient style: the accent fades out over the top half, behind the caller's name.
+private const val GradientFadeStart = 0.22f
+private const val GradientFadeEnd = 0.55f
+
+/** The animated style: two soft blobs of the theme's colours drifting behind the call. */
 @Composable
-fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
-    val context = LocalContext.current
+private fun BoxScope.AmbientBlobs() {
     val scheme = MaterialTheme.colorScheme
-    val surface = scheme.surface
-
-    val hasCustomBackground = !backgroundUri.isNullOrEmpty()
-    var customFailed by remember(backgroundUri) { mutableStateOf(false) }
-
-    val customVisible = hasCustomBackground && !customFailed
-    val photoVisible = !photoUri.isNullOrEmpty() && !customVisible
-
     // Read only while placing and drawing the blobs, so their drift redraws them without
     // recomposing the whole background on every frame of the call.
     val infiniteTransition = rememberInfiniteTransition(label = "ambientBg")
@@ -79,6 +78,44 @@ fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
         animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Reverse),
         label = "ba"
     )
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(blob1Offset.value.dp.roundToPx(), (-80).dp.roundToPx()) }
+            .size(280.dp)
+            .align(Alignment.TopStart)
+            .graphicsLayer { alpha = blobAlpha.value }
+            .clip(CircleShape)
+            .background(scheme.primaryContainer)
+            .blur(72.dp)
+    )
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(blob2Offset.value.dp.roundToPx(), 100.dp.roundToPx()) }
+            .size(320.dp)
+            .align(Alignment.BottomEnd)
+            .graphicsLayer { alpha = blobAlpha.value }
+            .clip(CircleShape)
+            .background(scheme.tertiaryContainer)
+            .blur(84.dp)
+    )
+}
+
+@Composable
+fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null, style: Int = PreferenceManager.CALL_BACKGROUND_ANIMATED) {
+    val context = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val surface = scheme.surface
+
+    val hasCustomBackground = !backgroundUri.isNullOrEmpty()
+    var customFailed by remember(backgroundUri) { mutableStateOf(false) }
+
+    val customVisible = hasCustomBackground && !customFailed
+    val hasPhoto = !photoUri.isNullOrEmpty()
+    // The photo style falls back on the animated one for a caller with no photo.
+    val animated = style == PreferenceManager.CALL_BACKGROUND_ANIMATED ||
+        (style == PreferenceManager.CALL_BACKGROUND_PHOTO && !hasPhoto)
+    val photoVisible = hasPhoto && !customVisible &&
+        (style == PreferenceManager.CALL_BACKGROUND_ANIMATED || style == PreferenceManager.CALL_BACKGROUND_PHOTO)
 
     val request = remember(backgroundUri, context) {
         if (backgroundUri.isNullOrEmpty()) {
@@ -92,26 +129,22 @@ fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
     }
 
     Box(modifier = Modifier.fillMaxSize().background(surface)) {
-        if (!customVisible) {
+        if (!customVisible && animated) {
+            AmbientBlobs()
+        }
+
+        if (!customVisible && style == PreferenceManager.CALL_BACKGROUND_GRADIENT) {
+            val accent = LocalAccentBarColor.current
             Box(
                 modifier = Modifier
-                    .offset { IntOffset(blob1Offset.value.dp.roundToPx(), (-80).dp.roundToPx()) }
-                    .size(280.dp)
-                    .align(Alignment.TopStart)
-                    .graphicsLayer { alpha = blobAlpha.value }
-                    .clip(CircleShape)
-                    .background(scheme.primaryContainer)
-                    .blur(72.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .offset { IntOffset(blob2Offset.value.dp.roundToPx(), 100.dp.roundToPx()) }
-                    .size(320.dp)
-                    .align(Alignment.BottomEnd)
-                    .graphicsLayer { alpha = blobAlpha.value }
-                    .clip(CircleShape)
-                    .background(scheme.tertiaryContainer)
-                    .blur(84.dp)
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0f to accent,
+                            GradientFadeStart to accent.copy(alpha = 0.6f),
+                            GradientFadeEnd to accent.copy(alpha = 0f)
+                        )
+                    )
             )
         }
 
@@ -121,7 +154,8 @@ fun ExpressiveBackground(photoUri: String?, backgroundUri: String? = null) {
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().blur(56.dp),
                 contentScale = ContentScale.Crop,
-                alpha = 0.42f
+                // The photo style shows it in full, the animated one as a hint behind the blobs.
+                alpha = if (style == PreferenceManager.CALL_BACKGROUND_PHOTO) 1f else 0.42f
             )
         }
 

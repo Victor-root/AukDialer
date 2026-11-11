@@ -655,6 +655,12 @@
     <string name="settings_call_recording_shizuku_denied">Access was refused. Allow AukDialer from the Shizuku app</string>
     <string name="settings_call_recording_shizuku_ready">Active, calls are recorded from the phone line</string>
     <string name="settings_call_recording_notice">Recording calls may be restricted by your device or by law in your region. Make sure you are allowed to record before using this feature.</string>
+    <string name="settings_call_background_style">Call screen background</string>
+    <string name="settings_call_background_style_supporting">What the call screen shows behind it when no image is set</string>
+    <string name="settings_call_background_style_animated">Animated</string>
+    <string name="settings_call_background_style_plain">Plain</string>
+    <string name="settings_call_background_style_gradient">Gradient</string>
+    <string name="settings_call_background_style_photo">Contact photo</string>
     <string name="settings_call_default_background">Default call background</string>
     <string name="settings_call_default_background_set">A custom image is shown on every call</string>
     <string name="settings_call_default_background_none">Not set, calls use the app theme</string>
