@@ -1,14 +1,13 @@
 package auk.dialer.vroot.view.screen
 
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.math.PI
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.TileMode
@@ -17,20 +16,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,13 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -63,117 +51,110 @@ private const val GradientFadeEnd = 0.55f
 
 // Where the caller's tile sits on the call screen, for the rings to start from.
 private const val RingsCenterFraction = 0.28f
-private const val RingCount = 3
-private const val BubbleCount = 16
-private const val AuroraHeightFraction = 0.55f
+private const val RingCount = 4
+private const val BubbleCount = 18
 
-/** The animated style: two soft blobs of the theme's colours drifting behind the call. */
+/** One loop of [periodMillis], linear and endless: the clock every animated background runs on. */
 @Composable
-private fun BoxScope.AmbientBlobs() {
-    val scheme = MaterialTheme.colorScheme
-    // Read only while placing and drawing the blobs, so their drift redraws them without
-    // recomposing the whole background on every frame of the call.
-    val infiniteTransition = rememberInfiniteTransition(label = "ambientBg")
-    val blob1Offset = infiniteTransition.animateFloat(
-        initialValue = -28f,
-        targetValue = 28f,
-        animationSpec = infiniteRepeatable(tween(11000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "b1"
-    )
-    val blob2Offset = infiniteTransition.animateFloat(
-        initialValue = 28f,
-        targetValue = -28f,
-        animationSpec = infiniteRepeatable(tween(13000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "b2"
-    )
-    val blobAlpha = infiniteTransition.animateFloat(
-        initialValue = 0.18f,
-        targetValue = 0.34f,
-        animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "ba"
-    )
-    Box(
-        modifier = Modifier
-            .offset { IntOffset(blob1Offset.value.dp.roundToPx(), (-80).dp.roundToPx()) }
-            .size(280.dp)
-            .align(Alignment.TopStart)
-            .graphicsLayer { alpha = blobAlpha.value }
-            .clip(CircleShape)
-            .background(scheme.primaryContainer)
-            .blur(72.dp)
-    )
-    Box(
-        modifier = Modifier
-            .offset { IntOffset(blob2Offset.value.dp.roundToPx(), 100.dp.roundToPx()) }
-            .size(320.dp)
-            .align(Alignment.BottomEnd)
-            .graphicsLayer { alpha = blobAlpha.value }
-            .clip(CircleShape)
-            .background(scheme.tertiaryContainer)
-            .blur(84.dp)
-    )
-}
-
-/** Three soft waves rolling along the bottom of the screen, under the call controls. */
-@Composable
-private fun Waves() {
-    val scheme = MaterialTheme.colorScheme
-    val accent = LocalAccentBarColor.current
-    val colors = listOf(scheme.tertiaryContainer, scheme.primaryContainer, accent)
-    val phase by rememberInfiniteTransition(label = "waves").animateFloat(
-        initialValue = 0f,
-        targetValue = 2f * PI.toFloat(),
-        animationSpec = infiniteRepeatable(tween(9000, easing = LinearEasing)),
-        label = "wavePhase"
-    )
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        colors.forEachIndexed { index, color ->
-            val baseline = size.height * (0.70f + index * 0.08f)
-            val amplitude = (14 + index * 6).dp.toPx()
-            // Each wave runs a whole number of times per cycle, so the loop never jumps.
-            val turns = index + 1
-            val path = Path().apply {
-                moveTo(0f, size.height)
-                var x = 0f
-                while (x <= size.width) {
-                    val angle = x / size.width * 2f * PI.toFloat() * (1.2f - index * 0.2f) + phase * turns + index
-                    lineTo(x, baseline + amplitude * sin(angle))
-                    x += 8f
-                }
-                lineTo(size.width, size.height)
-                close()
-            }
-            drawPath(path, color.copy(alpha = 0.28f + index * 0.08f))
-        }
-    }
-}
-
-/** Rings spreading out from behind the caller's tile, like a signal. */
-@Composable
-private fun Rings() {
-    val accent = LocalAccentBarColor.current
-    val progress by rememberInfiniteTransition(label = "rings").animateFloat(
+private fun rememberLoop(label: String, periodMillis: Int): State<Float> =
+    rememberInfiniteTransition(label = label).animateFloat(
         initialValue = 0f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(4200, easing = LinearEasing)),
-        label = "ringProgress"
+        animationSpec = infiniteRepeatable(tween(periodMillis, easing = LinearEasing)),
+        label = label
     )
+
+private const val TwoPi = (2 * PI).toFloat()
+
+/**
+ * The animated style: three wide halos of the theme's colours drifting across the whole screen.
+ * Each follows a closed curve, whole turns per loop, so the drift never jumps.
+ */
+@Composable
+private fun AmbientBlobs() {
+    val scheme = MaterialTheme.colorScheme
+    val colors = listOf(scheme.primaryContainer, scheme.tertiaryContainer, LocalAccentBarColor.current)
+    val loop by rememberLoop("halos", 48000)
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val center = Offset(size.width / 2f, size.height * RingsCenterFraction)
-        val maxRadius = size.width * 0.9f
-        repeat(RingCount) { index ->
-            val step = (progress + index.toFloat() / RingCount) % 1f
+        val radius = size.maxDimension * 0.55f
+        colors.forEachIndexed { index, color ->
+            val angle = loop * TwoPi + index * TwoPi / 3f
+            val center = Offset(
+                size.width * (0.5f + 0.38f * sin(angle)),
+                size.height * (0.5f + 0.36f * sin(2f * angle + index))
+            )
             drawCircle(
-                color = accent.copy(alpha = 0.35f * (1f - step)),
-                radius = maxRadius * step,
-                center = center,
-                style = Stroke(width = 3.dp.toPx())
+                brush = Brush.radialGradient(
+                    0f to color.copy(alpha = 0.42f),
+                    1f to color.copy(alpha = 0f),
+                    center = center,
+                    radius = radius
+                ),
+                radius = radius,
+                center = center
             )
         }
     }
 }
 
-/** Bubbles drifting slowly up the screen. */
+/** Waves stacked from the top of the screen to the bottom, each rolling slowly along. */
+@Composable
+private fun Waves() {
+    val scheme = MaterialTheme.colorScheme
+    val accent = LocalAccentBarColor.current
+    val colors = listOf(scheme.tertiaryContainer, scheme.primaryContainer, accent, scheme.tertiaryContainer, accent)
+    val loop by rememberLoop("waves", 36000)
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        colors.forEachIndexed { index, color ->
+            val baseline = size.height * (0.12f + index * 0.19f)
+            val amplitude = size.height * 0.035f
+            // Each wave runs a whole number of times per loop, so it never jumps.
+            val phase = loop * TwoPi * (if (index % 2 == 0) 1 else -1) + index
+            val path = Path().apply {
+                moveTo(0f, size.height)
+                var x = 0f
+                while (x <= size.width + 8f) {
+                    val wave = sin(x / size.width * TwoPi * (0.8f + index * 0.15f) + phase)
+                    lineTo(x, baseline + amplitude * wave)
+                    x += 8f
+                }
+                lineTo(size.width, size.height)
+                close()
+            }
+            drawPath(path, color.copy(alpha = 0.13f))
+        }
+    }
+}
+
+/** Rings spreading from behind the caller's tile out past the edges of the screen. */
+@Composable
+private fun Rings() {
+    val accent = LocalAccentBarColor.current
+    val tint = MaterialTheme.colorScheme.tertiaryContainer
+    val loop by rememberLoop("rings", 14000)
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val center = Offset(size.width / 2f, size.height * RingsCenterFraction)
+        // Far enough to clear the furthest corner.
+        val maxRadius = sqrt(size.width * size.width + size.height * size.height)
+        repeat(RingCount) { index ->
+            val step = (loop + index.toFloat() / RingCount) % 1f
+            val fade = 1f - step
+            drawCircle(
+                color = tint.copy(alpha = 0.22f * fade),
+                radius = maxRadius * step,
+                center = center
+            )
+            drawCircle(
+                color = accent.copy(alpha = 0.40f * fade),
+                radius = maxRadius * step,
+                center = center,
+                style = Stroke(width = 4.dp.toPx())
+            )
+        }
+    }
+}
+
+/** Large bubbles rising slowly up the whole screen. */
 @Composable
 private fun Bubbles() {
     val scheme = MaterialTheme.colorScheme
@@ -184,71 +165,50 @@ private fun Bubbles() {
         List(BubbleCount) {
             Bubble(
                 x = random.nextFloat(),
-                radius = 10f + random.nextFloat() * 26f,
-                // Whole cycles per loop, so every bubble wraps without a jump.
+                radius = 24f + random.nextFloat() * 56f,
+                // Whole laps per loop, so every bubble wraps without a jump.
                 laps = 1 + random.nextInt(2),
                 start = random.nextFloat(),
                 colorIndex = random.nextInt(3)
             )
         }
     }
-    val progress by rememberInfiniteTransition(label = "bubbles").animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(26000, easing = LinearEasing)),
-        label = "bubbleProgress"
-    )
+    val loop by rememberLoop("bubbles", 70000)
     Canvas(modifier = Modifier.fillMaxSize()) {
         bubbles.forEach { bubble ->
             val radius = bubble.radius.dp.toPx()
             val travel = size.height + radius * 2f
-            val rise = (progress * bubble.laps + bubble.start) % 1f
-            drawCircle(
-                color = colors[bubble.colorIndex].copy(alpha = 0.30f),
-                radius = radius,
-                center = Offset(bubble.x * size.width, size.height + radius - rise * travel)
+            val rise = (loop * bubble.laps + bubble.start) % 1f
+            val center = Offset(
+                bubble.x * size.width + radius * 0.4f * sin(rise * TwoPi * 2f),
+                size.height + radius - rise * travel
             )
+            drawCircle(color = colors[bubble.colorIndex].copy(alpha = 0.26f), radius = radius, center = center)
         }
     }
 }
 
 private class Bubble(val x: Float, val radius: Float, val laps: Int, val start: Float, val colorIndex: Int)
 
-/** A band of the theme's colours sliding slowly across the top half, fading out downwards. */
+/** Broad diagonal bands of the theme's colours sliding slowly across the whole screen. */
 @Composable
 private fun Aurora() {
     val scheme = MaterialTheme.colorScheme
     val accent = LocalAccentBarColor.current
-    val colors = listOf(accent, scheme.tertiary, scheme.primaryContainer, accent)
-    val shift by rememberInfiniteTransition(label = "aurora").animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(14000, easing = LinearEasing)),
-        label = "auroraShift"
-    )
+    val colors = listOf(accent, scheme.tertiaryContainer, scheme.primaryContainer, scheme.tertiary, accent)
+    val loop by rememberLoop("aurora", 45000)
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val bandHeight = size.height * AuroraHeightFraction
-        // The gradient repeats every two widths and slides by exactly that, so the loop is seamless.
-        val period = size.width * 2f
-        val offset = shift * period
+        // The gradient repeats every period and slides by exactly one, so the loop is seamless.
+        val period = size.maxDimension * 1.6f
+        val shift = loop * period
         drawRect(
             brush = Brush.linearGradient(
                 colors = colors,
-                start = Offset(-offset, 0f),
-                end = Offset(period - offset, bandHeight),
+                start = Offset(-shift, -shift * 0.6f),
+                end = Offset(period - shift, (period - shift) * 0.6f),
                 tileMode = TileMode.Repeated
             ),
-            size = Size(size.width, bandHeight),
-            alpha = 0.45f
-        )
-        drawRect(
-            brush = Brush.verticalGradient(
-                0f to scheme.surface.copy(alpha = 0f),
-                1f to scheme.surface,
-                startY = 0f,
-                endY = bandHeight
-            ),
-            size = Size(size.width, bandHeight)
+            alpha = 0.32f
         )
     }
 }
