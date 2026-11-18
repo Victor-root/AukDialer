@@ -388,14 +388,14 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- A task of its own: once the call ends the user is back where they were, not in the app. -->
+        <!-- A task of its own: once the call ends the user is back where they were, not in the app.
+             It stays in Recents during the call, and finishAndRemoveTask drops it when the call ends. -->
         <activity
             android:name=".controller.CallActivity"
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity="${applicationId}.call"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode|density|fontScale"
-            android:excludeFromRecents="true"
             android:showForAllUsers="true"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
