@@ -402,6 +402,129 @@
             android:directBootAware="true"
             android:theme="@style/Theme.AukDialer" />
 
+        <!-- The call screen opened under the launcher colour in use, so its Recents card shows
+             that icon. Picked by LauncherIconManager.callScreenComponent. -->
+        <activity-alias
+            android:name=".controller.CallAlias_Violet"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_violet"
+            android:roundIcon="@mipmap/ic_launcher_alias_violet" />
+        <activity-alias
+            android:name=".controller.CallAlias_Red"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_red"
+            android:roundIcon="@mipmap/ic_launcher_alias_red" />
+        <activity-alias
+            android:name=".controller.CallAlias_Pink"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_pink"
+            android:roundIcon="@mipmap/ic_launcher_alias_pink" />
+        <activity-alias
+            android:name=".controller.CallAlias_Purple"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_purple"
+            android:roundIcon="@mipmap/ic_launcher_alias_purple" />
+        <activity-alias
+            android:name=".controller.CallAlias_DeepPurple"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_deep_purple"
+            android:roundIcon="@mipmap/ic_launcher_alias_deep_purple" />
+        <activity-alias
+            android:name=".controller.CallAlias_Indigo"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_indigo"
+            android:roundIcon="@mipmap/ic_launcher_alias_indigo" />
+        <activity-alias
+            android:name=".controller.CallAlias_Blue"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_blue"
+            android:roundIcon="@mipmap/ic_launcher_alias_blue" />
+        <activity-alias
+            android:name=".controller.CallAlias_LightBlue"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_light_blue"
+            android:roundIcon="@mipmap/ic_launcher_alias_light_blue" />
+        <activity-alias
+            android:name=".controller.CallAlias_Cyan"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_cyan"
+            android:roundIcon="@mipmap/ic_launcher_alias_cyan" />
+        <activity-alias
+            android:name=".controller.CallAlias_Teal"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_teal"
+            android:roundIcon="@mipmap/ic_launcher_alias_teal" />
+        <activity-alias
+            android:name=".controller.CallAlias_Green"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_green"
+            android:roundIcon="@mipmap/ic_launcher_alias_green" />
+        <activity-alias
+            android:name=".controller.CallAlias_LightGreen"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_light_green"
+            android:roundIcon="@mipmap/ic_launcher_alias_light_green" />
+        <activity-alias
+            android:name=".controller.CallAlias_Lime"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_lime"
+            android:roundIcon="@mipmap/ic_launcher_alias_lime" />
+        <activity-alias
+            android:name=".controller.CallAlias_Yellow"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_yellow"
+            android:roundIcon="@mipmap/ic_launcher_alias_yellow" />
+        <activity-alias
+            android:name=".controller.CallAlias_Amber"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_amber"
+            android:roundIcon="@mipmap/ic_launcher_alias_amber" />
+        <activity-alias
+            android:name=".controller.CallAlias_Orange"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_orange"
+            android:roundIcon="@mipmap/ic_launcher_alias_orange" />
+        <activity-alias
+            android:name=".controller.CallAlias_DeepOrange"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_deep_orange"
+            android:roundIcon="@mipmap/ic_launcher_alias_deep_orange" />
+        <activity-alias
+            android:name=".controller.CallAlias_Brown"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_brown"
+            android:roundIcon="@mipmap/ic_launcher_alias_brown" />
+        <activity-alias
+            android:name=".controller.CallAlias_Gray"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_gray"
+            android:roundIcon="@mipmap/ic_launcher_alias_gray" />
+        <activity-alias
+            android:name=".controller.CallAlias_BlueGray"
+            android:targetActivity=".controller.CallActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_alias_blue_gray"
+            android:roundIcon="@mipmap/ic_launcher_alias_blue_gray" />
+
         <!-- Hands Shizuku's binder to the app, for call recording. The permission keeps other
              apps out: only Shizuku itself, holding it, talks to this provider. -->
         <provider

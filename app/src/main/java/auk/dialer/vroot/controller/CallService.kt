@@ -25,6 +25,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.LauncherIconManager
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import kotlinx.coroutines.*
@@ -47,6 +48,11 @@ class CallService : InCallService() {
 
     private val contactsRepository: IContactsRepository by inject()
     private val preferenceManager: PreferenceManager by inject()
+    private val launcherIconManager: LauncherIconManager by inject()
+
+    // Read once per binding: the service lives for the calls in progress, and the icon colour
+    // only changes from the app's settings.
+    private val callScreenComponent by lazy { launcherIconManager.callScreenComponent() }
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var redialCount = 0
     // The number being redialled: its new calls are attempts of the same series, not a fresh start.
@@ -581,7 +587,7 @@ class CallService : InCallService() {
         }
         updateNotification(call)
 
-        val intent = Intent(this, CallActivity::class.java).apply {
+        val intent = Intent().setComponent(callScreenComponent).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         try {
@@ -625,7 +631,7 @@ class CallService : InCallService() {
         when (intent?.action) {
             "ANSWER_CALL" -> {
                 answerCall()
-                val activityIntent = Intent(this, CallActivity::class.java).apply {
+                val activityIntent = Intent().setComponent(callScreenComponent).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 }
                 startActivity(activityIntent)
@@ -678,7 +684,7 @@ class CallService : InCallService() {
         }
         
         val isRinging = call.details.state == Call.STATE_RINGING
-        val fullScreenIntent = Intent(this, CallActivity::class.java).apply {
+        val fullScreenIntent = Intent().setComponent(callScreenComponent).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(

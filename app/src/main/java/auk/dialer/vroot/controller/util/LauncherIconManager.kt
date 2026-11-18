@@ -36,7 +36,16 @@ class LauncherIconManager(
      * preference on an install whose aliases it cannot touch, and trusting the
      * preference then reports "nothing to do" while the old icon is still up.
      */
-    fun currentColor(): Int {
+    fun currentColor(): Int = currentIcon()?.first ?: DEFAULT_COLOR
+
+    /**
+     * The call screen alias matching the launcher icon in use. Recents draws a task's icon from
+     * the component it was started with, so the call's card then shows the same colour.
+     */
+    fun callScreenComponent(): ComponentName =
+        ComponentName(context.packageName, "$COMPONENT_PACKAGE.controller.CallAlias_${currentIcon()?.second ?: DEFAULT_SUFFIX}")
+
+    private fun currentIcon(): Pair<Int, String>? {
         val pm = context.packageManager
         return ICONS.firstOrNull { (_, suffix) ->
             when (runCatching { pm.getComponentEnabledSetting(aliasComponent(suffix)) }.getOrNull()) {
@@ -45,7 +54,7 @@ class LauncherIconManager(
                 // Only the manifest default is enabled without ever being toggled.
                 else -> suffix == DEFAULT_SUFFIX
             }
-        }?.first ?: DEFAULT_COLOR
+        }
     }
 
     fun isChangeNeeded(color: Int): Boolean = nearestColor(color) != currentColor()
