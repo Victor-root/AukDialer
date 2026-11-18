@@ -37,6 +37,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import auk.dialer.vroot.view.theme.aukOnTint
 import auk.dialer.vroot.view.theme.aukTint
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
+import auk.dialer.vroot.view.theme.accentColorFromSeed
 import androidx.compose.ui.graphics.Color
 import org.koin.compose.koinInject
 import auk.dialer.vroot.view.theme.aukExceptBottom
@@ -50,7 +51,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     val launcherIconManager = koinInject<LauncherIconManager>()
     // The badge below is a small copy of the launcher icon, so it takes that icon's own colour
     // rather than the in-app theme accent, which is a separate setting.
-    val logoColor = remember { Color(launcherIconManager.currentColor()) }
+    val logoColor = remember { accentColorFromSeed(launcherIconManager.currentColor()) }
 
     Scaffold(
         topBar = {

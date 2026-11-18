@@ -41,6 +41,7 @@ import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
 import auk.dialer.vroot.view.theme.CUSTOM_PRIMARY_COLOR_UNSET
 import auk.dialer.vroot.view.theme.aukDynamicColorScheme
+import auk.dialer.vroot.view.theme.accentColorFromSeed
 import auk.dialer.vroot.view.theme.KEY_CUSTOM_PRIMARY_COLOR
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -90,7 +91,11 @@ fun InterfaceScreen(
 
     // One palette for both pickers: the launcher aliases already pin these
     // twenty Material colours, and the theme has no reason to offer others.
-    val paletteColors = remember { LauncherIconManager.ICONS.map { Color(it.first) } }
+    // Each swatch shows the accent its seed gives, the colour the app and the icon really take.
+    val palette = remember { LauncherIconManager.ICONS.map { (seed, _) -> seed to accentColorFromSeed(seed) } }
+    val paletteColors = remember(palette) { palette.map { it.second } }
+    fun swatchOf(seed: Int): Color? = palette.firstOrNull { it.first == seed }?.second
+    fun seedOf(swatch: Color): Int = palette.first { it.second == swatch }.first
 
     val launcherIconManager = koinInject<LauncherIconManager>()
     // Read from the package manager, not from the preference: only the enabled
@@ -214,12 +219,12 @@ fun InterfaceScreen(
                             selectedColor = if (dynamicColors) {
                                 null
                             } else {
-                                paletteColors.firstOrNull { it.toArgb() == customPrimaryColor }
+                                swatchOf(customPrimaryColor)
                             },
                             onColorSelected = { color ->
                                 dynamicColors = false
                                 prefs.setBoolean(PreferenceManager.KEY_DYNAMIC_COLORS, false)
-                                customPrimaryColor = color.toArgb()
+                                customPrimaryColor = seedOf(color)
                                 prefs.setInt(KEY_CUSTOM_PRIMARY_COLOR, customPrimaryColor)
                                 if (applyColorToIcon) {
                                     offerIconColorChange(LauncherIconManager.nearestColor(customPrimaryColor))
@@ -273,8 +278,8 @@ fun InterfaceScreen(
                                 supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
                                 leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_color_filter),
                                 colors = paletteColors,
-                                selectedColor = paletteColors.firstOrNull { it.toArgb() == appIconColor },
-                                onColorSelected = { color -> offerIconColorChange(color.toArgb()) }
+                                selectedColor = swatchOf(appIconColor),
+                                onColorSelected = { color -> offerIconColorChange(seedOf(color)) }
                             )
                         }
 

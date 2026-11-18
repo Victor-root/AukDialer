@@ -278,10 +278,22 @@ private fun harmonizeHue(sourceHue: Float, targetHue: Float, maxShiftDegrees: Fl
 private const val NEUTRAL_CHROMA_CAP = 4f
 private const val NEUTRAL_VARIANT_CHROMA_CAP = 8f
 
+private const val SEED_CHROMA_MAX = 80f
+private const val ACCENT_TONE = 40f
+
+/**
+ * The accent a seed turns into in the app (the bars and filled buttons, in both themes), which is
+ * darker than the seed itself. Swatches and launcher icons show this, so they match the app.
+ */
+fun accentColorFromSeed(seedArgb: Int): Color {
+    val seed = colorToLch(Color(seedArgb))
+    return toneColor(ACCENT_TONE, seed[1].coerceIn(0f, SEED_CHROMA_MAX), seed[2])
+}
+
 fun aukColorSchemeFromSeed(seedArgb: Int, darkTheme: Boolean): ColorScheme {
     val seed = colorToLch(Color(seedArgb))
     val hue = seed[2]
-    val primaryChroma = seed[1].coerceIn(0f, 80f)
+    val primaryChroma = seed[1].coerceIn(0f, SEED_CHROMA_MAX)
     val secondaryChroma = primaryChroma / 3f
     val tertiaryHue = (hue + 60f) % 360f
     val tertiaryChroma = primaryChroma / 2f
@@ -313,7 +325,7 @@ fun aukColorSchemeFromSeed(seedArgb: Int, darkTheme: Boolean): ColorScheme {
             onPrimary = p(20f),
             primaryContainer = p(30f),
             onPrimaryContainer = p(90f),
-            inversePrimary = p(40f),
+            inversePrimary = p(ACCENT_TONE),
             secondary = s(80f),
             onSecondary = s(20f),
             secondaryContainer = s(30f),
@@ -360,7 +372,7 @@ fun aukColorSchemeFromSeed(seedArgb: Int, darkTheme: Boolean): ColorScheme {
         )
     } else {
         lightColorScheme(
-            primary = p(40f),
+            primary = p(ACCENT_TONE),
             onPrimary = p(100f),
             primaryContainer = p(90f),
             onPrimaryContainer = p(10f),
@@ -379,7 +391,7 @@ fun aukColorSchemeFromSeed(seedArgb: Int, darkTheme: Boolean): ColorScheme {
             onSurface = n(10f),
             surfaceVariant = nv(90f),
             onSurfaceVariant = nv(30f),
-            surfaceTint = p(40f),
+            surfaceTint = p(ACCENT_TONE),
             inverseSurface = n(20f),
             inverseOnSurface = n(95f),
             error = Color(0xFFB3261E),
