@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.BottomBar
+import auk.dialer.vroot.view.components.OngoingCallBanner
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
@@ -184,22 +185,25 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            BottomBar(
-                navController = navController,
-                navigator = navigator,
-                pagerState = pagerState,
-                visibleTabs = visibleTabs,
-                onPageSelected = { page ->
-                    PerfLog.d("tab tapped: page $page")
-                    if (page != pagerState.currentPage) {
-                        scope.launch {
-                            pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
-                            pagerState.scrollToPage(page)
-                            pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
+            Column {
+                OngoingCallBanner()
+                BottomBar(
+                    navController = navController,
+                    navigator = navigator,
+                    pagerState = pagerState,
+                    visibleTabs = visibleTabs,
+                    onPageSelected = { page ->
+                        PerfLog.d("tab tapped: page $page")
+                        if (page != pagerState.currentPage) {
+                            scope.launch {
+                                pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
+                                pagerState.scrollToPage(page)
+                                pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {

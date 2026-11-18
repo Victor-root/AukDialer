@@ -263,6 +263,7 @@
     <string name="notif_missed_call_text">Missed call from %1$s at %2$s</string>
     <string name="notif_via_sim">via %1$s</string>
     <string name="notif_active_call">Active call</string>
+    <string name="ongoing_call_return">Return to the call</string>
 
     <!-- Backup & restore (status messages) -->
     <string name="backup_contacts_export_success">Contacts exported successfully</string>
