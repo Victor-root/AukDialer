@@ -15,6 +15,15 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -143,6 +152,32 @@ fun DialPadScreen(
         textFieldValue = TextFieldValue(newText, newSelection)
     }
 
+    val onBackspace = {
+        val selection = textFieldValue.selection
+        if (selection.collapsed) {
+            if (selection.start > 0) {
+                val newText = number.substring(0, selection.start - 1) + number.substring(selection.start)
+                textFieldValue = TextFieldValue(newText, TextRange(selection.start - 1))
+            }
+        } else {
+            val newText = number.substring(0, selection.start) + number.substring(selection.end)
+            textFieldValue = TextFieldValue(newText, TextRange(selection.start))
+        }
+    }
+
+    // A hardware keyboard types too: the number field itself takes no input, the on-screen keys do.
+    val keyFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { keyFocus.requestFocus() }
+    val onHardwareKey = { event: KeyEvent ->
+        val typed = event.nativeKeyEvent.unicodeChar.toChar()
+        when {
+            event.type != KeyEventType.KeyDown -> false
+            typed in "0123456789*#+" -> { onDigitClick(typed.toString()); true }
+            event.key == Key.Backspace -> { onBackspace(); true }
+            else -> false
+        }
+    }
+
     // Null when the audio service has no tone generator to spare: the keys then just stay silent.
     val toneGenerator = remember { runCatching { ToneGenerator(AudioManager.STREAM_DTMF, 80) }.getOrNull() }
 
@@ -260,6 +295,10 @@ fun DialPadScreen(
     }
 
     Scaffold(
+        modifier = Modifier
+            .focusRequester(keyFocus)
+            .focusable()
+            .onKeyEvent(onHardwareKey),
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
@@ -569,20 +608,7 @@ fun DialPadScreen(
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         textFieldValue = TextFieldValue("")
                                     },
-                                    onClick = {
-                                        if (number.isNotEmpty()) {
-                                            val selection = textFieldValue.selection
-                                            if (selection.collapsed) {
-                                                if (selection.start > 0) {
-                                                    val newText = number.substring(0, selection.start - 1) + number.substring(selection.start)
-                                                    textFieldValue = TextFieldValue(newText, TextRange(selection.start - 1))
-                                                }
-                                            } else {
-                                                val newText = number.substring(0, selection.start) + number.substring(selection.end)
-                                                textFieldValue = TextFieldValue(newText, TextRange(selection.start))
-                                            }
-                                        }
-                                    },
+                                    onClick = onBackspace,
                                     icon = Icons.AutoMirrored.Filled.Backspace,
                                     contentDescription = stringResource(R.string.content_desc_backspace),
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
