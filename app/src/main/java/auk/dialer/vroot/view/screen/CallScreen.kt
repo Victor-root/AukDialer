@@ -310,6 +310,19 @@ fun ExpressiveCallScreen(
                 // is still under way. Only a held call can be swapped back in.
                 val ocState = oc.details.state
                 val ocIsHeld = ocState == Call.STATE_HOLDING
+                val canSwap = ocIsHeld && callState != Call.STATE_RINGING
+                val swapToOtherCall: () -> Unit = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    try {
+                        CallService.setPreferredCall(oc)
+                        if (call.details.state != Call.STATE_HOLDING) {
+                            call.hold()
+                        }
+                        oc.unhold()
+                    } catch (e: Exception) {
+                        try { oc.unhold() } catch (e2: Exception) {}
+                    }
+                }
                 val ocStatus = when (ocState) {
                     Call.STATE_HOLDING -> stringResource(R.string.call_status_on_hold)
                     Call.STATE_ACTIVE -> stringResource(R.string.call_status_active)
@@ -318,19 +331,8 @@ fun ExpressiveCallScreen(
                     else -> ""
                 }
                 Surface(
-                    enabled = ocIsHeld && callState != Call.STATE_RINGING,
-                    onClick = {
-                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        try {
-                            CallService.setPreferredCall(oc)
-                            if (call.details.state != Call.STATE_HOLDING) {
-                                call.hold()
-                            }
-                            oc.unhold()
-                        } catch (e: Exception) {
-                            try { oc.unhold() } catch (e2: Exception) {}
-                        }
-                    },
+                    enabled = canSwap,
+                    onClick = swapToOtherCall,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
@@ -363,6 +365,14 @@ fun ExpressiveCallScreen(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
+                            }
+                        }
+                        // Tapping the card swaps too, but a button says so.
+                        if (canSwap) {
+                            FilledTonalButton(onClick = swapToOtherCall) {
+                                Icon(Icons.Default.SwapCalls, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(stringResource(R.string.call_swap))
                             }
                         }
                         IconButton(onClick = { oc.disconnect() }) {

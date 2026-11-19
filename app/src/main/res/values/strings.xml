@@ -588,6 +588,7 @@
     <string name="settings_call_waiting_check">Check current status</string>
     <string name="call_waiting_answer_hold">Answer and hold</string>
     <string name="call_waiting_end_and_answer">End and answer</string>
+    <string name="call_swap">Swap</string>
 
     <!-- Call recording -->
     <string name="settings_call_recording">Call recording</string>

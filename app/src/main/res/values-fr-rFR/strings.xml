@@ -668,6 +668,7 @@
     <string name="settings_call_waiting_check">Vérifier l’état actuel</string>
     <string name="call_waiting_answer_hold">Répondre et mettre en attente</string>
     <string name="call_waiting_end_and_answer">Raccrocher et répondre</string>
+    <string name="call_swap">Permuter</string>
     <string-array name="palette_color_names">
         <item>Violet</item>
         <item>Rouge</item>
