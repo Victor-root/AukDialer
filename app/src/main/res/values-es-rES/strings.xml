@@ -479,4 +479,14 @@
     <string name="callkp_digit_desc">Marcar %1$s</string>
     <string name="callkp_entered_desc">Dígitos introducidos: %1$s</string>
     <string name="callkp_entered_empty">Ningún dígito introducido</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d número bloqueado</item>
+        <item quantity="many">%1$d números bloqueados</item>
+        <item quantity="other">%1$d números bloqueados</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d contacto privado</item>
+        <item quantity="many">%1$d contactos privados</item>
+        <item quantity="other">%1$d contactos privados</item>
+    </plurals>
 </resources>

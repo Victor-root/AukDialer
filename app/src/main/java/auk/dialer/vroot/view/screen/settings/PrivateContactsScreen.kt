@@ -226,7 +226,7 @@ fun PrivateContactsScreen(
                                     )
                                     Spacer(Modifier.height(2.dp))
                                     Text(
-                                        text = "${privateContacts.size} ${stringResource(R.string.settings_private_manage_hint)}",
+                                        text = pluralStringResource(R.plurals.private_contacts_count, privateContacts.size, privateContacts.size) + " • " + stringResource(R.string.settings_private_manage_hint),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

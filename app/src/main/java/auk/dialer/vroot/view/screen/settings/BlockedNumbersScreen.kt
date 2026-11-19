@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -153,7 +154,7 @@ fun BlockedNumbersScreen(
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
-                                    text = stringResource(R.string.blocked_numbers_count, blockedNumbers.size) + " • " + stringResource(R.string.settings_blocked_numbers_supporting),
+                                    text = pluralStringResource(R.plurals.blocked_numbers_count, blockedNumbers.size, blockedNumbers.size) + " • " + stringResource(R.string.settings_blocked_numbers_supporting),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

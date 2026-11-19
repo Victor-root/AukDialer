@@ -582,4 +582,16 @@
     <string name="imei_dialog_title">Информация об устройстве (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
     <string name="imei_copied">Скопировано в буфер обмена</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d заблокированный номер</item>
+        <item quantity="few">%1$d заблокированных номера</item>
+        <item quantity="many">%1$d заблокированных номеров</item>
+        <item quantity="other">%1$d заблокированного номера</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d личный контакт</item>
+        <item quantity="few">%1$d личных контакта</item>
+        <item quantity="many">%1$d личных контактов</item>
+        <item quantity="other">%1$d личного контакта</item>
+    </plurals>
 </resources>

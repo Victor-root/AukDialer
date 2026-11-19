@@ -574,4 +574,12 @@
     <string name="imei_dialog_title">Geräte Info (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
     <string name="imei_copied">In Zwischenablage kopiert</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d Nummer blockiert</item>
+        <item quantity="other">%1$d Nummern blockiert</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d privater Kontakt</item>
+        <item quantity="other">%1$d private Kontakte</item>
+    </plurals>
 </resources>

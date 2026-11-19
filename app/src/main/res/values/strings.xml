@@ -617,7 +617,14 @@
     <string name="blocked_select_title">Block Numbers or Contacts</string>
     <string name="blocked_select_or_enter_button">Select Contacts or Enter Number</string>
     <string name="blocked_search_list_placeholder">Search blocked list...</string>
-    <string name="blocked_numbers_count">%1$d numbers blocked</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d number blocked</item>
+        <item quantity="other">%1$d numbers blocked</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d private contact</item>
+        <item quantity="other">%1$d private contacts</item>
+    </plurals>
     <string name="blocked_unblock_confirm_message">Unblock %1$s?</string>
 
     <!-- Contact call screen background -->

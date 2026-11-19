@@ -632,7 +632,16 @@
     <string name="blocked_select_title">Bloquer des numéros ou des contacts</string>
     <string name="blocked_select_or_enter_button">Sélectionner des contacts ou saisir un numéro</string>
     <string name="blocked_search_list_placeholder">Rechercher dans la liste des numéros bloqués...</string>
-    <string name="blocked_numbers_count">%1$d numéros bloqués</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d numéro bloqué</item>
+        <item quantity="many">%1$d numéros bloqués</item>
+        <item quantity="other">%1$d numéros bloqués</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d contact privé</item>
+        <item quantity="many">%1$d contacts privés</item>
+        <item quantity="other">%1$d contacts privés</item>
+    </plurals>
     <string name="blocked_unblock_confirm_message">Débloquer %1$s ?</string>
     <string name="contact_call_background">Fond d’écran d’appel</string>
     <string name="contact_call_background_set">Image personnalisée sélectionnée</string>

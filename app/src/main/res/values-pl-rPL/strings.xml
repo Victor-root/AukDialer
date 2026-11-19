@@ -580,4 +580,16 @@
     <string name="imei_dialog_title">Informacje o urządzeniu (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
     <string name="imei_copied">Skopiowano do schowka</string>
+    <plurals name="blocked_numbers_count">
+        <item quantity="one">%1$d zablokowany numer</item>
+        <item quantity="few">%1$d zablokowane numery</item>
+        <item quantity="many">%1$d zablokowanych numerów</item>
+        <item quantity="other">%1$d zablokowanego numeru</item>
+    </plurals>
+    <plurals name="private_contacts_count">
+        <item quantity="one">%1$d kontakt prywatny</item>
+        <item quantity="few">%1$d kontakty prywatne</item>
+        <item quantity="many">%1$d kontaktów prywatnych</item>
+        <item quantity="other">%1$d kontaktu prywatnego</item>
+    </plurals>
 </resources>
