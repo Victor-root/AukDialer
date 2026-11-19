@@ -53,33 +53,45 @@ fun rememberVideoLauncher(): VideoLauncher {
         }
     }
 
-    val videoLauncher = remember {
-        VideoLauncher { number, contact ->
-            pendingNumber = number
-            showAppPicker = true
+    val launchSystemVideoCall = { number: String ->
+        val uri = Uri.parse("tel:$number")
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            setDataAndType(uri, "vnd.android.cursor.item/video-chat-address")
+        }
+        context.startActivity(Intent.createChooser(intent, videoCallTitle))
+    }
+
+    // Only the apps on the phone: one that is not would fall back to a plain voice call.
+    val videoApps = listOf(
+        stringResource(R.string.brand_whatsapp) to "com.whatsapp",
+        stringResource(R.string.brand_google_meet) to "com.google.android.apps.meetings",
+        stringResource(R.string.brand_zoom) to "us.zoom.videomeetings",
+        stringResource(R.string.brand_telegram) to "org.telegram.messenger"
+    )
+    val installedApps = remember(videoApps) {
+        videoApps.filter { (_, pkg) -> context.packageManager.getLaunchIntentForPackage(pkg) != null }
+    }
+
+    val videoLauncher = remember(installedApps) {
+        VideoLauncher { number, _ ->
+            if (installedApps.isEmpty()) {
+                launchSystemVideoCall(number)
+            } else {
+                pendingNumber = number
+                showAppPicker = true
+            }
         }
     }
 
     if (showAppPicker) {
-        val apps = listOf(
-            stringResource(R.string.brand_whatsapp) to "com.whatsapp",
-            stringResource(R.string.brand_google_meet) to "com.google.android.apps.meetings",
-            stringResource(R.string.brand_zoom) to "us.zoom.videomeetings",
-            stringResource(R.string.brand_telegram) to "org.telegram.messenger"
-        )
-
         AukSelectionDialog(
             onDismissRequest = { showAppPicker = false },
             title = videoCallTitle,
-            items = apps + (stringResource(R.string.video_call_system) to "system"),
+            items = installedApps + (stringResource(R.string.video_call_system) to "system"),
             itemLabel = { it.first },
             onItemSelected = { (name, pkg) ->
                 if (pkg == "system") {
-                    val uri = Uri.parse("tel:$pendingNumber")
-                    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-                        setDataAndType(uri, "vnd.android.cursor.item/video-chat-address")
-                    }
-                    context.startActivity(Intent.createChooser(intent, videoCallTitle))
+                    launchSystemVideoCall(pendingNumber)
                 } else {
                     launchApp(pkg, pendingNumber)
                 }
