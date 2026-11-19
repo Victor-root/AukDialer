@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -98,6 +99,17 @@ fun ContactEditScreen(
     var isSaving by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var saveFailure by remember { mutableStateOf<ContactSaveResult?>(null) }
+    var showDiscardDialog by remember { mutableStateOf(false) }
+
+    // The form as loaded, to tell whether leaving would lose something typed.
+    fun formState(): List<Any?> = listOf(
+        givenName, familyName, nickname, notes, photoUri, selectedAccount, isPrivate,
+        phones.toList(), emails.toList(), addresses.toList()
+    )
+    var loadedForm by remember { mutableStateOf<List<Any?>?>(null) }
+    val hasChanges = loadedForm.let { it != null && it != formState() }
+    val leave: () -> Unit = { if (hasChanges) showDiscardDialog = true else navigator.navigateUp() }
+    BackHandler(enabled = hasChanges && !isSaving) { showDiscardDialog = true }
 
     LaunchedEffect(contactId, availableAccounts) {
         cloudDefaultAccount = contactsVM.getCloudDefaultAccount()
@@ -163,6 +175,7 @@ fun ContactEditScreen(
                 phones.add(PhoneNumberEntry(initialPhone))
             }
         }
+        loadedForm = formState()
     }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -179,7 +192,7 @@ fun ContactEditScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
+                    IconButton(onClick = leave) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
@@ -254,6 +267,18 @@ fun ContactEditScreen(
     ) { innerPadding ->
         saveFailure?.let { failure ->
             SaveFailureDialog(failure = failure, onDismissRequest = { saveFailure = null })
+        }
+
+        if (showDiscardDialog) {
+            AukConfirmationDialog(
+                onDismissRequest = { showDiscardDialog = false },
+                onConfirm = { navigator.navigateUp() },
+                title = stringResource(R.string.contact_discard_title),
+                message = stringResource(R.string.contact_discard_message),
+                confirmLabel = stringResource(R.string.contact_discard_confirm),
+                dismissLabel = stringResource(R.string.contact_discard_keep),
+                isDestructive = true
+            )
         }
 
         if (showDeleteDialog) {
