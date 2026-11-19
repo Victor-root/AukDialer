@@ -424,13 +424,11 @@ fun CallLogFullContent(
         val favRowState = rememberLazyListState()
         val favItems = remember { mutableStateListOf<Contact>() }
         LaunchedEffect(favorites) {
-            if (favItems.map { it.id }.toSet() != favorites.map { it.id }.toSet()) {
-                favItems.clear()
-                favItems.addAll(favorites)
-            } else {
-                val byId = favorites.associateBy { it.id }
-                for (i in favItems.indices) byId[favItems[i].id]?.let { favItems[i] = it }
-            }
+            val atStart = favRowState.firstVisibleItemIndex == 0 && favRowState.firstVisibleItemScrollOffset == 0
+            favItems.syncWith(favorites)
+            // A lazy row keeps the item it showed first in place when the order changes, which would
+            // leave a favourite moved to the front scrolled off to the left.
+            if (atStart) favRowState.scrollToItem(0)
         }
 
         val rowDragDropState = rememberRowDragDropState(favRowState) { from, to ->

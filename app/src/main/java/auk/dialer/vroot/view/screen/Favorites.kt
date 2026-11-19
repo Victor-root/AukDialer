@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -129,15 +130,7 @@ private fun FavoritesGridContent(navigator: DestinationsNavigator) {
     }
 
     val items = remember { mutableStateListOf<Contact>() }
-    LaunchedEffect(favorites) {
-        if (items.map { it.id }.toSet() != favorites.map { it.id }.toSet()) {
-            items.clear()
-            items.addAll(favorites)
-        } else {
-            val byId = favorites.associateBy { it.id }
-            for (i in items.indices) byId[items[i].id]?.let { items[i] = it }
-        }
-    }
+    LaunchedEffect(favorites) { items.syncWith(favorites) }
 
     var isEditing by remember { mutableStateOf(false) }
     LaunchedEffect(items.isEmpty()) {
@@ -351,5 +344,18 @@ private fun EmptyFavoritesState() {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
         )
+    }
+}
+
+/**
+ * Brings a favourites row being shown, and dragged, in line with [favorites]. The order counts too:
+ * the Favourites tab and the Recents row each keep their own copy, and either may reorder them.
+ */
+internal fun SnapshotStateList<Contact>.syncWith(favorites: List<Contact>) {
+    if (map { it.id } != favorites.map { it.id }) {
+        clear()
+        addAll(favorites)
+    } else {
+        favorites.forEachIndexed { index, contact -> this[index] = contact }
     }
 }
