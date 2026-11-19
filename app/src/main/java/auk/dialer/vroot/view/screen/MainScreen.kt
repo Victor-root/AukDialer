@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,6 +52,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.drop
 import kotlin.math.abs
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -77,6 +79,10 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     // Fades the pages through when a tab is picked from the bottom bar.
     val pagerAlpha = remember { Animatable(1f) }
+    // The tab switch under way. Taps come faster than a switch ends, and the pager only reaches the
+    // new page halfway through, so each tap is weighed against where the last one is heading.
+    var tabSwitch by remember { mutableStateOf<Job?>(null) }
+    var tabSwitchTarget by remember { mutableIntStateOf(0) }
 
     var isSelectingVoicemail by remember { mutableStateOf(false) }
     var voicemailActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
@@ -194,8 +200,11 @@ fun MainScreen(
                     visibleTabs = visibleTabs,
                     onPageSelected = { page ->
                         PerfLog.d("tab tapped: page $page")
-                        if (page != pagerState.currentPage) {
-                            scope.launch {
+                        val heading = if (tabSwitch?.isActive == true) tabSwitchTarget else pagerState.currentPage
+                        if (page != heading) {
+                            tabSwitch?.cancel()
+                            tabSwitchTarget = page
+                            tabSwitch = scope.launch {
                                 pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
                                 pagerState.scrollToPage(page)
                                 pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
