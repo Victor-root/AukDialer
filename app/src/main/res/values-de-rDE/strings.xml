@@ -63,8 +63,6 @@
     <string name="call_type_blocked">Blockiert</string>
     <string name="filter_all">Alle</string>
     <string name="sim_ask_every_time">Jedes Mal fragen</string>
-    <string name="sim_slot_1">SIM 1</string>
-    <string name="sim_slot_2">SIM 2</string>
     <string name="brand_whatsapp">WhatsApp</string>
     <string name="brand_telegram">Telegram</string>
     <string name="brand_signal">Signal</string>

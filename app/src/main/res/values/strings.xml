@@ -69,8 +69,6 @@
     <string name="call_type_declined">Declined</string>
     <string name="filter_all">All</string>
     <string name="sim_ask_every_time">Ask every time</string>
-    <string name="sim_slot_1">SIM 1</string>
-    <string name="sim_slot_2">SIM 2</string>
     <string name="brand_whatsapp">WhatsApp</string>
     <string name="brand_google">Google</string>
     <string name="brand_telegram">Telegram</string>

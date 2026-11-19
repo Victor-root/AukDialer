@@ -22,6 +22,8 @@ import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
+import auk.dialer.vroot.view.components.rememberCallCapablePhoneAccounts
+import auk.dialer.vroot.view.components.rememberSimLabels
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -75,6 +77,9 @@ fun CallAccountsScreen(
     var redialAttempts by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_REDIAL_ATTEMPTS, 3)) }
     var redialDelay by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_REDIAL_DELAY, 3000)) }
     var defaultSim by remember(settingsState) { mutableStateOf(prefs.getInt("default_sim", 0)) }
+    // Only the SIMs really in the phone, and no choice at all with a single one.
+    val simAccounts = rememberCallCapablePhoneAccounts()
+    val simLabels = rememberSimLabels(simAccounts)
 
     var defaultCallBg by remember(settingsState) { mutableStateOf(CallBackgroundStore.defaultModel(context)) }
     var savingCallBg by remember { mutableStateOf(false) }
@@ -141,18 +146,15 @@ fun CallAccountsScreen(
                         leadingIcon = Icons.Outlined.Speed,
                         onClick = { navigator.navigate(SpeedDialScreenDestination) }
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    AukListItem(
-                        headline = stringResource(R.string.settings_call_default_sim),
-                        supporting = when(defaultSim) {
-                            0 -> askEveryTimeLabel
-                            1 -> stringResource(R.string.sim_slot_1)
-                            2 -> stringResource(R.string.sim_slot_2)
-                            else -> askEveryTimeLabel
-                        },
-                        leadingIcon = Icons.Outlined.SimCard,
-                        onClick = { showSimDialog = true }
-                    )
+                    if (simAccounts.size > 1) {
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        AukListItem(
+                            headline = stringResource(R.string.settings_call_default_sim),
+                            supporting = simLabels.getOrNull(defaultSim - 1) ?: askEveryTimeLabel,
+                            leadingIcon = Icons.Outlined.SimCard,
+                            onClick = { showSimDialog = true }
+                        )
+                    }
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     AukListItem(
                         headline = stringResource(R.string.settings_call_calling_accounts),
@@ -419,11 +421,7 @@ fun CallAccountsScreen(
     }
 
     if (showSimDialog) {
-        val simOptions = listOf(
-            stringResource(R.string.sim_ask_every_time),
-            stringResource(R.string.sim_slot_1),
-            stringResource(R.string.sim_slot_2)
-        )
+        val simOptions = listOf(stringResource(R.string.sim_ask_every_time)) + simLabels
         AukSelectionDialog(
             onDismissRequest = { showSimDialog = false },
             title = stringResource(R.string.settings_call_default_sim),
