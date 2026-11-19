@@ -295,7 +295,9 @@ fun ExpressiveCallScreen(
         ) {
             otherCall?.let { oc ->
                 val unknownLabel = stringResource(R.string.label_unknown)
-                var ocName by remember(oc, unknownLabel) { mutableStateOf(oc.details.handle?.schemeSpecificPart ?: unknownLabel) }
+                var ocName by remember(oc, unknownLabel) {
+                    mutableStateOf(oc.details.handle?.schemeSpecificPart?.let { formatPhoneNumber(it) } ?: unknownLabel)
+                }
                 LaunchedEffect(oc) {
                     val number = oc.details.handle?.schemeSpecificPart ?: ""
                     if (number.isNotEmpty()) {

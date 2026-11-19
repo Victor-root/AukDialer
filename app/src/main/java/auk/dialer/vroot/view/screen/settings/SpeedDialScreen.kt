@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
@@ -132,7 +133,7 @@ fun SpeedDialScreen(
                             )
                             if (number != null) {
                                 Text(
-                                    text = number,
+                                    text = formatPhoneNumber(number),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -217,7 +218,7 @@ fun ContactPickerDialog(
                 filteredContacts.take(30).forEach { contact ->
                     AukListItem(
                         headline = contact.name,
-                        supporting = contact.phoneNumbers.firstOrNull() ?: stringResource(R.string.settings_speed_dial_no_number),
+                        supporting = contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: stringResource(R.string.settings_speed_dial_no_number),
                         headlineMaxLines = 2,
                         supportingMaxLines = 2,
                         avatarName = contact.name,
