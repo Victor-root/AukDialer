@@ -602,7 +602,7 @@
     <string name="settings_bottom_nav_move_up">Monter</string>
     <string name="settings_bottom_nav_move_down">Descendre</string>
     <string name="settings_bottom_nav_reset">Réinitialiser</string>
-    <string name="settings_call_background_style">Fond de l’écran d’appel</string>
+    <string name="settings_call_background_style">Style du fond d’appel</string>
     <string name="settings_call_background_style_animated">Cercles flottants</string>
     <string name="settings_call_background_style_waves">Vagues</string>
     <string name="settings_call_background_style_rings">Ondes</string>
@@ -612,7 +612,7 @@
     <string name="settings_call_background_style_plain">Uni</string>
     <string name="settings_call_background_style_gradient">Dégradé</string>
     <string name="settings_call_background_style_photo">Photo du contact</string>
-    <string name="settings_call_default_background">Fond d’écran d’appel</string>
+    <string name="settings_call_default_background">Image de fond par défaut</string>
     <string name="settings_call_default_background_supporting">Affiché sur chaque appel entrant et sortant, sauf si le contact a son propre fond.</string>
     <string name="action_remove">Retirer</string>
     <string name="action_record">Enregistrer</string>
