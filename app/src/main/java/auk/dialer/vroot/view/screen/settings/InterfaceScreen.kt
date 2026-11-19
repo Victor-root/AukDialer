@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,7 +89,7 @@ fun InterfaceScreen(
     var customPrimaryColor by remember { mutableStateOf(prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, CUSTOM_PRIMARY_COLOR_UNSET)) }
     var avatarShape by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_AVATAR_SHAPE, 0)) }
     var cardRoundness by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, 28)) }
-    var showRoundnessDialog by remember { mutableStateOf(false) }
+    var showRoundnessDialog by rememberSaveable { mutableStateOf(false) }
 
     // One palette for both pickers: the launcher aliases already pin these
     // twenty Material colours, and the theme has no reason to offer others.
@@ -102,13 +103,13 @@ fun InterfaceScreen(
     // Read from the package manager, not from the preference: only the enabled
     // alias says which icon is really on screen.
     var appIconColor by remember { mutableStateOf(launcherIconManager.currentColor()) }
-    var pendingIconColor by remember { mutableStateOf<Int?>(null) }
+    var pendingIconColor by rememberSaveable { mutableStateOf<Int?>(null) }
     var applyColorToIcon by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_APPLY_COLOR_TO_ICON, false)) }
     // dynamicLightColorScheme/dynamicDarkColorScheme read Android's system dynamic-colour
     // resources, and that doesn't take effect live in the running process the way the app's
     // own colour math does, so switching to system colours needs the same close-and-reopen
     // flow as an icon change.
-    var pendingDynamicColorChange by remember { mutableStateOf(false) }
+    var pendingDynamicColorChange by rememberSaveable { mutableStateOf(false) }
 
     val restartRequiredMessage = stringResource(R.string.settings_interface_restart_required)
     val restartActionLabel = stringResource(R.string.settings_interface_restart_action)

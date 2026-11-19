@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -96,9 +97,9 @@ fun CallAccountsScreen(
         }
     }
 
-    var showSimDialog by remember { mutableStateOf(false) }
-    var showCallWaitingDialog by remember { mutableStateOf(false) }
-    var showCallBackgroundPicker by remember { mutableStateOf(false) }
+    var showSimDialog by rememberSaveable { mutableStateOf(false) }
+    var showCallWaitingDialog by rememberSaveable { mutableStateOf(false) }
+    var showCallBackgroundPicker by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {

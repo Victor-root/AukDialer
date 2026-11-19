@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -707,7 +708,7 @@ fun AukSelectListItem(
     enabled: Boolean = true,
     preview: (@Composable (Int) -> Unit)? = null
 ) {
-    var showSelectionScreen by remember { mutableStateOf(false) }
+    var showSelectionScreen by rememberSaveable { mutableStateOf(false) }
 
     AukListItem(
         headline = headline,
@@ -962,7 +963,7 @@ fun AukColorSelectListItem(
     contentBeforeGrid: (@Composable ColumnScope.(onSelect: () -> Unit) -> Unit)? = null,
     contentAfterGrid: (@Composable ColumnScope.() -> Unit)? = null
 ) {
-    var showPicker by remember { mutableStateOf(false) }
+    var showPicker by rememberSaveable { mutableStateOf(false) }
 
     AukListItem(
         headline = headline,
