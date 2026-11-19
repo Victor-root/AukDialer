@@ -41,6 +41,7 @@ import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.PermissionDeniedView
+import auk.dialer.vroot.view.components.AukConfirmationDialog
 import auk.dialer.vroot.view.components.SelectionDeleteActionBar
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
@@ -106,6 +107,23 @@ fun VoicemailScreenContent(
     }
     LaunchedEffect(isSelecting, selectedIds.size) {
         onSelectionStateChange?.invoke(isSelecting, if (isSelecting) selectionActionBar else null)
+    }
+
+    // One message deleted from its menu is asked about like several are.
+    var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
+    pendingDeleteId?.let { id ->
+        AukConfirmationDialog(
+            onDismissRequest = { pendingDeleteId = null },
+            onConfirm = {
+                viewModel.delete(setOf(id))
+                pendingDeleteId = null
+            },
+            title = pluralStringResource(R.plurals.voicemail_delete_selected_title, 1, 1),
+            message = pluralStringResource(R.plurals.voicemail_delete_selected_message, 1),
+            confirmLabel = stringResource(R.string.action_delete),
+            icon = Icons.Outlined.Delete,
+            isDestructive = true
+        )
     }
 
     var isDefaultDialer by remember { mutableStateOf(viewModel.isDefaultDialer()) }
@@ -270,7 +288,7 @@ fun VoicemailScreenContent(
                                                     onToggleRead = {
                                                         viewModel.markAsRead(voicemail.id, !voicemail.isRead)
                                                     },
-                                                    onDelete = { viewModel.delete(setOf(voicemail.id)) },
+                                                    onDelete = { pendingDeleteId = voicemail.id },
                                                     selected = voicemail.id in selectedIds,
                                                     selectionMode = isSelecting,
                                                     onToggleSelection = {
