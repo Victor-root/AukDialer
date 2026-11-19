@@ -53,6 +53,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -585,7 +586,8 @@ fun ExpressiveCallScreen(
                     }
                 )
             } else {
-                if (useCustomUI != 2 && useCustomUI != 3) {
+                // The iOS style carries its own message button.
+                if (useCustomUI != 2) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -875,6 +877,13 @@ fun formatDuration(seconds: Long): String {
     return String.format(Locale.getDefault(), "%02d:%02d", m, s)
 }
 
+/**
+ * The answer or decline colour for a swipe hint. Those colours are made to fill buttons and read too
+ * dark as text on the dark theme's call screen, so they are lightened there.
+ */
+private fun swipeHintColor(color: Color, isDark: Boolean): Color =
+    if (isDark) lerp(color, Color.White, 0.45f) else color
+
 @Composable
 fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
@@ -915,8 +924,8 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
     )
 
     val hintAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
+        initialValue = 0.7f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1500, easing = LinearOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -972,7 +981,7 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                     .alpha((1f - (dragProgress.value * -2f).coerceIn(0f, 1f)) * hintAlpha),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = declineRed.copy(alpha = 0.8f),
+                color = swipeHintColor(declineRed, isDark),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -987,7 +996,7 @@ fun HorizontalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                     .alpha((1f - (dragProgress.value * 2f).coerceIn(0f, 1f)) * hintAlpha),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = answerGreen.copy(alpha = 0.8f),
+                color = swipeHintColor(answerGreen, isDark),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -1124,20 +1133,20 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 10.dp)
-                    .alpha((0.4f + (dragProgress.value * -1.5f)).coerceIn(0.15f, 1f)),
+                    .alpha((0.85f + (dragProgress.value * -1.5f)).coerceIn(0.15f, 1f)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
                     Icons.Default.KeyboardArrowUp,
                     contentDescription = null,
-                    tint = answerGreen,
+                    tint = swipeHintColor(answerGreen, isDark),
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
                     stringResource(R.string.action_answer),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = answerGreen
+                    color = swipeHintColor(answerGreen, isDark)
                 )
             }
 
@@ -1145,19 +1154,19 @@ fun VerticalSwipeToAnswer(onAnswer: () -> Unit, onDecline: () -> Unit) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 10.dp)
-                    .alpha((0.4f + (dragProgress.value * 1.5f)).coerceIn(0.15f, 1f)),
+                    .alpha((0.85f + (dragProgress.value * 1.5f)).coerceIn(0.15f, 1f)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     stringResource(R.string.action_decline),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = declineRed
+                    color = swipeHintColor(declineRed, isDark)
                 )
                 Icon(
                     Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = declineRed,
+                    tint = swipeHintColor(declineRed, isDark),
                     modifier = Modifier.size(24.dp)
                 )
             }
