@@ -144,6 +144,10 @@ fun MainScreen(
     val statusBarSampler = rememberStatusBarSampler(scrollBehavior, enabled = edgeToEdge)
     val headerSearch = rememberHeaderSearchState()
     val headerTitle = navigationTabLabel(currentTab ?: defaultTab)
+    // Only these two tabs have a filter row.
+    val tabHasFilters = (currentTab ?: defaultTab).let {
+        it == PreferenceManager.TAB_RECENTS || it == PreferenceManager.TAB_CONTACTS
+    }
 
     Scaffold(
         modifier = if (edgeToEdge) {
@@ -169,11 +173,11 @@ fun MainScreen(
                             PreferenceManager.TAB_VOICEMAIL -> voicemailActionBar?.invoke()
                             PreferenceManager.TAB_RECORDINGS -> recordingsActionBar?.invoke()
                             PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
-                            else -> TopBar(navigator, headerTitle, headerSearch)
+                            else -> TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters)
                         }
                     } else {
                         Column {
-                            TopBar(navigator, headerTitle, headerSearch)
+                            TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters)
                             AnimatedVisibility(
                                 visible = filtersVisible && !headerSearch.expanded,
                                 enter = fadeIn() + expandVertically(),

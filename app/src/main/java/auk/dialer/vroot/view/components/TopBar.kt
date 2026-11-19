@@ -58,10 +58,16 @@ private const val SearchRevealMillis = 300
 /**
  * The tabs' header: the section's [title] and its actions. The magnifier unrolls a search field over
  * the whole row from the right edge, and rolls it back the same way; the screen shows the results
- * while [search] is open.
+ * while [search] is open. The filter button only shows where [hasFilters] says there is a filter
+ * row for it to show.
  */
 @Composable
-fun TopBar(navigator: DestinationsNavigator, title: String, search: HeaderSearchState) {
+fun TopBar(
+    navigator: DestinationsNavigator,
+    title: String,
+    search: HeaderSearchState,
+    hasFilters: Boolean = true
+) {
     val prefs = koinInject<PreferenceManager>()
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
     // With the filter row hidden this is the last thing in the header, and 4dp put it right against
@@ -71,7 +77,7 @@ fun TopBar(navigator: DestinationsNavigator, title: String, search: HeaderSearch
         start = 16.dp,
         end = 16.dp,
         top = 4.dp,
-        bottom = if (filtersVisible && !search.expanded) 4.dp else 12.dp
+        bottom = if (hasFilters && filtersVisible && !search.expanded) 4.dp else 12.dp
     )
 
     AukAccentHeader {
@@ -95,26 +101,28 @@ fun TopBar(navigator: DestinationsNavigator, title: String, search: HeaderSearch
                     onClick = search::open
                 )
 
-                Surface(
-                    onClick = {
-                        prefs.setShowHeaderFilters(!filtersVisible)
-                    },
-                    modifier = Modifier.size(TopBarActionButtonSize),
-                    shape = CircleShape,
-                    color = if (filtersVisible) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    contentColor = if (filtersVisible) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        LocalOnAccentBarColor.current
-                    }
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (filtersVisible) Icons.Default.FilterAltOff else Icons.Default.FilterAlt,
-                            contentDescription = stringResource(
-                                if (filtersVisible) R.string.content_desc_hide_filters else R.string.content_desc_show_filters
+                if (hasFilters) {
+                    Surface(
+                        onClick = {
+                            prefs.setShowHeaderFilters(!filtersVisible)
+                        },
+                        modifier = Modifier.size(TopBarActionButtonSize),
+                        shape = CircleShape,
+                        color = if (filtersVisible) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        contentColor = if (filtersVisible) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            LocalOnAccentBarColor.current
+                        }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = if (filtersVisible) Icons.Default.FilterAltOff else Icons.Default.FilterAlt,
+                                contentDescription = stringResource(
+                                    if (filtersVisible) R.string.content_desc_hide_filters else R.string.content_desc_show_filters
+                                )
                             )
-                        )
+                        }
                     }
                 }
 

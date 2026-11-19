@@ -79,7 +79,7 @@ fun FavoritesScreenContent(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             if (showTopBar) {
-                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_FAVORITES), headerSearch)
+                TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_FAVORITES), headerSearch, hasFilters = false)
             }
         },
         contentWindowInsets = WindowInsets(0)

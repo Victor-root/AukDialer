@@ -183,7 +183,7 @@ fun VoicemailScreenContent(
                 if (isSelecting) {
                     selectionActionBar()
                 } else {
-                    TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_VOICEMAIL), headerSearch)
+                    TopBar(navigator, navigationTabLabel(PreferenceManager.TAB_VOICEMAIL), headerSearch, hasFilters = false)
                 }
             }
         },
