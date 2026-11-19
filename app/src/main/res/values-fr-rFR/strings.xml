@@ -561,6 +561,7 @@
     </plurals>
     <string name="blocked_select_title">Bloquer des numéros ou des contacts</string>
     <string name="blocked_select_or_enter_button">Sélectionner des contacts ou saisir un numéro</string>
+    <string name="blocked_search_hint">Rechercher un contact ou saisir un numéro</string>
     <string name="blocked_search_list_placeholder">Rechercher dans la liste des numéros bloqués...</string>
     <plurals name="blocked_numbers_count">
         <item quantity="one">%1$d numéro bloqué</item>

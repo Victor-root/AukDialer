@@ -74,6 +74,7 @@ fun BlockedNumbersScreen(
     // function, and onClick runs outside composition.
     val blockSelectTitle = stringResource(R.string.blocked_select_title)
     val blockAction = stringResource(R.string.action_block)
+    val blockSearchHint = stringResource(R.string.blocked_search_hint)
 
     resultRecipient.onNavResult { result ->
         when (result) {
@@ -167,7 +168,9 @@ fun BlockedNumbersScreen(
                                     ContactSelectionScreenDestination(
                                         title = blockSelectTitle,
                                         isMultiSelect = true,
-                                        actionButtonText = blockAction
+                                        actionButtonText = blockAction,
+                                        offerNewContact = false,
+                                        searchPlaceholder = blockSearchHint
                                     )
                                 )
                             },

@@ -61,7 +61,10 @@ fun ContactSelectionScreen(
     title: String = "Select Contact",
     isMultiSelect: Boolean = false,
     actionButtonText: String = "Select",
-    returnContactId: Boolean = false
+    returnContactId: Boolean = false,
+    // Off where a new contact makes no sense, as when picking numbers to block.
+    offerNewContact: Boolean = true,
+    searchPlaceholder: String? = null
 ) {
     val viewModel: ContactsViewModel = koinActivityViewModel()
     val allContacts by viewModel.allContacts.collectAsState()
@@ -122,8 +125,10 @@ fun ContactSelectionScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { navigator.navigate(ContactEditScreenDestination()) }) {
-                        Icon(Icons.Outlined.PersonAdd, contentDescription = stringResource(R.string.content_desc_create_new_contact))
+                    if (offerNewContact) {
+                        IconButton(onClick = { navigator.navigate(ContactEditScreenDestination()) }) {
+                            Icon(Icons.Outlined.PersonAdd, contentDescription = stringResource(R.string.content_desc_create_new_contact))
+                        }
                     }
                     if (isMultiSelect && totalSelectedCount > 0) {
                         IconButton(onClick = {
@@ -203,19 +208,21 @@ fun ContactSelectionScreen(
                                     )
                                 }
                             }
-                            Spacer(Modifier.height(14.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Button(
-                                    onClick = { navigator.navigate(ContactEditScreenDestination()) },
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(itemCornerDp)
+                            if (offerNewContact) {
+                                Spacer(Modifier.height(14.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Icon(Icons.Outlined.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(stringResource(R.string.contact_create_title), fontWeight = FontWeight.Bold)
+                                    Button(
+                                        onClick = { navigator.navigate(ContactEditScreenDestination()) },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(itemCornerDp)
+                                    ) {
+                                        Icon(Icons.Outlined.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(stringResource(R.string.contact_create_title), fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
                         }
@@ -227,7 +234,7 @@ fun ContactSelectionScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(R.string.search_contacts_placeholder)) },
+                        placeholder = { Text(searchPlaceholder ?: stringResource(R.string.search_contacts_placeholder)) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
