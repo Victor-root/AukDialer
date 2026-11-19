@@ -10,10 +10,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsEndWidth
+import androidx.compose.foundation.layout.windowInsetsStartWidth
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
@@ -235,7 +242,16 @@ fun AukTheme(
                             .fillMaxSize()
                             .background(colorScheme.background)
                     ) {
-                        content()
+                        // Turned, the navigation bar and the camera cutout sit at a side of the
+                        // screen: every screen keeps clear of them there, as it does of the bars
+                        // above and below.
+                        Box(
+                            modifier = Modifier.windowInsetsPadding(
+                                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                            )
+                        ) {
+                            content()
+                        }
                         // Edge to edge off: an opaque accent band over the navigation bar area, so it
                         // reads as a solid bar matching the header. On: nothing, and the app shows
                         // through the transparent navigation bar.
@@ -245,6 +261,22 @@ fun AukTheme(
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
                                     .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                    .background(barColor)
+                            )
+                            // Turned, the navigation bar stands at a side: the same band there,
+                            // which its light buttons are drawn for.
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .fillMaxHeight()
+                                    .windowInsetsStartWidth(WindowInsets.navigationBars)
+                                    .background(barColor)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .fillMaxHeight()
+                                    .windowInsetsEndWidth(WindowInsets.navigationBars)
                                     .background(barColor)
                             )
                         }
