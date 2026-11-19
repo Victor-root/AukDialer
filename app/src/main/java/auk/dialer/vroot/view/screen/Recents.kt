@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import auk.dialer.vroot.view.components.rememberCurrentDay
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.CallLogViewModel
@@ -473,7 +474,8 @@ fun CallLogFullContent(
             }.groupedConsecutive()
         }
 
-        val groupedLogs = remember(filteredLogs) {
+        val today = rememberCurrentDay()
+        val groupedLogs = remember(filteredLogs, today) {
             filteredLogs.groupBy { formatDateHeader(context, it.date) }
         }
 

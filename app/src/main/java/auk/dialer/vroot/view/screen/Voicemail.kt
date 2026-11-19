@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.view.components.rememberCurrentDay
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
@@ -227,7 +228,8 @@ fun VoicemailScreenContent(
                                     onOpenSettings = { navigator.navigate(VoicemailScreenDestination) }
                                 )
                             } else {
-                                val groupedVoicemails = remember(voicemails) {
+                                val today = rememberCurrentDay()
+                                val groupedVoicemails = remember(voicemails, today) {
                                     voicemails.groupBy { formatDateHeader(context, it.date) }
                                 }
                                 LazyColumn(

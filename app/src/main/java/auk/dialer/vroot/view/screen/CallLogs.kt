@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.view.components.rememberCurrentDay
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallLogViewModel
@@ -191,7 +192,8 @@ fun CallLogFullScreen(
                             Text(stringResource(R.string.call_log_no_filter_match), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
-                        val groupedLogs = finalLogs.groupBy { formatDateHeader(context, it.date) }
+                        val today = rememberCurrentDay()
+                        val groupedLogs = remember(finalLogs, today) { finalLogs.groupBy { formatDateHeader(context, it.date) } }
 
                         LazyColumn(
                             state = listState,

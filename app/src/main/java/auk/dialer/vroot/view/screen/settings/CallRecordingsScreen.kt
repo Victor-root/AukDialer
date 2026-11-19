@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.view.components.rememberCurrentDay
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallRecorder
@@ -187,7 +188,8 @@ fun CallRecordingsContent(
                 list == null -> AukLoadingIndicatorView(modifier = Modifier.fillMaxSize())
                 list.isEmpty() -> EmptyRecordingsState()
                 else -> {
-                    val grouped = remember(list) { list.groupBy { formatDateHeader(context, it.recording.startedAt) } }
+                    val today = rememberCurrentDay()
+                    val grouped = remember(list, today) { list.groupBy { formatDateHeader(context, it.recording.startedAt) } }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + padding.calculateBottomPadding())
