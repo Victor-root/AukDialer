@@ -243,7 +243,7 @@
     <string name="settings_manage_contacts_headline">Kontakte verwalten</string>
     <string name="settings_manage_contacts_supporting">Doppelte Einträge zusammenführen und Liste bereinigen</string>
     <string name="settings_about_headline">Über AukDialer</string>
-    <string name="settings_about_supporting">Version, Lizenzen und Datenschutz</string>
+    <string name="settings_about_supporting">Version, Autor und Quellcode</string>
     <!-- Settings > Interface -->
     <string name="settings_interface_title">Benutzeroberfläche</string>
     <string name="settings_group_color">Farbe</string>

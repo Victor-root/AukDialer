@@ -294,7 +294,7 @@
     <string name="settings_manage_contacts_headline">Manage Contacts</string>
     <string name="settings_manage_contacts_supporting">Merge duplicates and clean up your list</string>
     <string name="settings_about_headline">About AukDialer</string>
-    <string name="settings_about_supporting">Version, licenses, and privacy policy</string>
+    <string name="settings_about_supporting">Version, author and source code</string>
     <string name="settings_debug_simulate_call_number_label">Caller number or text</string>
     <string name="settings_debug_simulate_call_number_placeholder">0600000000</string>
     <string name="settings_debug_simulate_call_headline">Simulate an incoming call</string>
@@ -690,12 +690,18 @@
         <item quantity="one">Delete %d recording?</item>
         <item quantity="other">Delete %d recordings?</item>
     </plurals>
-    <string name="call_recordings_delete_selected_message">These recordings will be permanently removed from your device.</string>
+    <plurals name="call_recordings_delete_selected_message">
+        <item quantity="one">This recording will be permanently removed from your device.</item>
+        <item quantity="other">These recordings will be permanently removed from your device.</item>
+    </plurals>
     <plurals name="voicemail_delete_selected_title">
         <item quantity="one">Delete %d voicemail?</item>
         <item quantity="other">Delete %d voicemails?</item>
     </plurals>
-    <string name="voicemail_delete_selected_message">These voicemails will be permanently deleted.</string>
+    <plurals name="voicemail_delete_selected_message">
+        <item quantity="one">This voicemail will be permanently deleted.</item>
+        <item quantity="other">These voicemails will be permanently deleted.</item>
+    </plurals>
     <string name="call_recordings_delete_message">This recording will be permanently removed from your device.</string>
 
     <!-- Visual voicemail -->

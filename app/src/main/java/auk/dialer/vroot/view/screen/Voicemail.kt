@@ -97,7 +97,7 @@ fun VoicemailScreenContent(
             selectedCount = selectedIds.size,
             onClearSelection = { selectedIds = emptySet() },
             confirmTitle = pluralStringResource(R.plurals.voicemail_delete_selected_title, selectedIds.size, selectedIds.size),
-            confirmMessage = stringResource(R.string.voicemail_delete_selected_message),
+            confirmMessage = pluralStringResource(R.plurals.voicemail_delete_selected_message, selectedIds.size),
             onDelete = {
                 viewModel.delete(selectedIds)
                 selectedIds = emptySet()

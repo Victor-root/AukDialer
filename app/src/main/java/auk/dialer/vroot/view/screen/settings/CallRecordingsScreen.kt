@@ -150,7 +150,7 @@ fun CallRecordingsContent(
             selectedCount = selectedPaths.size,
             onClearSelection = { selectedPaths = emptySet() },
             confirmTitle = pluralStringResource(R.plurals.call_recordings_delete_selected_title, selectedPaths.size, selectedPaths.size),
-            confirmMessage = stringResource(R.string.call_recordings_delete_selected_message),
+            confirmMessage = pluralStringResource(R.plurals.call_recordings_delete_selected_message, selectedPaths.size),
             onDelete = {
                 if (playingPath in selectedPaths) player.release()
                 selectedPaths.forEach { CallRecorder.delete(File(it)) }

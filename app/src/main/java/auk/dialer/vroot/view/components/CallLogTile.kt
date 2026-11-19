@@ -246,7 +246,9 @@ fun BatchCallLogActionBar(
     onDelete: () -> Unit,
     onBlock: () -> Unit,
     onAddContact: (() -> Unit)? = null,
-    onCopy: (() -> Unit)? = null
+    onCopy: (() -> Unit)? = null,
+    // A selected row can stand for several calls in a row: the confirmation counts the calls.
+    deleteCount: Int = selectedCount
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showBlockConfirm by remember { mutableStateOf(false) }
@@ -275,7 +277,7 @@ fun BatchCallLogActionBar(
             onDismissRequest = { showDeleteConfirm = false },
             onConfirm = onDelete,
             title = stringResource(R.string.call_log_delete_title),
-            message = pluralStringResource(R.plurals.call_log_delete_confirm, selectedCount, selectedCount),
+            message = pluralStringResource(R.plurals.call_log_delete_confirm, deleteCount, deleteCount),
             confirmLabel = stringResource(R.string.action_delete),
             dismissLabel = stringResource(R.string.action_cancel),
             icon = Icons.Default.Delete,

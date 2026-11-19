@@ -248,7 +248,7 @@
     <string name="settings_manage_contacts_headline">Управление контактами</string>
     <string name="settings_manage_contacts_supporting">Поиск дубликатов и очистка</string>
     <string name="settings_about_headline">О проекте</string>
-    <string name="settings_about_supporting">Версия, лицензии и политика конфиденциальности</string>
+    <string name="settings_about_supporting">Версия, автор и исходный код</string>
     <!-- Settings > Interface -->
     <string name="settings_interface_title">Пользовательский интерфейс</string>
     <string name="settings_group_color">Цвет</string>

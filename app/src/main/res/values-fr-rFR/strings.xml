@@ -278,8 +278,8 @@
     <string name="settings_backup_restore_supporting">Importer et exporter les contacts et journaux</string>
     <string name="settings_manage_contacts_headline">Gérer les contacts</string>
     <string name="settings_manage_contacts_supporting">Fusionner les doublons et nettoyer votre liste</string>
-    <string name="settings_about_headline">À propos de AukDialer</string>
-    <string name="settings_about_supporting">Version, licences et politique de confidentialité</string>
+    <string name="settings_about_headline">À propos d\'AukDialer</string>
+    <string name="settings_about_supporting">Version, auteur et code source</string>
     <string name="settings_debug_simulate_call_number_label">Numéro ou texte de l’appelant</string>
     <string name="settings_debug_simulate_call_number_placeholder">0600000000</string>
     <string name="settings_debug_simulate_call_headline">Simuler un appel entrant</string>
@@ -693,13 +693,21 @@
         <item quantity="many">Supprimer %d enregistrements ?</item>
         <item quantity="other">Supprimer %d enregistrements ?</item>
     </plurals>
-    <string name="call_recordings_delete_selected_message">Ces enregistrements seront définitivement supprimés de votre appareil.</string>
+    <plurals name="call_recordings_delete_selected_message">
+        <item quantity="one">Cet enregistrement sera définitivement supprimé de votre appareil.</item>
+        <item quantity="many">Ces enregistrements seront définitivement supprimés de votre appareil.</item>
+        <item quantity="other">Ces enregistrements seront définitivement supprimés de votre appareil.</item>
+    </plurals>
     <plurals name="voicemail_delete_selected_title">
         <item quantity="one">Supprimer %d message vocal ?</item>
         <item quantity="many">Supprimer %d messages vocaux ?</item>
         <item quantity="other">Supprimer %d messages vocaux ?</item>
     </plurals>
-    <string name="voicemail_delete_selected_message">Ces messages vocaux seront définitivement supprimés.</string>
+    <plurals name="voicemail_delete_selected_message">
+        <item quantity="one">Ce message vocal sera définitivement supprimé.</item>
+        <item quantity="many">Ces messages vocaux seront définitivement supprimés.</item>
+        <item quantity="other">Ces messages vocaux seront définitivement supprimés.</item>
+    </plurals>
     <string name="call_recordings_delete_title">Supprimer l’enregistrement ?</string>
     <string name="call_recordings_delete_message">Cet enregistrement sera définitivement supprimé de votre appareil.</string>
     <string name="settings_call_default_background_none">Non défini, les appels utilisent le thème de l’application</string>

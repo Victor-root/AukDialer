@@ -118,6 +118,7 @@ fun RecentScreenContent(
     val batchActionBar: @Composable () -> Unit = {
         BatchCallLogActionBar(
             selectedCount = selectedEntries.size,
+            deleteCount = selectedEntries.sumOf { it.ids.size },
             onClearSelection = { selectedEntries = emptySet() },
             onDelete = {
                 val allIdsToDelete = selectedEntries.flatMap { it.ids }

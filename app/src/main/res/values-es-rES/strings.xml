@@ -237,7 +237,7 @@
     <string name="settings_manage_contacts_headline">Administrar contactos</string>
     <string name="settings_manage_contacts_supporting">Fusionar duplicados y limpiar tu lista</string>
     <string name="settings_about_headline">Acerca de AukDialer</string>
-    <string name="settings_about_supporting">Política de privacidad, licencia y versión</string>
+    <string name="settings_about_supporting">Versión, autor y código fuente</string>
     <!-- Settings > Interface -->
     <string name="settings_interface_title">Interfaz de usuario</string>
     <string name="settings_group_color">Color</string>
