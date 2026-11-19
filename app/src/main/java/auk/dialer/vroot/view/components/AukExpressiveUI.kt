@@ -438,7 +438,8 @@ fun AukExpressiveButton(
                 style = MaterialTheme.typography.labelMediumEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                // A row of four buttons leaves too little width for some labels on one line.
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
