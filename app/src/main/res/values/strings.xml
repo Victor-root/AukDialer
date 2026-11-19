@@ -764,4 +764,27 @@
     <string name="imei_dialog_title">Device Info (IMEI)</string>
     <string name="imei_label">IMEI %1$d</string>
     <string name="imei_copied">Copied to clipboard</string>
+    <!-- Names of the twenty palette colours, in LauncherIconManager.ICONS order, read out by TalkBack. -->
+    <string-array name="palette_color_names">
+        <item>Violet</item>
+        <item>Red</item>
+        <item>Pink</item>
+        <item>Purple</item>
+        <item>Deep purple</item>
+        <item>Indigo</item>
+        <item>Blue</item>
+        <item>Light blue</item>
+        <item>Cyan</item>
+        <item>Teal</item>
+        <item>Green</item>
+        <item>Light green</item>
+        <item>Lime</item>
+        <item>Yellow</item>
+        <item>Amber</item>
+        <item>Orange</item>
+        <item>Deep orange</item>
+        <item>Brown</item>
+        <item>Grey</item>
+        <item>Blue grey</item>
+    </string-array>
 </resources>

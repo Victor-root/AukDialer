@@ -500,6 +500,7 @@ fun AukColorPickerDialog(
     selectedColor: Color?,
     onColorSelected: (Color) -> Unit,
     icon: ImageVector? = null,
+    colorNames: List<String> = emptyList(),
     dismissLabel: String = stringResource(R.string.action_cancel),
     contentBeforeGrid: (@Composable ColumnScope.(onSelect: () -> Unit) -> Unit)? = null,
     contentAfterGrid: (@Composable ColumnScope.() -> Unit)? = null
@@ -520,12 +521,13 @@ fun AukColorPickerDialog(
             verticalArrangement = Arrangement.spacedBy(ColorPickerSpacing),
             maxItemsInEachRow = ColorPickerColumns
         ) {
-            colors.forEach { swatch ->
+            colors.forEachIndexed { index, swatch ->
                 key(swatch.value) {
                     AukColorSwatch(
                         color = swatch,
                         selected = swatch == selectedColor,
-                        onClick = { onColorSelected(swatch) }
+                        onClick = { onColorSelected(swatch) },
+                        name = colorNames.getOrNull(index)
                     )
                 }
             }

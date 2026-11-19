@@ -735,4 +735,26 @@
     <string name="settings_call_waiting_check">Vérifier l’état actuel</string>
     <string name="call_waiting_answer_hold">Répondre et mettre en attente</string>
     <string name="call_waiting_end_and_answer">Raccrocher et répondre</string>
+    <string-array name="palette_color_names">
+        <item>Violet</item>
+        <item>Rouge</item>
+        <item>Rose</item>
+        <item>Pourpre</item>
+        <item>Violet foncé</item>
+        <item>Indigo</item>
+        <item>Bleu</item>
+        <item>Bleu clair</item>
+        <item>Cyan</item>
+        <item>Sarcelle</item>
+        <item>Vert</item>
+        <item>Vert clair</item>
+        <item>Citron vert</item>
+        <item>Jaune</item>
+        <item>Ambre</item>
+        <item>Orange</item>
+        <item>Orange foncé</item>
+        <item>Marron</item>
+        <item>Gris</item>
+        <item>Gris bleu</item>
+    </string-array>
 </resources>

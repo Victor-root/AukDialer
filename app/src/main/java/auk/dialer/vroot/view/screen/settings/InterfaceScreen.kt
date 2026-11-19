@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -96,6 +97,7 @@ fun InterfaceScreen(
     // Each swatch shows the accent its seed gives, the colour the app and the icon really take.
     val palette = remember { LauncherIconManager.ICONS.map { (seed, _) -> seed to accentColorFromSeed(seed) } }
     val paletteColors = remember(palette) { palette.map { it.second } }
+    val paletteNames = stringArrayResource(R.array.palette_color_names).toList()
     fun swatchOf(seed: Int): Color? = palette.firstOrNull { it.first == seed }?.second
     fun seedOf(swatch: Color): Int = palette.first { it.second == swatch }.first
 
@@ -218,6 +220,7 @@ fun InterfaceScreen(
                             supporting = stringResource(R.string.settings_interface_primary_color_supporting),
                             leadingIcon = Icons.Outlined.ColorLens,
                             colors = paletteColors,
+                            colorNames = paletteNames,
                             selectedColor = if (dynamicColors) {
                                 null
                             } else {
@@ -280,6 +283,7 @@ fun InterfaceScreen(
                                 supporting = stringResource(R.string.settings_interface_app_icon_color_supporting),
                                 leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_color_filter),
                                 colors = paletteColors,
+                            colorNames = paletteNames,
                                 selectedColor = swatchOf(appIconColor),
                                 onColorSelected = { color -> offerIconColorChange(seedOf(color)) }
                             )

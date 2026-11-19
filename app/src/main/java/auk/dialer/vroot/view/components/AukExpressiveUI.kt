@@ -864,7 +864,8 @@ fun AukColorSwatch(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     size: Dp = AukColorSwatchDefaults.Size,
-    icon: ImageVector? = null
+    icon: ImageVector? = null,
+    name: String? = null
 ) {
     val progress by animateFloatAsState(
         targetValue = if (selected) 1f else 0f,
@@ -902,11 +903,13 @@ fun AukColorSwatch(
         }
     }
 
+    // A plain colour says nothing to TalkBack without its name.
+    val namedModifier = if (name != null) modifier.semantics { contentDescription = name } else modifier
     if (onClick != null) {
         Surface(
             selected = selected,
             onClick = onClick,
-            modifier = modifier.size(size),
+            modifier = namedModifier.size(size),
             shape = shape,
             color = color,
             contentColor = onColor,
@@ -915,7 +918,7 @@ fun AukColorSwatch(
         )
     } else {
         Surface(
-            modifier = modifier.size(size),
+            modifier = namedModifier.size(size),
             shape = shape,
             color = color,
             contentColor = onColor,
@@ -957,6 +960,7 @@ fun AukColorSelectListItem(
     selectedColor: Color?,
     onColorSelected: (Color) -> Unit,
     modifier: Modifier = Modifier,
+    colorNames: List<String> = emptyList(),
     supporting: String? = null,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
@@ -994,6 +998,7 @@ fun AukColorSelectListItem(
             title = headline,
             icon = leadingIcon,
             colors = colors,
+            colorNames = colorNames,
             selectedColor = selectedColor,
             onColorSelected = {
                 showPicker = false

@@ -190,7 +190,7 @@ fun ContactEditScreen(
                             modifier = Modifier.padding(end = 8.dp),
                             shape = RoundedCornerShape(24.dp),
                         ) {
-                            Icon(Icons.Default.Delete, null)
+                            Icon(Icons.Default.Delete, stringResource(R.string.action_delete))
                         }
                     }
                     if (isSaving) {
