@@ -1,8 +1,8 @@
 package auk.dialer.vroot.view.components
 
 import auk.dialer.vroot.view.theme.softAccentColors
+import auk.dialer.vroot.view.theme.animateCornerDpAsState
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -383,7 +383,7 @@ fun AukExpressiveButton(
 
     val restCorner = aukCornerDp((size.value * 0.45f).roundToInt(), roundness)
     val pressedCorner = aukCornerDp((size.value * 0.26f).roundToInt(), roundness)
-    val cornerRadius by animateDpAsState(
+    val cornerRadius by animateCornerDpAsState(
         targetValue = if (isPressed) pressedCorner else restCorner,
         animationSpec = AukMotion.pressFeedback(),
         label = "AukExpressiveButtonCorner"
@@ -530,7 +530,7 @@ fun AukListItem(
     val roundness = LocalCardRoundness.current
     val restCorner = aukCornerDp(24, roundness)
     val pressedCorner = aukCornerDp(12, roundness)
-    val animatedCornerRadius by animateDpAsState(
+    val animatedCornerRadius by animateCornerDpAsState(
         targetValue = if (isPressed) pressedCorner else restCorner,
         animationSpec = AukMotion.shapeMorph(),
         label = "AukListItemCorner"

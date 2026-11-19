@@ -1,5 +1,7 @@
 package auk.dialer.vroot.view.theme
 
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +12,8 @@ import androidx.compose.material3.toPath
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -48,6 +52,21 @@ fun aukRoundnessScale(roundness: Int): Float =
 
 fun aukCornerDp(baseDp: Int, roundness: Int): Dp =
     (baseDp * aukRoundnessScale(roundness)).coerceAtLeast(1f).dp
+
+/**
+ * A corner radius animated with a spring. The spatial springs overshoot their target, and with the
+ * lowest card roundness the target is close enough to zero for that overshoot to go below it, which
+ * a shape rejects with a crash. So the value handed out never goes under zero.
+ */
+@Composable
+fun animateCornerDpAsState(
+    targetValue: Dp,
+    animationSpec: FiniteAnimationSpec<Dp>,
+    label: String
+): State<Dp> {
+    val animated = animateDpAsState(targetValue, animationSpec, label = label)
+    return remember(animated) { derivedStateOf { animated.value.coerceAtLeast(0.dp) } }
+}
 
 fun aukCornerShape(baseDp: Int, roundness: Int): CornerBasedShape =
     RoundedCornerShape(aukCornerDp(baseDp, roundness))

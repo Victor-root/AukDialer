@@ -2,7 +2,6 @@ package auk.dialer.vroot.view.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -85,6 +84,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.theme.LocalCardRoundness
+import auk.dialer.vroot.view.theme.animateCornerDpAsState
 import auk.dialer.vroot.view.theme.callColors
 import auk.dialer.vroot.view.theme.AukMaterialShapes
 import auk.dialer.vroot.view.theme.AukMorphShape
@@ -553,7 +553,7 @@ fun AukSelectionRow(
         animationSpec = AukMotion.shapeMorph(),
         label = "AukSelectionRowMorph"
     )
-    val corner by animateDpAsState(
+    val corner by animateCornerDpAsState(
         targetValue = aukCornerDp(
             if (selected) AukShapeDefaults.BaseExtraLarge else AukShapeDefaults.BaseLarge,
             roundness
