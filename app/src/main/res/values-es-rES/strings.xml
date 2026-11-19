@@ -60,6 +60,7 @@
     <string name="call_type_incoming">Entrante</string>
     <string name="call_type_outgoing">Saliente</string>
     <string name="call_type_missed">Perdida</string>
+    <string name="call_type_blocked">Bloqueada</string>
     <string name="filter_all">Todo</string>
     <string name="sim_ask_every_time">Preguntar siempre</string>
     <string name="sim_slot_1">SIM 1</string>
