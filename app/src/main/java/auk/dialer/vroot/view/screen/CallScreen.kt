@@ -197,6 +197,7 @@ fun ExpressiveCallScreen(
     
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val shortScreen = isShortCallScreen(configuration)
 
     LaunchedEffect(callState, call.details.connectTimeMillis, initialConnectTime) {
         if (callState == Call.STATE_ACTIVE) {
@@ -721,7 +722,7 @@ fun ExpressiveCallScreen(
 
                 if (showKeypad && !callHasEnded) {
                     Box(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), contentAlignment = Alignment.Center) {
-                        keypadSection(false)
+                        keypadSection(shortScreen)
                     }
                 }
 
@@ -734,8 +735,8 @@ fun ExpressiveCallScreen(
                 ) {
                     when {
                         callHasEnded -> {}
-                        callState == Call.STATE_RINGING -> incomingControls(false)
-                        else -> activeControls(false)
+                        callState == Call.STATE_RINGING -> incomingControls(shortScreen)
+                        else -> activeControls(shortScreen)
                     }
                 }
             }
@@ -835,11 +836,19 @@ fun FloatingParticles() {
     }
 }
 
+/**
+ * A call screen too short for the full size controls: a small phone, or large text. The controls,
+ * keypad and avatar then take their compact sizes, or the timer and the hang up button get crushed.
+ */
+private fun isShortCallScreen(configuration: Configuration): Boolean =
+    configuration.screenHeightDp / configuration.fontScale < 720f
+
 @Composable
 private fun heroAvatarSize(isLandscape: Boolean): Dp {
     val configuration = LocalConfiguration.current
+    val share = if (isShortCallScreen(configuration)) 0.15f else 0.22f
     return if (isLandscape) 120.dp
-           else (configuration.screenHeightDp.dp * 0.22f).coerceAtMost(200.dp)
+           else (configuration.screenHeightDp.dp * share).coerceAtMost(200.dp)
 }
 
 @Composable

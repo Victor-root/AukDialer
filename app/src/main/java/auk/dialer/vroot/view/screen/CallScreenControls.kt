@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import androidx.compose.foundation.text.TextAutoSize
 import android.telecom.Call
 import android.telecom.CallAudioState
 import android.view.HapticFeedbackConstants
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.theme.callColors
 
@@ -156,14 +158,18 @@ fun CallActionButton(
                 tint = contentColor
             )
             Spacer(modifier = Modifier.height(if (compact) 3.dp else 5.dp))
+            val labelStyle = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium
+            // A label of one word that does not fit the button would be split in the middle
+            // ("Haut-parle / ur" with large text): it stays on one line and shrinks instead.
             Text(
                 text = label,
-                style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
+                style = labelStyle,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 color = contentColor,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                maxLines = if (' ' in label.trim()) 2 else 1,
+                overflow = TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = labelStyle.fontSize)
             )
         }
     }
