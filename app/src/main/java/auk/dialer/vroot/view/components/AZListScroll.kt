@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -83,11 +84,17 @@ fun AZListScroll(
 
     val scope = rememberCoroutineScope()
     var draggingChar by remember { mutableStateOf<Char?>(null) }
+    // The letter last jumped to. Near the end of the list its section cannot reach the top, where the
+    // highlight is read from, so it stays highlighted until the list is scrolled by hand.
+    var jumpedChar by remember { mutableStateOf<Char?>(null) }
+    LaunchedEffect(listState) {
+        listState.interactionSource.interactions.collect { if (it is DragInteraction.Start) jumpedChar = null }
+    }
 
     val scrollingChar by remember {
         derivedStateOf {
             val firstVisible = listState.firstVisibleItemIndex
-            alphabetIndices.entries
+            jumpedChar ?: alphabetIndices.entries
                 .filter { it.value <= firstVisible }
                 .maxByOrNull { it.value }
                 ?.key ?: alphabetIndices.keys.firstOrNull()
@@ -175,6 +182,7 @@ fun AZListScroll(
                 // A drag reports every move: only a new letter scrolls.
                 if (char == draggingChar) return@AlphabetSideBar
                 draggingChar = char
+                jumpedChar = char
                 val index = alphabetIndices[char] ?: return@AlphabetSideBar
                 scope.launch { listState.scrollToItem(index) }
             },
