@@ -15,6 +15,11 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -274,16 +279,13 @@ fun DialPadScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
-        ) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
+        val layoutDirection = LocalLayoutDirection.current
+        // Side by side when the phone is turned: stacked, the keypad leaves no room for its last row
+        // and the call button.
+        val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        val infoArea: @Composable (Modifier) -> Unit = { areaModifier ->
+            BoxWithConstraints(modifier = areaModifier) {
 
                 if (number.isEmpty()) {
                     // Scaled from the space actually left above the keypad on this device, between
@@ -403,20 +405,31 @@ fun DialPadScreen(
                     }
                 }
             }
+        }
 
+        val keypadPanel: @Composable (Modifier) -> Unit = { panelModifier ->
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = panelModifier,
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 16.dp,
-                shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
+                shape = if (landscape) {
+                    RoundedCornerShape(topStart = 36.dp, bottomStart = 36.dp)
+                } else {
+                    RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
+                }
             ) {
                 // The panel reaches the bottom of the screen, behind the navigation bar, and only
-                // its keys stay above it.
+                // its keys stay above it. Turned, the navigation bar is at its side, and a phone too
+                // short for the whole keypad scrolls it rather than hiding the call button.
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 24.dp, bottom = innerPadding.calculateBottomPadding()),
+                        .then(if (landscape) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                        .padding(
+                            top = if (landscape) 12.dp else 24.dp,
+                            bottom = innerPadding.calculateBottomPadding(),
+                            end = if (landscape) innerPadding.calculateEndPadding(layoutDirection) else 0.dp
+                        ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     InterceptPlatformTextInput(
@@ -427,7 +440,7 @@ fun DialPadScreen(
                         BasicTextField(
                             value = textFieldValue,
                             onValueChange = { textFieldValue = it },
-                            textStyle = MaterialTheme.typography.displayMedium.copy(
+                            textStyle = (if (landscape) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayMedium).copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center
                             ),
@@ -457,14 +470,14 @@ fun DialPadScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(if (landscape) 8.dp else 16.dp))
 
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp, start = 4.dp, end = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(if (landscape) 4.dp else 8.dp)
                     ) {
                         val keys = listOf(
                             listOf("1", "2", "3"),
@@ -487,6 +500,7 @@ fun DialPadScreen(
                                     DialPadKey(
                                         number = key,
                                         letters = subKeys[key] ?: "",
+                                        compact = landscape,
                                         toneGenerator = toneGenerator,
                                         context = context,
                                         onClick = onDigitClick,
@@ -508,12 +522,12 @@ fun DialPadScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(if (landscape) 4.dp else 8.dp))
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                                .padding(start = 24.dp, end = 24.dp, bottom = if (landscape) 4.dp else 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Row(
@@ -540,7 +554,7 @@ fun DialPadScreen(
                                 contentDescription = stringResource(R.string.action_call),
                                 containerColor = MaterialTheme.callColors.answer,
                                 contentColor = MaterialTheme.callColors.onAnswer,
-                                modifier = Modifier.width(100.dp).height(72.dp),
+                                modifier = Modifier.width(100.dp).height(if (landscape) 56.dp else 72.dp),
                                 isLarge = true
                             )
 
@@ -575,6 +589,29 @@ fun DialPadScreen(
                         }
                     }
                 }
+            }
+        }
+
+        if (landscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection)
+                    )
+            ) {
+                infoArea(Modifier.weight(1f).fillMaxHeight())
+                keypadPanel(Modifier.weight(1f).fillMaxHeight())
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = innerPadding.calculateTopPadding())
+            ) {
+                infoArea(Modifier.weight(1f).fillMaxWidth())
+                keypadPanel(Modifier.fillMaxWidth())
             }
         }
     }
@@ -684,7 +721,8 @@ fun DialPadKey(
     toneGenerator: ToneGenerator?,
     context: Context,
     onClick: (String) -> Unit,
-    onLongClick: ((String) -> Unit)? = null
+    onLongClick: ((String) -> Unit)? = null,
+    compact: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -703,7 +741,7 @@ fun DialPadKey(
 
     Surface(
         modifier = Modifier
-            .size(width = 96.dp, height = 64.dp)
+            .size(width = 96.dp, height = if (compact) 44.dp else 64.dp)
             .scale(scale)
             .combinedClickable(
                 interactionSource = interactionSource,
@@ -729,7 +767,7 @@ fun DialPadKey(
         ) {
             Text(
                 text = number,
-                style = MaterialTheme.typography.displaySmall,
+                style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = if (isPressed) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
             )
