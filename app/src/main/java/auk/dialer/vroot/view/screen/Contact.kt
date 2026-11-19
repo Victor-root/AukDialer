@@ -84,6 +84,20 @@ fun ContactScreenContent(
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
 
+    // Another filter is another list, read from its top. Kept where the last one was scrolled to,
+    // it would hide its first contacts, and an empty one would still offer to scroll back up.
+    val selectedAccount by contactsVM.selectedAccount.collectAsState()
+    val showPrivateOnly by contactsVM.showPrivateOnly.collectAsState()
+    val showLocalOnly by contactsVM.showLocalOnly.collectAsState()
+    val filter = Triple(selectedAccount, showPrivateOnly, showLocalOnly)
+    var shownFilter by remember { mutableStateOf(filter) }
+    LaunchedEffect(filter) {
+        if (filter != shownFilter) {
+            shownFilter = filter
+            listState.scrollToItem(0)
+        }
+    }
+
     var selectedIds by remember { mutableStateOf(setOf<String>()) }
     var pendingDeletion by remember { mutableStateOf<List<String>>(emptyList()) }
     if (pendingDeletion.isNotEmpty()) {

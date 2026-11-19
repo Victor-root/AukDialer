@@ -447,6 +447,15 @@ fun CallLogFullContent(
         LaunchedEffect(selectedFilter, mergeFavorites, favorites.isEmpty()) {
             isEditingFavorites = false
         }
+        // Another filter is another list, read from its top: kept where the last one was scrolled to,
+        // its first calls would sit hidden above the screen.
+        var shownFilter by remember { mutableStateOf(selectedFilter) }
+        LaunchedEffect(selectedFilter) {
+            if (selectedFilter != shownFilter) {
+                shownFilter = selectedFilter
+                listState.scrollToItem(0)
+            }
+        }
         val context = LocalContext.current
         val callLauncher = rememberCallLauncher()
         val blockLogVisibility = prefs.getInt(auk.dialer.vroot.controller.util.PreferenceManager.KEY_BLOCK_LOG_VISIBILITY, 0)
