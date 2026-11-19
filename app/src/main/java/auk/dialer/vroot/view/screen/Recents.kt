@@ -207,7 +207,7 @@ fun RecentScreenContent(
             }
         },
         floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(ScrollToTopFabGap)) {
                 ScrollToTopButton(
                     visible = showButton && selectedEntries.isEmpty(),
                     onClick = {
