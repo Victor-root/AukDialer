@@ -104,9 +104,15 @@ fun ExpressiveCallScreen(
     val view = LocalView.current
     val context = LocalContext.current
     // Nothing may be able to send a text (no SMS app), and the call screen must not go down for it.
+    // A task of its own: the call screen removes its task when the call ends, and would take the
+    // message being written with it.
     fun openMessageToCaller() {
         runCatching {
-            context.startActivity(Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:$phoneNumber") })
+            context.startActivity(
+                Intent(Intent.ACTION_SENDTO)
+                    .setData(Uri.parse("smsto:$phoneNumber"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
         }
     }
 
