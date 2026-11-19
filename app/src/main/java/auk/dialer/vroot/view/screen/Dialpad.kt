@@ -53,6 +53,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -102,7 +103,10 @@ fun DialPadScreen(
     val settingsState by prefs.settingsChanged.collectAsState()
 
     val allContacts by contactsVM.allContacts.collectAsState()
-    var textFieldValue by remember { mutableStateOf(TextFieldValue(initialNumber ?: "")) }
+    // Saved, so turning the phone does not wipe the number being typed.
+    var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(initialNumber ?: ""))
+    }
     val number = textFieldValue.text
 
     var showSocialDialog by remember { mutableStateOf(false) }
