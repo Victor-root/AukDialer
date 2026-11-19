@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
@@ -173,11 +174,14 @@ fun BottomBar(
                     )
                 },
                 label = if (iconOnly) null else ({
+                    // Even at the smallest size, a long label may not fit a narrow slot with large
+                    // text: it then ends in an ellipsis rather than being cut off mid letter.
                     Text(
                         text = tab.label,
                         fontSize = labelFontSize,
                         maxLines = 1,
-                        softWrap = false
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }),
                 colors = itemColors

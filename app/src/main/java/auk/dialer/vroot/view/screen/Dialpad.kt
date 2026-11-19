@@ -287,7 +287,9 @@ fun DialPadScreen(
         val infoArea: @Composable (Modifier) -> Unit = { areaModifier ->
             BoxWithConstraints(modifier = areaModifier) {
 
-                if (number.isEmpty()) {
+                // Left out when the space above the keypad is too short to hold it: squeezed in,
+                // it showed as a sliver under the header.
+                if (number.isEmpty() && maxHeight >= DialpadHintMinHeight) {
                     // Scaled from the space actually left above the keypad on this device, between
                     // the two sizes already checked on a small phone and a tall emulator screen.
                     val heightRatio = ((maxHeight - 320.dp) / (500.dp - 320.dp)).coerceIn(0f, 1f)
@@ -673,6 +675,9 @@ fun DialPadScreen(
         }
     }
 }
+
+/** The least height the empty dialpad's hint (icon, title and line below) needs to show whole. */
+private val DialpadHintMinHeight = 150.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
