@@ -491,10 +491,10 @@ fun ContactDetailsScreen(
                                 contactsViewModel.toggleFavorite(contact)
                             }
                         }) {
+                            // Filled or outlined says it all: the accent the bar is painted in would hide it.
                             Icon(
                                 if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                                contentDescription = stringResource(R.string.content_desc_favorite),
-                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                contentDescription = stringResource(R.string.content_desc_favorite)
                             )
                         }
                         IconButton(onClick = {
