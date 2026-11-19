@@ -196,7 +196,8 @@ fun AudioMessageRow(
                     valueRange = 0f..durationMs.toFloat(),
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 8.dp)
+                        .padding(horizontal = 8.dp),
+                    colors = aukSliderColors()
                 )
                 Text(
                     text = formatPlaybackTime(durationMs),

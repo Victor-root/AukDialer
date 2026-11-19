@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.aukSliderColors
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.*
@@ -257,7 +258,8 @@ private fun IntensitySlider(
             valueRange = IntensityRange,
             steps = IntensitySteps,
             onValueChangeFinished = onValueChangeFinished,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = aukSliderColors()
         )
     }
 }

@@ -47,6 +47,7 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.theme.LocalAccentBarColor
 import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
 import auk.dialer.vroot.view.theme.LocalCardRoundness
+import auk.dialer.vroot.view.theme.LocalVividColors
 import auk.dialer.vroot.view.theme.AukMaterialShapes
 import auk.dialer.vroot.view.theme.AukMotion
 import auk.dialer.vroot.view.theme.AukShapeDefaults
@@ -920,6 +921,21 @@ fun AukColorSwatch(
             content = content
         )
     }
+}
+
+/**
+ * Slider colours for the app. Vivid colours fill the pale containers a slider takes its remaining
+ * track from with the accent, which would paint both sides of the thumb alike and hide the value: that
+ * side turns neutral instead.
+ */
+@Composable
+fun aukSliderColors(): SliderColors = if (LocalVividColors.current) {
+    SliderDefaults.colors(
+        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+} else {
+    SliderDefaults.colors()
 }
 
 object AukColorSwatchDefaults {

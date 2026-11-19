@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.aukSliderColors
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -575,7 +576,8 @@ private fun CardRoundnessDialog(
             valueRange = RoundnessRange,
             steps = RoundnessSteps,
             onValueChangeFinished = onValueChangeFinished,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = aukSliderColors()
         )
     }
 }
