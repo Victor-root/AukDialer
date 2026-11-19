@@ -377,10 +377,6 @@
     <string name="settings_call_voicemail_supporting">Настройка почтового ящика</string>
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Заблокированные номера</string>
-    <string name="settings_blocked_method">Метод блокировки</string>
-    <string name="settings_blocked_method_supporting">Как обрабатываются заблокированные вызовы</string>
-    <string name="settings_blocked_method_decline">Отклонять автоматически</string>
-    <string name="settings_blocked_method_silent">Беззвучный режим</string>
     <string name="settings_blocked_log_visibility">Показать журнал</string>
     <string name="settings_blocked_log_visibility_supporting">Отображение заблокированных звонков в журнале вызовов</string>
     <string name="settings_blocked_log_hide">Скрыть из журналов</string>

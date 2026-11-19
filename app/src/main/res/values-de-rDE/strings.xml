@@ -372,10 +372,6 @@
     <string name="settings_call_voicemail_supporting">Mailbox-Einstellungen</string>
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Blockierte Nummern</string>
-    <string name="settings_blocked_method">Blockierungsmethode</string>
-    <string name="settings_blocked_method_supporting">Behandlung blockierter Anrufe</string>
-    <string name="settings_blocked_method_decline">Automatisch ablehnen</string>
-    <string name="settings_blocked_method_silent">Stummes Klingeln</string>
     <string name="settings_blocked_log_visibility">Sichtbarkeit in Anrufliste</string>
     <string name="settings_blocked_log_visibility_supporting">Blockierte Anrufe unter \"Zuletzt\" anzeigen oder verbergen</string>
     <string name="settings_blocked_log_hide">In Anrufliste verbergen</string>

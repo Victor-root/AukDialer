@@ -376,10 +376,6 @@
     <string name="settings_call_voicemail_supporting">Skonfiguruj skrzynkę poczty głosowej</string>
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Zablokowane numery</string>
-    <string name="settings_blocked_method">Metoda blokowania</string>
-    <string name="settings_blocked_method_supporting">Jak traktowane są zablokowane połączenia</string>
-    <string name="settings_blocked_method_decline">Odrzucaj automatycznie</string>
-    <string name="settings_blocked_method_silent">Wyciszaj dzwonek</string>
     <string name="settings_blocked_log_visibility">Widoczność w rejestrze</string>
     <string name="settings_blocked_log_visibility_supporting">Pokazuj lub ukrywaj zablokowane połączenia w ostatnich</string>
     <string name="settings_blocked_log_hide">Ukrywaj w rejestrze</string>

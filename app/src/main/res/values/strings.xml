@@ -451,10 +451,6 @@
 
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Blocked Numbers</string>
-    <string name="settings_blocked_method">Block method</string>
-    <string name="settings_blocked_method_supporting">How blocked calls are handled</string>
-    <string name="settings_blocked_method_decline">Decline automatically</string>
-    <string name="settings_blocked_method_silent">Ring silently</string>
     <string name="settings_blocked_log_visibility">Log visibility</string>
     <string name="settings_blocked_log_visibility_supporting">Show or hide blocked calls in recents</string>
     <string name="settings_blocked_log_hide">Hide from logs</string>

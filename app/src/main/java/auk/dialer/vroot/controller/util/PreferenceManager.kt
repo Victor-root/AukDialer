@@ -274,7 +274,6 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
         const val KEY_AUTO_REDIAL_BUSY = "auto_redial_busy"
         const val KEY_REDIAL_ATTEMPTS = "redial_attempts"
         const val KEY_REDIAL_DELAY = "redial_delay"
-        const val KEY_BLOCK_METHOD = "block_method"
         const val KEY_BLOCK_LOG_VISIBILITY = "block_log_visibility"
         const val KEY_BLOCK_NOTIFICATION = "block_notification"
         const val KEY_VIBRATE_ON_ANSWER = "vibrate_on_answer"

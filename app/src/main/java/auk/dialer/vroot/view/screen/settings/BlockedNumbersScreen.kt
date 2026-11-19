@@ -21,6 +21,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.controller.BlockedCallWorker
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
@@ -61,7 +62,6 @@ fun BlockedNumbersScreen(
     val allContacts by contactsVM.allContacts.collectAsState()
     val settingsState by prefs.settingsChanged.collectAsState()
 
-    var blockMethod by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_BLOCK_METHOD, 0)) }
     var logVisibility by remember(settingsState) { mutableStateOf(prefs.getInt(PreferenceManager.KEY_BLOCK_LOG_VISIBILITY, 0)) }
     var blockNotification by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, true)) }
 
@@ -292,21 +292,6 @@ fun BlockedNumbersScreen(
             item {
                 AukExpressiveCard {
                     AukSelectListItem(
-                        headline = stringResource(R.string.settings_blocked_method),
-                        supporting = stringResource(R.string.settings_blocked_method_supporting),
-                        leadingIcon = Icons.Outlined.Gavel,
-                        options = listOf(
-                            stringResource(R.string.settings_blocked_method_decline) to 0,
-                            stringResource(R.string.settings_blocked_method_silent) to 1
-                        ),
-                        selectedValue = blockMethod,
-                        onValueChange = {
-                            blockMethod = it
-                            prefs.setInt(PreferenceManager.KEY_BLOCK_METHOD, it)
-                        }
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    AukSelectListItem(
                         headline = stringResource(R.string.settings_blocked_log_visibility),
                         supporting = stringResource(R.string.settings_blocked_log_visibility_supporting),
                         leadingIcon = Icons.Outlined.Visibility,
@@ -333,6 +318,7 @@ fun BlockedNumbersScreen(
                         onCheckedChange = {
                             blockNotification = it
                             prefs.setBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, it)
+                            BlockedCallWorker.schedule(context, prefs)
                         }
                     )
                 }

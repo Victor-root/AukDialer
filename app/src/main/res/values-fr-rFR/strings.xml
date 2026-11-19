@@ -417,10 +417,6 @@
     <string name="settings_call_voicemail_supporting">Configurer votre messagerie</string>
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Numéros bloqués</string>
-    <string name="settings_blocked_method">Méthode de blocage</string>
-    <string name="settings_blocked_method_supporting">Comment les appels bloqués sont traités</string>
-    <string name="settings_blocked_method_decline">Refuser automatiquement</string>
-    <string name="settings_blocked_method_silent">Sonner en silence</string>
     <string name="settings_blocked_log_visibility">Visibilité dans le journal</string>
     <string name="settings_blocked_log_visibility_supporting">Afficher ou masquer les appels bloqués dans les récents</string>
     <string name="settings_blocked_log_hide">Masquer du journal</string>

@@ -356,9 +356,6 @@
     <string name="settings_call_voicemail_supporting">Configurar tu buzón</string>
     <!-- Settings > Blocked numbers -->
     <string name="settings_blocked_title">Números bloqueados</string>
-    <string name="settings_blocked_method">Método de bloqueo</string>
-    <string name="settings_blocked_method_decline">Rechazar automáticamente</string>
-    <string name="settings_blocked_method_silent">Modo silencioso</string>
     <string name="settings_blocked_log_hide">Ocultar de los registros</string>
     <string name="settings_blocked_log_show">Mostrar en los registros</string>
     <string name="settings_blocked_notifications">Bloquear notificaciones</string>
