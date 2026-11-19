@@ -457,7 +457,24 @@ class CallService : InCallService() {
             .setAutoCancel(true)
             .setColor(Color.RED)
 
-        notificationManager.notify(number.hashCode(), builder.build())
+        // Call back or answer by text right from the notification, which then goes away.
+        val notificationId = number.hashCode()
+        if (number.isNotEmpty()) {
+            fun action(intentAction: String, requestOffset: Int): PendingIntent = PendingIntent.getActivity(
+                this,
+                notificationId * 31 + requestOffset,
+                Intent(this, auk.dialer.vroot.MainActivity::class.java)
+                    .setAction(intentAction)
+                    .setData(Uri.fromParts("tel", number, null))
+                    .putExtra(auk.dialer.vroot.MainActivity.EXTRA_DISMISS_NOTIFICATION, notificationId)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(0, getString(R.string.notif_action_call_back), action(Intent.ACTION_CALL, 1))
+            builder.addAction(0, getString(R.string.action_message), action(auk.dialer.vroot.MainActivity.ACTION_MESSAGE_CALLER, 2))
+        }
+
+        notificationManager.notify(notificationId, builder.build())
     }
 
     private fun updateCallState() {

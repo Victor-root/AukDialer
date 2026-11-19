@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -198,8 +199,16 @@ class MainActivity : ComponentActivity() {
         val data = intent.data
         val action = intent.action
 
+        // A missed call notification's button: the notification has done its job.
+        if (intent.hasExtra(EXTRA_DISMISS_NOTIFICATION)) {
+            NotificationManagerCompat.from(this).cancel(intent.getIntExtra(EXTRA_DISMISS_NOTIFICATION, 0))
+        }
+
         when (action) {
             "auk.dialer.vroot.ACTION_VIEW_RECENTS" -> openTab(navController, PreferenceManager.TAB_RECENTS)
+            ACTION_MESSAGE_CALLER -> data?.schemeSpecificPart?.let { number ->
+                runCatching { startActivity(Intent(Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:$number"))) }
+            }
             VvmNotifier.ACTION_VIEW_VOICEMAIL -> openTab(navController, PreferenceManager.TAB_VOICEMAIL)
             Intent.ACTION_DIAL, Intent.ACTION_VIEW, Intent.ACTION_CALL -> {
                 if (data?.scheme == "tel") {
@@ -234,5 +243,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        /** Opens a text to the number in the intent's data, from a missed call notification. */
+        const val ACTION_MESSAGE_CALLER = "auk.dialer.vroot.ACTION_MESSAGE_CALLER"
+
+        /** The id of a notification to remove once its button brought the app up. */
+        const val EXTRA_DISMISS_NOTIFICATION = "auk.dialer.vroot.EXTRA_DISMISS_NOTIFICATION"
     }
 }
