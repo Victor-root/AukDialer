@@ -98,7 +98,6 @@
     <string name="default_dialer_set_as_default">Définir par défaut</string>
     <!-- Top bar / bottom navigation -->
     <string name="top_bar_search_placeholder">Rechercher</string>
-    <string name="content_desc_search">Rechercher</string>
     <string name="content_desc_show_filters">Afficher les filtres</string>
     <string name="content_desc_hide_filters">Masquer les filtres</string>
     <!-- Recents / Call log -->
@@ -111,10 +110,6 @@
         <item quantity="other">Voulez-vous vraiment supprimer les %1$d journaux d’appels sélectionnés ?</item>
     </plurals>
     <string name="call_log_delete_title">Supprimer les journaux d’appels</string>
-    <string name="call_log_clear_all_title">Effacer tous les journaux</string>
-    <string name="call_log_clear_all_confirm">Tout effacer</string>
-    <string name="call_log_clear_all_message">Cette action supprimera tout votre historique d’appels. Cette action est irréversible.</string>
-    <string name="content_desc_clear_all_logs">Effacer tous les journaux</string>
     <string name="content_desc_delete_selected">Supprimer la sélection</string>
     <string name="recents_permission_title">Historique des appels</string>
     <string name="recents_permission_description">AukDialer a besoin d’accéder à vos journaux d’appels pour afficher votre activité récente et vos appels manqués.</string>
@@ -191,7 +186,6 @@
     <string name="contact_edit_select_account_title">Choisir un compte</string>
     <string name="contact_edit_private_storage_description">Non visible par les autres applications</string>
     <string name="contact_edit_identity_header">Identité</string>
-    <string name="contact_edit_full_name">Nom complet</string>
     <string name="contact_edit_first_name">Prénom</string>
     <string name="contact_edit_last_name">Nom</string>
     <string name="contact_edit_nickname">Surnom</string>
@@ -233,15 +227,11 @@
     <string name="call_status_calling">Appel en cours...</string>
     <string name="call_status_incoming">Appel entrant</string>
     <string name="call_status_connecting">Connexion...</string>
-    <string name="call_status_disconnecting">Fin de l’appel...</string>
     <string name="audio_route_handset">Combiné</string>
     <string name="audio_route_speaker">Haut-parleur</string>
     <string name="audio_route_headset">Casque</string>
     <string name="audio_route_bluetooth">Bluetooth</string>
-    <string name="audio_route_bluetooth_short">BT</string>
     <string name="audio_output_title">Sortie audio</string>
-    <string name="swipe_up_to_answer">Glissez vers le haut pour répondre</string>
-    <string name="swipe_down_to_reject">Glissez vers le bas pour refuser</string>
     <string name="slide_to_answer">glisser pour répondre</string>
     <!-- Call notifications (CallService) -->
     <string name="notif_channel_calls">Appels</string>
@@ -268,7 +258,6 @@
     </plurals>
     <!-- Settings > root -->
     <string name="settings_title">Paramètres</string>
-    <string name="settings_donate">Faire un don</string>
     <string name="settings_interface_headline">Interface</string>
     <string name="settings_interface_supporting">Thème, couleurs et accessibilité</string>
     <string name="settings_sound_vibration_headline">Son et vibration</string>
@@ -282,7 +271,6 @@
     <string name="settings_backup_restore_headline">Sauvegarde et restauration</string>
     <string name="settings_backup_restore_supporting">Importer et exporter les contacts et journaux</string>
     <string name="settings_manage_contacts_headline">Gérer les contacts</string>
-    <string name="settings_manage_contacts_supporting">Fusionner les doublons et nettoyer votre liste</string>
     <string name="settings_about_headline">À propos d\'AukDialer</string>
     <string name="settings_about_supporting">Version, auteur et code source</string>
     <string name="settings_debug_simulate_call_number_label">Numéro ou texte de l’appelant</string>
@@ -311,8 +299,6 @@
     <string name="settings_interface_vivid_colors_supporting">Remplit les icônes, les boutons et l’onglet sélectionné avec la couleur principale au lieu d’une teinte pâle.</string>
     <string name="settings_interface_edge_to_edge">Bord à bord</string>
     <string name="settings_interface_edge_to_edge_supporting">Afficher l’app derrière la barre d’état et la barre de navigation. Désactivé, les barres restent pleines avec la couleur d’accentuation.</string>
-    <string name="settings_interface_show_first_letter">Afficher la première lettre dans l’avatar</string>
-    <string name="settings_interface_show_first_letter_supporting">Affiche une lettre lorsqu’il n’y a pas de photo</string>
     <string name="settings_interface_colorful_avatars">Utiliser des avatars colorés</string>
     <string name="settings_interface_colorful_avatars_supporting">Couleurs aléatoires basées sur le nom du contact</string>
     <string name="settings_interface_show_picture">Afficher la photo dans l’avatar</string>
@@ -322,29 +308,16 @@
     <string name="settings_interface_avatar_shape_squircle">Squircle</string>
     <string name="settings_interface_avatar_shape_circle">Cercle</string>
     <string name="settings_interface_avatar_shape_square">Carré</string>
-    <string name="settings_interface_call_screen_avatar">Avatar sur l’écran d’appel</string>
-    <string name="settings_interface_call_screen_avatar_supporting">Afficher la photo du contact sur l’écran d’appel</string>
-    <string name="settings_interface_show_dividers">Afficher les séparateurs</string>
-    <string name="settings_interface_show_dividers_supporting">Afficher des lignes entre les éléments de liste</string>
-    <string name="settings_interface_expressive_cards">Utiliser des cartes expressives</string>
-    <string name="settings_interface_expressive_cards_supporting">Enveloppe les éléments de liste dans des cartes stylisées</string>
     <string name="settings_interface_transition_animation">Animation de transition</string>
     <string name="settings_interface_transition_animation_supporting">Style des animations entre les écrans</string>
     <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Fondu</string>
     <string name="settings_interface_transition_none">Aucune</string>
-    <string name="settings_interface_search_matching_mode">Mode de correspondance de recherche</string>
-    <string name="settings_interface_search_matching_mode_supporting">Comportement de l’algorithme de filtrage des contacts</string>
-    <string name="settings_interface_search_mode_t9_contains">T9 et contient</string>
-    <string name="settings_interface_search_mode_starts_with">Commence par</string>
-    <string name="settings_interface_search_mode_exact_match">Correspondance exacte</string>
     <string name="settings_interface_card_roundness">Arrondi des cartes</string>
     <string name="settings_interface_card_roundness_supporting">Ajuster le rayon des coins des cartes de l’interface</string>
     <string name="settings_interface_card_roundness_value">%1$d dp</string>
     <string name="settings_interface_default_bottom_bar">Barre inférieure par défaut</string>
     <string name="settings_interface_default_bottom_bar_supporting">Choisissez l’onglet ouvert au démarrage</string>
-    <string name="settings_interface_flip_bottom_bar">Inverser la barre inférieure</string>
-    <string name="settings_interface_flip_bottom_bar_supporting">Inverse la position des onglets contacts et récents</string>
     <string name="settings_interface_icon_only_bar">Barre inférieure avec icônes seules</string>
     <string name="settings_interface_icon_only_bar_supporting">Supprime les libellés textuels de la navigation</string>
     <!-- Settings > Sound & Vibration -->
@@ -368,7 +341,6 @@
     <string name="settings_sound_ringtone_settings">Paramètres de sonnerie</string>
     <string name="settings_sound_ringtone_settings_supporting">Ouvrir les paramètres audio du système</string>
     <string name="call_failed_airplane_mode">Impossible de passer un appel en mode avion</string>
-    <string name="call_failed_no_network">Échec de l’appel : réseau cellulaire indisponible</string>
     <string name="call_failed_restricted">Échec de l’appel : appel restreint</string>
     <string name="call_failed_generic">Impossible d’effectuer l’appel</string>
     <string name="settings_manage_standardize_confirm_message">Cette action supprimera les espaces et caractères spéciaux de tous vos contacts. Voulez-vous continuer ?</string>
@@ -393,15 +365,6 @@
     <string name="settings_call_incoming_ui_buttons">Boutons</string>
     <string name="settings_call_incoming_ui_slide_ios">Glisser pour répondre (iOS)</string>
     <string name="settings_call_incoming_ui_vertical_swipe">Glissement vertical</string>
-    <string name="settings_call_dialpad_style">Style du clavier</string>
-    <string name="settings_call_dialpad_style_supporting">Apparence visuelle du clavier téléphonique</string>
-    <string name="settings_call_dialpad_style_modern">Moderne</string>
-    <string name="settings_call_dialpad_style_classic">Classique</string>
-    <string name="settings_call_dialpad_style_minimal">Minimaliste</string>
-    <string name="settings_call_dialpad_layout">Disposition du clavier</string>
-    <string name="settings_call_dialpad_layout_supporting">Alignement pour une utilisation à une main</string>
-    <string name="settings_call_dialpad_layout_left">Gauche</string>
-    <string name="settings_call_dialpad_layout_right">Droite</string>
     <string name="settings_call_auto_redial">Rappel automatique</string>
     <string name="settings_call_auto_redial_supporting">Rappeler automatiquement si la ligne est occupée</string>
     <string name="settings_call_redial_attempts">Tentatives de rappel</string>
@@ -442,29 +405,12 @@
     <string name="settings_backup_import_logs">Importer les journaux d’appels</string>
     <string name="settings_backup_import_logs_supporting">Restaurer l’historique depuis un fichier JSON</string>
     <!-- Settings > Manage contacts -->
-    <string name="settings_manage_title">Gérer les contacts</string>
-    <string name="settings_manage_standardizing_title">Normalisation des numéros</string>
-    <string name="settings_manage_percent_completed">%1$d%% terminé</string>
-    <string name="settings_manage_display_sorting">Affichage et tri</string>
-    <string name="settings_manage_sort_by">Trier par</string>
-    <string name="settings_manage_sort_by_supporting">Choisissez comment les contacts sont classés</string>
-    <string name="settings_manage_sort_first_name">Prénom</string>
-    <string name="settings_manage_sort_last_name">Nom</string>
-    <string name="settings_manage_name_format">Format du nom</string>
-    <string name="settings_manage_name_format_supporting">Choisissez comment les noms sont affichés</string>
-    <string name="settings_manage_name_format_first_first">Prénom en premier</string>
-    <string name="settings_manage_name_format_last_first">Nom en premier</string>
-    <string name="settings_manage_storage">Stockage</string>
     <string name="settings_manage_private_contacts">Contacts privés</string>
     <string name="settings_manage_private_contacts_supporting">Gérer les contacts stockés uniquement dans cette application</string>
     <string name="settings_manage_visibility">Visibilité</string>
     <string name="settings_manage_visibility_supporting">Choisissez les comptes à afficher dans votre liste</string>
-    <string name="settings_manage_quick_fixes">Corrections rapides</string>
     <string name="settings_manage_standardize_numbers">Normaliser les numéros de téléphone</string>
     <string name="settings_manage_standardize_numbers_supporting">Supprime les espaces et caractères spéciaux de tous les numéros</string>
-    <string name="settings_manage_no_duplicates">Aucun doublon trouvé.</string>
-    <string name="settings_manage_found_duplicates">%1$d groupes de doublons trouvés</string>
-    <string name="settings_manage_merge_duplicates">Fusionner les doublons</string>
     <!-- Settings > Contact visibility -->
     <string name="settings_visibility_title">Visibilité des contacts</string>
     <string name="settings_visibility_description">Choisissez les comptes qui doivent être visibles dans votre liste de contacts. Désélectionner un compte masquera ses contacts sans les supprimer.</string>
@@ -473,8 +419,6 @@
     <string name="settings_visibility_reset_all">Réinitialiser pour tout afficher</string>
     <!-- Settings > Private contacts -->
     <string name="settings_private_title">Contacts privés</string>
-    <string name="content_desc_import">Importer</string>
-    <string name="content_desc_export">Exporter</string>
     <string name="action_import">Importer</string>
     <string name="action_export">Exporter</string>
     <string name="private_contacts_select_title">Contacts à rendre privés</string>
@@ -535,8 +479,6 @@
     <string name="favorites_add_button">Ajouter un favori</string>
     <string name="favorites_collapse">Réduire les favoris</string>
     <string name="favorites_expand">Déployer les favoris</string>
-    <string name="blocked_select_contact">Sélectionner un contact</string>
-    <string name="blocked_search_contact_hint">Rechercher un nom ou un numéro...</string>
     <!-- Favorites -->
     <!-- Bottom navigation layout -->
     <!-- Blocking -->
@@ -545,10 +487,8 @@
     <!-- Call recording -->
 
     <!-- Visual voicemail -->
-    <string name="voicemail_title">Messagerie vocale</string>
     <string name="playback_play">Lire</string>
     <string name="playback_pause">Pause</string>
-    <string name="voicemail_sync_now">Synchroniser</string>
     <string name="voicemail_sync_no_new">Aucun nouveau message vocal</string>
     <string name="playback_route_speaker">Lecture sur haut-parleur, basculer sur l’écouteur</string>
     <string name="playback_route_earpiece">Lecture sur écouteur, basculer sur le haut-parleur</string>
@@ -585,14 +525,6 @@
     <string name="video_call_title">Appel vidéo</string>
     <string name="video_call_chooser_with">Appel vidéo avec</string>
     <string name="video_call_system">Appel vidéo du système</string>
-    <string name="callbg_image_unavailable">Impossible de charger l’image de fond d’appel</string>
-    <string name="callin_handle_horizontal_desc">Appel entrant. Glissez à droite pour répondre, à gauche pour refuser.</string>
-    <string name="callin_handle_vertical_desc">Appel entrant. Glissez vers le haut pour répondre, vers le bas pour refuser.</string>
-    <string name="callin_handle_slide_desc">Appel entrant. Glissez vers la droite pour répondre.</string>
-    <string name="callin_action_answer">Répondre à l’appel</string>
-    <string name="callin_action_decline">Refuser l’appel</string>
-    <string name="callin_action_message">Répondre par un message</string>
-    <string name="callin_waiting_actions">Options d’appel en attente</string>
     <string name="callkp_digit_desc">Composer %1$s</string>
     <string name="callkp_entered_desc">Chiffres saisis : %1$s</string>
     <string name="callkp_entered_empty">Aucun chiffre saisi</string>
@@ -618,8 +550,6 @@
     <string name="blocked_list_empty">Vous n’avez encore bloqué aucun numéro.</string>
     <string name="blocked_list_no_match">Aucun numéro bloqué ne correspond</string>
     <string name="blocked_list_item_supporting">Les appels de ce numéro sont bloqués</string>
-    <string name="blocked_add_number">Bloquer un numéro</string>
-    <string name="blocked_add_number_hint">Numéro de téléphone</string>
     <string name="contact_block">Bloquer le contact</string>
     <string name="contact_block_supporting">Ne plus recevoir d’appels de ce contact</string>
     <string name="contact_unblock">Débloquer le contact</string>
@@ -719,7 +649,6 @@
     <string name="settings_call_default_background_set">Une image personnalisée est affichée sur chaque appel</string>
     <string name="settings_call_default_background_choose">Choisir une image</string>
     <string name="settings_call_default_background_change">Modifier</string>
-    <string name="settings_group_work_in_progress">En cours de développement</string>
     <string name="settings_call_recording">Enregistrement des appels</string>
     <string name="call_recording_microphone_denied">L’enregistrement a besoin d’accéder au micro</string>
     <string name="settings_call_recording_entry_supporting">Options d’enregistrement, Shizuku et enregistrements sauvegardés</string>
@@ -731,10 +660,8 @@
     <string name="settings_call_recording_shizuku_needs_permission">Shizuku est démarré. Touchez pour autoriser AukDialer à l’utiliser</string>
     <string name="settings_call_recording_shizuku_denied">L’accès a été refusé. Autorisez AukDialer depuis l’application Shizuku</string>
     <string name="settings_call_recording_shizuku_ready">Actif, les appels sont enregistrés depuis la ligne téléphonique</string>
-    <string name="settings_call_recording_notice">L’enregistrement des appels peut être restreint par votre appareil ou par la loi de votre pays. Assurez-vous d’en avoir le droit avant d’utiliser cette fonction.</string>
     <string name="settings_call_waiting">Appel en attente</string>
     <string name="settings_call_waiting_supporting">Recevoir un second appel pendant que vous êtes déjà en ligne</string>
-    <string name="settings_call_waiting_description">L’appel en attente est un service de votre opérateur. Choisir une option ci-dessous compose le code standard sur votre carte SIM.</string>
     <string name="settings_call_waiting_enable">Activer l’appel en attente</string>
     <string name="settings_call_waiting_disable">Désactiver l’appel en attente</string>
     <string name="settings_call_waiting_check">Vérifier l’état actuel</string>

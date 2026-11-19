@@ -91,7 +91,6 @@
     <string name="default_dialer_set_as_default">Establecer como predeterminado</string>
     <!-- Top bar / bottom navigation -->
     <string name="top_bar_search_placeholder">Buscar en AukDialer</string>
-    <string name="content_desc_search">Buscar</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">Historial de llamadas</string>
     <string name="call_history_with_contact">Historial con %1$s</string>
@@ -102,10 +101,6 @@
         <item quantity="other">¿Está seguro que deseas eliminar %1$d registros de llamadas seleccionados?</item>
     </plurals>
     <string name="call_log_delete_title">Borrar registros de llamadas</string>
-    <string name="call_log_clear_all_title">Borrar todos los registros</string>
-    <string name="call_log_clear_all_confirm">Borrar todo</string>
-    <string name="call_log_clear_all_message">Esto eliminará todo tu historial de llamadas. Esta acción no se puede deshacer.</string>
-    <string name="content_desc_clear_all_logs">Borrar todos los registros</string>
     <string name="content_desc_delete_selected">Borrar selección</string>
     <string name="recents_permission_title">Historial de llamadas</string>
     <string name="recents_permission_description">AukDialer necesita acceso a tus registros de llamadas para mostrar tu actividad reciente y llamadas perdidas.</string>
@@ -160,7 +155,6 @@
     <string name="contact_edit_select_account_title">Seleccionar cuenta</string>
     <string name="contact_edit_private_storage_description">No visible para otras aplicaciones</string>
     <string name="contact_edit_identity_header">Identidad</string>
-    <string name="contact_edit_full_name">Nombre completo</string>
     <string name="contact_edit_first_name">Primer nombre</string>
     <string name="contact_edit_last_name">Apellido(s)</string>
     <string name="contact_edit_nickname">Apodo</string>
@@ -195,15 +189,11 @@
     <string name="call_status_calling">Llamando...</string>
     <string name="call_status_incoming">Llamada entrante</string>
     <string name="call_status_connecting">Conectando...</string>
-    <string name="call_status_disconnecting">Finalizando llamada...</string>
     <string name="audio_route_handset">Teléfono</string>
     <string name="audio_route_speaker">Altavoz</string>
     <string name="audio_route_headset">Auriculares</string>
     <string name="audio_route_bluetooth">Bluetooth</string>
-    <string name="audio_route_bluetooth_short">BT</string>
     <string name="audio_output_title">Salida de audio</string>
-    <string name="swipe_up_to_answer">Desliza hacia arriba para responder</string>
-    <string name="swipe_down_to_reject">Desliza hacia abajo para rechazar</string>
     <string name="slide_to_answer">Deslizar para responder</string>
     <!-- Call notifications (CallService) -->
     <string name="notif_channel_calls">Llamadas</string>
@@ -223,7 +213,6 @@
     <string name="backup_import_failed">Error al importar: %1$s</string>
     <!-- Settings > root -->
     <string name="settings_title">Ajustes</string>
-    <string name="settings_donate">Donar</string>
     <string name="settings_interface_headline">Apariencia</string>
     <string name="settings_interface_supporting">Tema, colores y accesibilidad</string>
     <string name="settings_sound_vibration_headline">Sonido y vibración</string>
@@ -235,7 +224,6 @@
     <string name="settings_backup_restore_headline">Copia de seguridad&amp; Restauración</string>
     <string name="settings_backup_restore_supporting">Importar y exportar contactos y registros</string>
     <string name="settings_manage_contacts_headline">Administrar contactos</string>
-    <string name="settings_manage_contacts_supporting">Fusionar duplicados y limpiar tu lista</string>
     <string name="settings_about_headline">Acerca de AukDialer</string>
     <string name="settings_about_supporting">Versión, autor y código fuente</string>
     <!-- Settings > Interface -->
@@ -250,8 +238,6 @@
     <string name="settings_interface_primary_color">Color primario</string>
     <string name="settings_interface_amoled">Modo oscuro AMOLED</string>
     <string name="settings_interface_amoled_supporting">Utiliza el color negro para los elementos de la interfaz de usuario.</string>
-    <string name="settings_interface_show_first_letter">Mostrar la primera letra en el avatar</string>
-    <string name="settings_interface_show_first_letter_supporting">Muestra la letra cuando falta la imagen</string>
     <string name="settings_interface_colorful_avatars">Utilizar avatares coloridos</string>
     <string name="settings_interface_colorful_avatars_supporting">Colores aleatorios basados en el nombre del contacto</string>
     <string name="settings_interface_gradient_avatars_supporting">Usar fondos de gradiente de múltiples colores</string>
@@ -269,25 +255,14 @@
     <string name="settings_interface_avatar_shape_gem">Gema</string>
     <string name="settings_interface_avatar_shape_sunny">Sol</string>
     <string name="settings_interface_avatar_shape_heart">Corazón</string>
-    <string name="settings_interface_call_screen_avatar">Avatar de la pantalla de llamada</string>
-    <string name="settings_interface_call_screen_avatar_supporting">Mostrar imagen del contacto en la pantalla de llamada</string>
-    <string name="settings_interface_show_dividers">Mostrar separadores</string>
-    <string name="settings_interface_show_dividers_supporting">Mostrar líneas entre los elementos de la lista</string>
-    <string name="settings_interface_expressive_cards">Utilizar tarjetas expresivas</string>
     <string name="settings_interface_transition_animation">Animaciones de transición</string>
     <string name="settings_interface_transition_animation_supporting">Estilo de animaciones entre pantallas</string>
     <string name="settings_interface_transition_zoom">Zoom</string>
     <string name="settings_interface_transition_fade">Desvanecer</string>
     <string name="settings_interface_transition_none">Nada</string>
-    <string name="settings_interface_search_matching_mode">Modo de búsqueda de coincidencia</string>
-    <string name="settings_interface_search_mode_t9_contains">T9 &amp; Contiene</string>
-    <string name="settings_interface_search_mode_starts_with">Comienza por</string>
-    <string name="settings_interface_search_mode_exact_match">Coincidencia exacta</string>
     <string name="settings_interface_card_roundness_supporting">Ajustar el radio de la esquina de las tarjetas de la IU</string>
     <string name="settings_interface_default_bottom_bar">Barra inferior predeterminada</string>
     <string name="settings_interface_default_bottom_bar_supporting">Selecciona qué pestaña se abre al inicio</string>
-    <string name="settings_interface_flip_bottom_bar">Invertir la barra inferior</string>
-    <string name="settings_interface_flip_bottom_bar_supporting">Invierte la posición de las pestañas de contactos &amp; recientes</string>
     <string name="settings_interface_icon_only_bar">Barra inferior de solo iconos</string>
     <string name="settings_interface_icon_only_bar_supporting">Quitar etiquetas de texto en la navegación</string>
     <!-- Settings > Sound & Vibration -->
@@ -305,7 +280,6 @@
     <string name="settings_sound_ringtone_settings">Ajustes del tono de llamada</string>
     <string name="settings_sound_ringtone_settings_supporting">Abrir ajustes de sonido del sistema</string>
     <string name="call_failed_airplane_mode">No se puede realizar llamada mientras el modo avión está activado</string>
-    <string name="call_failed_no_network">Llamada fallida: red móvil no disponible</string>
     <string name="call_failed_restricted">Llamada fallida: la llamada está restringida</string>
     <string name="call_failed_generic">No se pudo completar la llamada</string>
     <string name="settings_manage_standardize_confirm_message">Esto eliminará espacios y caracteres especiales de todos los números de los contactos del almacenamiento del dispositivo. ¿Continuar?</string>
@@ -327,15 +301,6 @@
     <string name="settings_call_incoming_ui_buttons">Botones</string>
     <string name="settings_call_incoming_ui_slide_ios">Deslizar para responder (iOS)</string>
     <string name="settings_call_incoming_ui_vertical_swipe">Deslizamiento vertical</string>
-    <string name="settings_call_dialpad_style">Estilo del marcador</string>
-    <string name="settings_call_dialpad_style_supporting">Apariencia visual del marcador del teléfono</string>
-    <string name="settings_call_dialpad_style_modern">Moderna</string>
-    <string name="settings_call_dialpad_style_classic">Clásica</string>
-    <string name="settings_call_dialpad_style_minimal">Minimalista</string>
-    <string name="settings_call_dialpad_layout">Diseño del marcador</string>
-    <string name="settings_call_dialpad_layout_supporting">Alineación para uso a una sola mano</string>
-    <string name="settings_call_dialpad_layout_left">Izquierda</string>
-    <string name="settings_call_dialpad_layout_right">Derecha</string>
     <string name="settings_call_auto_redial">Remarcado automático</string>
     <string name="settings_call_auto_redial_supporting">Remarcar automáticamente si la línea está ocupada</string>
     <string name="settings_call_redial_attempts">Intentos de remarcado</string>
@@ -373,32 +338,14 @@
     <string name="settings_backup_import_logs">Importar registros de llamadas</string>
     <string name="settings_backup_import_logs_supporting">Restaurar historial desde un archivo JSON</string>
     <!-- Settings > Manage contacts -->
-    <string name="settings_manage_title">Administrar contactos</string>
-    <string name="settings_manage_percent_completed">%1$d%% completado</string>
-    <string name="settings_manage_display_sorting">Mostrar &amp; ordenar</string>
-    <string name="settings_manage_sort_by">Ordenar por</string>
-    <string name="settings_manage_sort_by_supporting">Elige cómo se ordenan los contactos</string>
-    <string name="settings_manage_sort_first_name">Nombre</string>
-    <string name="settings_manage_sort_last_name">Apellido</string>
-    <string name="settings_manage_name_format">Formato del nombre</string>
-    <string name="settings_manage_name_format_supporting">Elige cómo se muestran las nombres</string>
-    <string name="settings_manage_name_format_first_first">Nombre primero</string>
-    <string name="settings_manage_name_format_last_first">Apellido primero</string>
-    <string name="settings_manage_storage">Almacenamiento</string>
     <string name="settings_manage_private_contacts">Contactos privados</string>
-    <string name="settings_manage_quick_fixes">Correcciones rápidas</string>
     <string name="settings_manage_standardize_numbers_supporting">Remueve espacios y caracteres especiales de todos los números</string>
-    <string name="settings_manage_no_duplicates">No se han encontrado duplicados</string>
-    <string name="settings_manage_found_duplicates">Se han encontrado grupos de duplicados %1$d</string>
-    <string name="settings_manage_merge_duplicates">Fusionar duplicados</string>
     <!-- Settings > Contact visibility -->
     <string name="settings_visibility_accounts_header">Cuentas</string>
     <string name="settings_visibility_local_memory_supporting">Contactos almacenados en el dispositivo</string>
     <string name="settings_visibility_reset_all">Restablecer para mostrar todo</string>
     <!-- Settings > Private contacts -->
     <string name="settings_private_title">Contactos privados</string>
-    <string name="content_desc_import">Importar</string>
-    <string name="content_desc_export">Exportar</string>
     <string name="settings_private_empty">No se encontraron contactos privados</string>
     <!-- Settings > Speed dial -->
     <string name="settings_speed_dial_title">Marcado rápido</string>
@@ -437,7 +384,6 @@
     <string name="favorites_add_button">Añadir a favoritos</string>
     <string name="favorites_collapse">Colapsar favoritos</string>
     <string name="favorites_expand">Expandir favoritos</string>
-    <string name="blocked_select_contact">Seleccionar contacto</string>
     <!-- Bottom navigation layout -->
     <string name="settings_bottom_nav_description">Arrastra el orden y la visibilidad de los botones en la parte inferior de la aplicación. Al menos un botón tiene que permanecer visible.</string>
     <string name="settings_bottom_nav_preview">Vista previa</string>

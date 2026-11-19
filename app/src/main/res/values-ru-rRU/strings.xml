@@ -94,7 +94,6 @@
     <string name="default_dialer_set_as_default">Назначить по умолчанию</string>
     <!-- Top bar / bottom navigation -->
     <string name="top_bar_search_placeholder">Поиск в AukDialer</string>
-    <string name="content_desc_search">Поиск</string>
     <!-- Recents / Call log -->
     <string name="call_history_title">История вызовов</string>
     <string name="call_history_with_contact">История с %1$s</string>
@@ -107,10 +106,6 @@
         <item quantity="other">Вы уверены, что хотите удалить %1$d выбранных журналов вызовов?</item>
     </plurals>
     <string name="call_log_delete_title">Удалить журнал вызовов</string>
-    <string name="call_log_clear_all_title">Очистить все журналы</string>
-    <string name="call_log_clear_all_confirm">Очистить всё</string>
-    <string name="call_log_clear_all_message">Это действие удалит всю историю вызовов. Это действие не может быть отменено.</string>
-    <string name="content_desc_clear_all_logs">Удалить все записи?</string>
     <string name="content_desc_delete_selected">Удалить выбранное</string>
     <string name="recents_permission_title">История вызовов</string>
     <string name="recents_permission_description">Для отображения недавней активности и пропущенных вызовов AukDialer необходим доступ к журналу вызовов</string>
@@ -169,7 +164,6 @@
     <string name="contact_edit_select_account_title">Выберите учетную запись</string>
     <string name="contact_edit_private_storage_description">Не виден другим приложениям</string>
     <string name="contact_edit_identity_header">Личные данные</string>
-    <string name="contact_edit_full_name">Имя и фамилия</string>
     <string name="contact_edit_first_name">Имя</string>
     <string name="contact_edit_last_name">Фамилия</string>
     <string name="contact_edit_nickname">Никнейм</string>
@@ -205,15 +199,11 @@
     <string name="call_status_calling">Вызов...</string>
     <string name="call_status_incoming">Входящий вызов</string>
     <string name="call_status_connecting">Подключение…</string>
-    <string name="call_status_disconnecting">Конец вызова...</string>
     <string name="audio_route_handset">Разговорный динамик</string>
     <string name="audio_route_speaker">Громкая связь</string>
     <string name="audio_route_headset">Наушники</string>
     <string name="audio_route_bluetooth">Bluetooth</string>
-    <string name="audio_route_bluetooth_short">BT</string>
     <string name="audio_output_title">Аудио выход</string>
-    <string name="swipe_up_to_answer">Свайп вверх, чтобы ответить</string>
-    <string name="swipe_down_to_reject">Свайп вниз, чтобы отклонить</string>
     <string name="slide_to_answer">проведите для ответа</string>
     <!-- Call notifications (CallService) -->
     <string name="notif_channel_calls">Вызовы</string>
@@ -233,7 +223,6 @@
     <string name="backup_import_failed">Ошибка импорта: %1$s</string>
     <!-- Settings > root -->
     <string name="settings_title">Настройки</string>
-    <string name="settings_donate">Пожертвовать</string>
     <string name="settings_interface_headline">Интерфейс</string>
     <string name="settings_interface_supporting">Тема, цвета и доступность</string>
     <string name="settings_sound_vibration_headline">Звук &amp; вибрация</string>
@@ -246,7 +235,6 @@
   </string>
     <string name="settings_backup_restore_supporting">Импорт и экспорт контактов и журналов</string>
     <string name="settings_manage_contacts_headline">Управление контактами</string>
-    <string name="settings_manage_contacts_supporting">Поиск дубликатов и очистка</string>
     <string name="settings_about_headline">О проекте</string>
     <string name="settings_about_supporting">Версия, автор и исходный код</string>
     <!-- Settings > Interface -->
@@ -261,8 +249,6 @@
     <string name="settings_interface_primary_color">Основной цвет</string>
     <string name="settings_interface_amoled">AMOLED тёмный режим</string>
     <string name="settings_interface_amoled_supporting">Использует чёрный тон для элементов интерфейса.</string>
-    <string name="settings_interface_show_first_letter">Первая буква в качестве аватара</string>
-    <string name="settings_interface_show_first_letter_supporting">Отображать букву, если нет фотографии</string>
     <string name="settings_interface_colorful_avatars">Использовать цветные аватары</string>
     <string name="settings_interface_colorful_avatars_supporting">Генерация цвета аватара по имени контакта</string>
     <string name="settings_interface_gradient_avatars">Градиентные аватары контактов</string>
@@ -282,28 +268,15 @@
     <string name="settings_interface_avatar_shape_sunny">Солнце</string>
     <string name="settings_interface_avatar_shape_heart">Сердце</string>
     <string name="settings_interface_avatar_shape_burst">Мягкий взрыв</string>
-    <string name="settings_interface_call_screen_avatar">Аватар на экране вызова</string>
-    <string name="settings_interface_call_screen_avatar_supporting">Показывать изображение контакта на экране вызова</string>
-    <string name="settings_interface_show_dividers">Показывать разделители</string>
-    <string name="settings_interface_show_dividers_supporting">Показывать разделители списка</string>
-    <string name="settings_interface_expressive_cards">Использовать экспрессивные карты</string>
-    <string name="settings_interface_expressive_cards_supporting">Использовать стиль карточек для списков</string>
     <string name="settings_interface_transition_animation">Анимация перехода</string>
     <string name="settings_interface_transition_animation_supporting">Стиль анимации между экранами</string>
     <string name="settings_interface_transition_zoom">Масштаб</string>
     <string name="settings_interface_transition_fade">Затухание</string>
     <string name="settings_interface_transition_none">Нет</string>
-    <string name="settings_interface_search_matching_mode">Режим поиска</string>
-    <string name="settings_interface_search_matching_mode_supporting">Метод фильтрации контактов</string>
-    <string name="settings_interface_search_mode_t9_contains">T9 &amp; содержит</string>
-    <string name="settings_interface_search_mode_starts_with">Начать с</string>
-    <string name="settings_interface_search_mode_exact_match">Точное совпадение</string>
     <string name="settings_interface_card_roundness">Скругление карточек</string>
     <string name="settings_interface_card_roundness_supporting">Регулировка радиуса скругления карточек</string>
     <string name="settings_interface_default_bottom_bar">Нижняя панель по умолчанию</string>
     <string name="settings_interface_default_bottom_bar_supporting">Вкладка при запуске</string>
-    <string name="settings_interface_flip_bottom_bar">Зеркальное отображение нижней панели</string>
-    <string name="settings_interface_flip_bottom_bar_supporting">Инвертирует расположение вкладок контактов &amp; недавних</string>
     <string name="settings_interface_icon_only_bar">Иконки без подписей</string>
     <string name="settings_interface_icon_only_bar_supporting">Скрывает подписи на панели навигации</string>
     <!-- Settings > Sound & Vibration -->
@@ -323,7 +296,6 @@
     <string name="settings_sound_ringtone_settings">Настройки мелодии звонка</string>
     <string name="settings_sound_ringtone_settings_supporting">Открыть системные настройки звука</string>
     <string name="call_failed_airplane_mode">Невозможно совершить вызов, пока включен режим полета</string>
-    <string name="call_failed_no_network">Не удалось позвонить: мобильная сеть недоступна</string>
     <string name="call_failed_restricted">Сбой вызова: вызов запрещен</string>
     <string name="call_failed_generic">Вызов не может быть завершен</string>
     <string name="settings_manage_standardize_confirm_message">Это действие удалит пробелы и специальные символы из всех номеров контактов в памяти устройства. Продолжить?</string>
@@ -348,15 +320,6 @@
     <string name="settings_call_incoming_ui_buttons">Кнопки</string>
     <string name="settings_call_incoming_ui_slide_ios">Слайдер ответа в стиле iOS</string>
     <string name="settings_call_incoming_ui_vertical_swipe">Вертикальный свайп</string>
-    <string name="settings_call_dialpad_style">Стиль клавиатуры</string>
-    <string name="settings_call_dialpad_style_supporting">Оформление экрана вызова</string>
-    <string name="settings_call_dialpad_style_modern">Современный</string>
-    <string name="settings_call_dialpad_style_classic">Классический</string>
-    <string name="settings_call_dialpad_style_minimal">Минимальный</string>
-    <string name="settings_call_dialpad_layout">Макет клавиатуры</string>
-    <string name="settings_call_dialpad_layout_supporting">Выравнивание для управления одной рукой</string>
-    <string name="settings_call_dialpad_layout_left">Слева</string>
-    <string name="settings_call_dialpad_layout_right">Справа</string>
     <string name="settings_call_auto_redial">Авто дозвон</string>
     <string name="settings_call_auto_redial_supporting">Повторять вызов, если линия занята</string>
     <string name="settings_call_redial_attempts">Количество попыток дозвона</string>
@@ -398,29 +361,12 @@
     <string name="settings_backup_import_logs">Импорт журнала вызовов</string>
     <string name="settings_backup_import_logs_supporting">Восстановить историю из JSON-файла</string>
     <!-- Settings > Manage contacts -->
-    <string name="settings_manage_title">Управление контактами</string>
-    <string name="settings_manage_standardizing_title">Стандартизация номеров</string>
-    <string name="settings_manage_percent_completed">%1$d%% завершено</string>
-    <string name="settings_manage_display_sorting">Отображение &amp; сортировка</string>
-    <string name="settings_manage_sort_by">Сортировать по</string>
-    <string name="settings_manage_sort_by_supporting">Выберите способ сортировки контактов</string>
-    <string name="settings_manage_sort_first_name">Имя</string>
-    <string name="settings_manage_sort_last_name">Фамилия</string>
-    <string name="settings_manage_name_format">Формат имени</string>
-    <string name="settings_manage_name_format_supporting">Выбрать способ отображения имен</string>
-    <string name="settings_manage_name_format_first_first">Сначала имя, потом фамилия</string>
-    <string name="settings_manage_name_format_last_first">Сначала фамилия, потом имя</string>
-    <string name="settings_manage_storage">Хранилище</string>
     <string name="settings_manage_private_contacts">Личные контакты</string>
     <string name="settings_manage_private_contacts_supporting">Локальные контакты приложения</string>
     <string name="settings_manage_visibility">Отображение контакта</string>
     <string name="settings_manage_visibility_supporting">Выберите, какие учетные записи будут отображаться в списке</string>
-    <string name="settings_manage_quick_fixes">Быстрые исправления</string>
     <string name="settings_manage_standardize_numbers">Стандартизировать номера телефонов</string>
     <string name="settings_manage_standardize_numbers_supporting">Удалить пробелы и специальные символы со всех номеров</string>
-    <string name="settings_manage_no_duplicates">Дубликаты контактов не найдены</string>
-    <string name="settings_manage_found_duplicates">Найдено групп дубликатов %1$d</string>
-    <string name="settings_manage_merge_duplicates">Объединить дубликаты</string>
     <!-- Settings > Contact visibility -->
     <string name="settings_visibility_title">Отображение контакта</string>
     <string name="settings_visibility_description">Выбор учетных записей для отображения в списке контактов. Снятие галочки с учетной записи скроет ее контакты, но не удалит их.</string>
@@ -429,8 +375,6 @@
     <string name="settings_visibility_reset_all">Сброс отображения всех</string>
     <!-- Settings > Private contacts -->
     <string name="settings_private_title">Личные контакты</string>
-    <string name="content_desc_import">Импорт</string>
-    <string name="content_desc_export">Экспорт</string>
     <string name="settings_private_empty">Личные контакты не найдены</string>
     <string name="settings_private_manage_hint">Управление зашифрованными локальными контактами</string>
     <!-- Settings > Speed dial -->
@@ -477,8 +421,6 @@
     <string name="favorites_add_button">Добавить в избранное</string>
     <string name="favorites_collapse">Скрыть избранные</string>
     <string name="favorites_expand">Показать избранные</string>
-    <string name="blocked_select_contact">Выберите контакт</string>
-    <string name="blocked_search_contact_hint">Поиск по имени или номеру контакта...</string>
     <!-- Bottom navigation layout -->
     <string name="settings_bottom_nav_title">Панель навигации снизу</string>
     <string name="settings_bottom_nav_supporting">Порядок, отображение или скрытие кнопки навигации</string>
@@ -500,8 +442,6 @@
     <string name="blocked_list_title">Заблокированные номера</string>
     <string name="blocked_list_empty">Вы еще не заблокировали ни одного номера.</string>
     <string name="blocked_list_item_supporting">Звонки с этого номера заблокированы</string>
-    <string name="blocked_add_number">Заблокировать номер</string>
-    <string name="blocked_add_number_hint">Номер телефона</string>
     <string name="contact_block">Заблокировать контакт</string>
     <string name="contact_block_supporting">Заблокировать звонки от этого контакта</string>
     <string name="contact_unblock">Разблокировать контакт</string>
@@ -527,7 +467,6 @@
     <!-- Call waiting -->
     <string name="settings_call_waiting">Ожидание вызова</string>
     <string name="settings_call_waiting_supporting">Параллельный вызов во время разговора</string>
-    <string name="settings_call_waiting_description">Услуга «Ожидание вызова» управляется оператором. При выборе варианта ниже на ваш номер будет отправлен стандартный USSD-запрос.</string>
     <string name="settings_call_waiting_enable">Включить ожидание звонка</string>
     <string name="settings_call_waiting_disable">Выключить ожидание звонков</string>
     <string name="settings_call_waiting_check">Проверка текущего статуса</string>
@@ -538,7 +477,6 @@
     <string name="settings_call_recording_supporting">Показать кнопку записи во время вызовов</string>
     <string name="settings_call_recording_auto">Записывать каждый звонок</string>
     <string name="settings_call_recording_auto_supporting">Запускать запись автоматически при подключении к вызову</string>
-    <string name="settings_call_recording_notice">Запись звонков может быть запрещена законом или устройством. Убедитесь в законности функции перед использованием.</string>
     <string name="settings_call_default_background">Фон карточки по умолчанию</string>
     <string name="settings_call_default_background_set">Пользовательское изображение для каждого вызова</string>
     <string name="settings_call_default_background_none">Не выбрано — звонки используют тему приложения</string>
@@ -561,15 +499,7 @@
     <string name="video_call_chooser_with">Видеовызов с</string>
     <string name="video_call_system">Системный видеовызов</string>
     <!-- Call screen background and active controls -->
-    <string name="callbg_image_unavailable">Не удается загрузить фоновое изображение вызова</string>
     <!-- Incoming call controls and in-call keypad -->
-    <string name="callin_handle_horizontal_desc">Входящий вызов. Проведите вправо, чтобы ответить, или влево, чтобы отклонить.</string>
-    <string name="callin_handle_vertical_desc">Входящий вызов. Проведите вверх, чтобы ответить, или вниз, чтобы отклонить.</string>
-    <string name="callin_handle_slide_desc">Входящий вызов. Проведите вправо для ответа.</string>
-    <string name="callin_action_answer">Ответ на вызов</string>
-    <string name="callin_action_decline">Отклонить вызов</string>
-    <string name="callin_action_message">Ответить сообщением</string>
-    <string name="callin_waiting_actions">Параметры ожидания</string>
     <string name="callkp_digit_desc">Позвонить: %1$s</string>
     <string name="callkp_entered_desc">Введенные цифры: %1$s</string>
     <string name="callkp_entered_empty">Нет введенных цифр</string>
