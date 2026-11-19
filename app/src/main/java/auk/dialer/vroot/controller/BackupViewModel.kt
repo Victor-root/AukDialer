@@ -1,5 +1,7 @@
 package auk.dialer.vroot.controller
 
+import auk.dialer.vroot.controller.util.areNumbersEqual
+import auk.dialer.vroot.controller.util.VCardWriter
 import auk.dialer.vroot.controller.util.VCardReader
 import android.content.Context
 import android.net.Uri
@@ -35,20 +37,7 @@ class BackupViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val contacts = contactsRepo.getDeviceContactsWithDetails()
-                val vCard = buildString {
-                    contacts.forEach { contact ->
-                        append("BEGIN:VCARD\n")
-                        append("VERSION:3.0\n")
-                        append("FN:${contact.name}\n")
-                        contact.phoneNumbers.forEach { number ->
-                            append("TEL;TYPE=CELL:$number\n")
-                        }
-                        contact.emails.forEach { email ->
-                            append("EMAIL;TYPE=INTERNET:$email\n")
-                        }
-                        append("END:VCARD\n")
-                    }
-                }
+                val vCard = VCardWriter.cards(contacts)
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     OutputStreamWriter(outputStream).use { writer ->
                         writer.write(vCard)
@@ -66,7 +55,15 @@ class BackupViewModel(
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val text = BufferedReader(InputStreamReader(inputStream)).use { it.readText() }
-                    VCardReader.parse(text).forEach { entry ->
+                    // A file imported twice, or holding contacts already on the phone, adds no copies:
+                    // a card with the same name and one of the same numbers as a contact is skipped.
+                    val existing = contactsRepo.getDeviceContactsWithDetails()
+                    VCardReader.parse(text).filterNot { entry ->
+                        existing.any { contact ->
+                            contact.name.equals(entry.name, ignoreCase = true) &&
+                                entry.phoneNumbers.any { number -> contact.phoneNumbers.any { areNumbersEqual(it, number) } }
+                        }
+                    }.forEach { entry ->
                         contactsRepo.saveContact(
                             Contact(
                                 id = "0",

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import android.util.Log
+import auk.dialer.vroot.controller.util.VCardWriter
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.modal.data.AddressEntry
@@ -1171,16 +1172,7 @@ class ContactsRepository(
 
     override fun exportPrivateContacts(uri: Uri) {
         val privateContacts = privateContactDao.getAll().map { it.toContact() }
-        val vcfContent = buildString {
-            privateContacts.forEach { contact ->
-                append("BEGIN:VCARD\n")
-                append("VERSION:3.0\n")
-                append("FN:${contact.name}\n")
-                contact.phoneNumbers.forEach { append("TEL;TYPE=CELL:$it\n") }
-                contact.emails.forEach { append("EMAIL;TYPE=HOME:$it\n") }
-                append("END:VCARD\n")
-            }
-        }
+        val vcfContent = VCardWriter.cards(privateContacts)
         try {
             context.contentResolver.openOutputStream(uri)?.use { 
                 it.write(vcfContent.toByteArray())

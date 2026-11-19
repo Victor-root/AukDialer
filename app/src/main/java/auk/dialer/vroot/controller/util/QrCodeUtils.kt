@@ -31,14 +31,6 @@ object QrCodeUtils {
         }
     }
 
-    fun generateVCard(name: String, phone: String?, email: String?): String {
-        return buildString {
-            append("BEGIN:VCARD\n")
-            append("VERSION:3.0\n")
-            append("FN:$name\n")
-            if (!phone.isNullOrBlank()) append("TEL;TYPE=CELL:$phone\n")
-            if (!email.isNullOrBlank()) append("EMAIL:$email\n")
-            append("END:VCARD")
-        }
-    }
+    fun generateVCard(name: String, phone: String?, email: String?): String =
+        VCardWriter.card(name, givenName = null, familyName = null, listOfNotNull(phone), listOfNotNull(email))
 }
