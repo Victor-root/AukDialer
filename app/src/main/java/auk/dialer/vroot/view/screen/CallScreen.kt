@@ -656,6 +656,12 @@ fun ExpressiveCallScreen(
                 ) {
                     otherCallCard()
                     heroSection()
+                    // Under the caller rather than in place of the controls: those keep the hang up
+                    // button, and the button that closes the keypad again.
+                    if (showKeypad && !callHasEnded) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        keypadSection(true)
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -670,7 +676,6 @@ fun ExpressiveCallScreen(
                 ) {
                     when {
                         callHasEnded -> {}
-                        showKeypad -> keypadSection(true)
                         callState == Call.STATE_RINGING -> incomingControls(true)
                         else -> activeControls(true)
                     }
