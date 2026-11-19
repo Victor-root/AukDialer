@@ -1,5 +1,8 @@
 package auk.dialer.vroot.view.components
 
+import auk.dialer.vroot.view.theme.AUK_AVATAR_SHAPE_HEART
+import kotlin.math.roundToInt
+import androidx.compose.ui.layout.layout
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -324,6 +327,20 @@ fun AukAvatar(
             }
         )
 
+    // A heart's notch takes the top of the shape: its body, where the letter or icon has room, sits
+    // lower than the box's middle.
+    val showsPhoto = style.showPicture && !photoUri.isNullOrEmpty() && photoUri != "voicemail://icon"
+    val contentModifier = if (!showsPhoto && avatarShape == style.shape && style.shapeIndex == AUK_AVATAR_SHAPE_HEART) {
+        Modifier.layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            layout(placeable.width, placeable.height) {
+                placeable.place(0, (placeable.height * HEART_CONTENT_DROP).roundToInt())
+            }
+        }
+    } else {
+        Modifier
+    }
+
     val backgroundModifier = if (gradientBrush != null) {
         Modifier.background(gradientBrush, avatarShape)
     } else {
@@ -335,10 +352,11 @@ fun AukAvatar(
             modifier = Modifier
                 .fillMaxSize()
                 .then(backgroundModifier)
-                .clip(avatarShape),
+                .clip(avatarShape)
+                .then(contentModifier),
             contentAlignment = Alignment.Center
         ) {
-            if (style.showPicture && !photoUri.isNullOrEmpty() && photoUri != "voicemail://icon") {
+            if (showsPhoto) {
                 AsyncImage(
                     model = photoUri,
                     contentDescription = null,
@@ -396,3 +414,5 @@ fun AukAvatar(
         }
     }
 }
+
+private const val HEART_CONTENT_DROP = 0.07f
