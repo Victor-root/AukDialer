@@ -1,6 +1,10 @@
 package auk.dialer.vroot.controller.util
 
+import android.provider.ContactsContract.CommonDataKinds.Event
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
+import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
+import auk.dialer.vroot.modal.data.ContactEvent
 
 /**
  * Writes contacts as vCard 3.0, the counterpart of [VCardReader]: every card carries the structured
@@ -14,7 +18,9 @@ object VCardWriter {
             append(
                 card(
                     contact.name, contact.givenName, contact.familyName, contact.phoneNumbers, contact.emails,
-                    nickname = contact.nickname, company = contact.company
+                    nickname = contact.nickname, company = contact.company,
+                    addresses = contact.addressEntries.ifEmpty { contact.addresses.map { AddressEntry(it) } },
+                    events = contact.events
                 )
             )
         }
@@ -27,7 +33,9 @@ object VCardWriter {
         phones: List<String>,
         emails: List<String>,
         nickname: String? = null,
-        company: String? = null
+        company: String? = null,
+        addresses: List<AddressEntry> = emptyList(),
+        events: List<ContactEvent> = emptyList()
     ): String = buildString {
         line("BEGIN:VCARD")
         line("VERSION:3.0")
@@ -39,6 +47,23 @@ object VCardWriter {
         company?.takeIf { it.isNotBlank() }?.let { line("ORG:${escape(it)}") }
         phones.filter { it.isNotBlank() }.forEach { line("TEL;TYPE=CELL:${escape(it)}") }
         emails.filter { it.isNotBlank() }.forEach { line("EMAIL;TYPE=INTERNET:${escape(it)}") }
+        // The address is kept whole as one line, the street part: it is stored that way on the phone.
+        addresses.filter { it.address.isNotBlank() }.forEach { entry ->
+            val type = when (entry.type) {
+                StructuredPostal.TYPE_HOME -> ";TYPE=HOME"
+                StructuredPostal.TYPE_WORK -> ";TYPE=WORK"
+                else -> ""
+            }
+            line("ADR$type:;;${escape(entry.address)};;;;")
+        }
+        // vCard 3.0 only names the birthday; the wedding anniversary goes the way Apple and Evolution write it.
+        events.forEach { event ->
+            val day = EventDates.parse(event.date) ?: return@forEach
+            when (event.type) {
+                Event.TYPE_BIRTHDAY -> line("BDAY:${EventDates.store(day)}")
+                Event.TYPE_ANNIVERSARY -> line("X-ANNIVERSARY:${EventDates.store(day)}")
+            }
+        }
         line("END:VCARD")
     }
 

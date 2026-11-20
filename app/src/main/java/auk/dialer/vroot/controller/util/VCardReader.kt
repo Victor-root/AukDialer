@@ -1,15 +1,21 @@
 package auk.dialer.vroot.controller.util
 
+import android.provider.ContactsContract.CommonDataKinds.Event
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
+import auk.dialer.vroot.modal.data.AddressEntry
+import auk.dialer.vroot.modal.data.ContactEvent
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 
-/** Name, nickname, company, numbers and e-mails of one card, the parts the imports keep. */
+/** Name, nickname, company, numbers, e-mails, addresses and dates of one card, the parts the imports keep. */
 data class VCardEntry(
     val name: String,
     val phoneNumbers: List<String>,
     val emails: List<String>,
     val nickname: String? = null,
-    val company: String? = null
+    val company: String? = null,
+    val addresses: List<AddressEntry> = emptyList(),
+    val events: List<ContactEvent> = emptyList()
 )
 
 /**
@@ -30,6 +36,8 @@ object VCardReader {
         var company = ""
         val numbers = mutableListOf<String>()
         val emails = mutableListOf<String>()
+        val addresses = mutableListOf<AddressEntry>()
+        val events = mutableListOf<ContactEvent>()
 
         for (line in unfold(text)) {
             val colon = line.indexOf(':')
@@ -49,6 +57,8 @@ object VCardReader {
                     company = ""
                     numbers.clear()
                     emails.clear()
+                    addresses.clear()
+                    events.clear()
                 }
                 "END" -> if (inCard && rawValue.trim().equals("VCARD", ignoreCase = true)) {
                     inCard = false
@@ -59,7 +69,9 @@ object VCardReader {
                             numbers.toList(),
                             emails.toList(),
                             nickname = nickname.trim().ifBlank { null },
-                            company = company.trim().ifBlank { null }
+                            company = company.trim().ifBlank { null },
+                            addresses = addresses.toList(),
+                            events = events.toList()
                         )
                     }
                 }
@@ -76,6 +88,12 @@ object VCardReader {
                     val email = unescape(decode(rawValue, params)).trim()
                     if (email.isNotEmpty()) emails += email
                 }
+                "ADR" -> if (inCard) {
+                    val address = addressFromParts(decode(rawValue, params))
+                    if (address.isNotEmpty()) addresses += AddressEntry(address, addressType(params))
+                }
+                "BDAY" -> if (inCard) eventOf(Event.TYPE_BIRTHDAY, rawValue)?.let(events::add)
+                "ANNIVERSARY", "X-ANNIVERSARY" -> if (inCard) eventOf(Event.TYPE_ANNIVERSARY, rawValue)?.let(events::add)
             }
         }
         return entries
@@ -129,6 +147,32 @@ object VCardReader {
             i++
         }
         return String(bytes.toByteArray(), charset)
+    }
+
+    /** "PO box;Extended;Street;City;Region;Postal code;Country" as one address: "Street, 75001 Paris, France". */
+    private fun addressFromParts(value: String): String {
+        val fields = splitUnescaped(value).map { unescape(it).trim() }
+        fun field(index: Int) = fields.getOrElse(index) { "" }
+        val cityLine = listOf(field(5), field(3)).filter { it.isNotEmpty() }.joinToString(" ")
+        return listOf(field(0), field(1), field(2), cityLine, field(4), field(6))
+            .filter { it.isNotEmpty() }
+            .joinToString(", ")
+    }
+
+    /** TYPE=HOME, TYPE=WORK, also written "TYPE=home,pref" or the bare "HOME" of vCard 2.1. */
+    private fun addressType(params: List<String>): Int {
+        val types = params.flatMap { it.removePrefix("TYPE=").split(',') }
+        return when {
+            "HOME" in types -> StructuredPostal.TYPE_HOME
+            "WORK" in types -> StructuredPostal.TYPE_WORK
+            else -> StructuredPostal.TYPE_OTHER
+        }
+    }
+
+    /** A date in any of the forms phones write ("1990-03-12", "19900312", "--0312"), stored the standard way. */
+    private fun eventOf(type: Int, value: String): ContactEvent? {
+        val day = EventDates.parse(value) ?: return null
+        return ContactEvent(type = type, label = null, date = EventDates.store(day))
     }
 
     /** "Family;Given;Middle;Prefix;Suffix" as it reads: "Prefix Given Middle Family Suffix". */

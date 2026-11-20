@@ -2,10 +2,14 @@ package auk.dialer.vroot.controller.util
 
 import android.content.Context
 import android.provider.ContactsContract.CommonDataKinds.Email
+import android.provider.ContactsContract.CommonDataKinds.Event
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Event as EventIcon
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone as PhoneIcon
@@ -13,6 +17,7 @@ import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.ui.graphics.vector.ImageVector
+import auk.dialer.vroot.R
 
 object ContactTypeLabels {
 
@@ -37,6 +42,26 @@ object ContactTypeLabels {
         StructuredPostal.TYPE_WORK,
         StructuredPostal.TYPE_OTHER
     )
+
+    val eventTypeOptions: List<Int> = listOf(
+        Event.TYPE_BIRTHDAY,
+        Event.TYPE_ANNIVERSARY,
+        Event.TYPE_OTHER
+    )
+
+    /** A date's kind in the app's own words; a custom one goes by the label it was given. */
+    fun eventTypeLabel(context: Context, type: Int, label: String?): String = when (type) {
+        Event.TYPE_BIRTHDAY -> context.getString(R.string.contact_event_birthday)
+        Event.TYPE_ANNIVERSARY -> context.getString(R.string.contact_event_anniversary)
+        Event.TYPE_CUSTOM -> label?.takeIf { it.isNotBlank() } ?: context.getString(R.string.contact_event_generic)
+        else -> context.getString(R.string.contact_event_other)
+    }
+
+    fun eventTypeIcon(type: Int): ImageVector = when (type) {
+        Event.TYPE_BIRTHDAY -> Icons.Default.Cake
+        Event.TYPE_ANNIVERSARY -> Icons.Default.Favorite
+        else -> Icons.Default.EventIcon
+    }
 
     fun phoneTypeLabel(context: Context, type: Int, label: String?): String {
         return try {

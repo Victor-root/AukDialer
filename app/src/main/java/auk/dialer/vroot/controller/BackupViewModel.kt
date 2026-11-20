@@ -71,7 +71,10 @@ class BackupViewModel(
                                 phoneNumbers = entry.phoneNumbers,
                                 emails = entry.emails,
                                 nickname = entry.nickname,
-                                company = entry.company
+                                company = entry.company,
+                                addresses = entry.addresses.map { it.address },
+                                addressEntries = entry.addresses,
+                                events = entry.events
                             )
                         )
                     }

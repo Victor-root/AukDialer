@@ -8,6 +8,8 @@ import android.media.RingtoneManager
 import android.provider.ContactsContract
 import android.telecom.TelecomManager
 import android.telecom.VideoProfile
+import auk.dialer.vroot.controller.util.EventDates
+import androidx.compose.ui.res.pluralStringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
@@ -24,8 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Cake
-import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -826,24 +826,12 @@ fun ContactDetailsScreen(
                         }
                     }
 
-                    if (fullContact != null && (fullContact!!.events.isNotEmpty() || fullContact!!.addresses.isNotEmpty())) {
+                    val addressEntries = fullContact?.let { contact ->
+                        contact.addressEntries.ifEmpty { contact.addresses.map { AddressEntry(it) } }
+                    }.orEmpty()
+                    if (addressEntries.isNotEmpty()) {
                         item {
-                            AukExpressiveCard(title = stringResource(R.string.contact_events_title), icon = Icons.Default.Event) {
-                                fullContact!!.events.forEachIndexed { index, event ->
-                                    val isBirthday = event.type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY
-                                    AukListItem(
-                                        headline = event.date,
-                                        supporting = event.label ?: if (isBirthday) stringResource(R.string.contact_event_birthday) else stringResource(R.string.contact_event_generic),
-                                        leadingIcon = if (isBirthday) Icons.Outlined.Cake else Icons.Outlined.Event,
-                                        onClick = { copyToClipboard(event.date) }
-                                    )
-                                    if (index < fullContact!!.events.size - 1 || fullContact!!.addresses.isNotEmpty()) {
-                                        AukDivider(Modifier.padding(horizontal = 16.dp))
-                                    }
-                                }
-                                val addressEntries = fullContact!!.addressEntries.ifEmpty {
-                                    fullContact!!.addresses.map { AddressEntry(it) }
-                                }
+                            AukExpressiveCard(title = stringResource(R.string.contact_details_addresses_title), icon = Icons.Default.LocationOn) {
                                 addressEntries.forEachIndexed { index, addressEntry ->
                                     val address = addressEntry.address
                                     AukListItem(
@@ -852,11 +840,39 @@ fun ContactDetailsScreen(
                                             .ifBlank { stringResource(R.string.label_address) },
                                         leadingIcon = ContactTypeLabels.addressTypeIcon(addressEntry.type),
                                         onClick = {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$address"))
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${Uri.encode(address)}"))
                                             context.startActivity(intent)
                                         }
                                     )
                                     if (index < addressEntries.size - 1) {
+                                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    val events = fullContact?.events.orEmpty()
+                    if (events.isNotEmpty()) {
+                        item {
+                            AukExpressiveCard(title = stringResource(R.string.contact_details_dates_title), icon = Icons.Default.Event) {
+                                events.forEachIndexed { index, event ->
+                                    val typeLabel = ContactTypeLabels.eventTypeLabel(context, event.type, event.label)
+                                    // A birthday with its year also tells how old the contact is.
+                                    val age = EventDates.parse(event.date)
+                                        ?.takeIf { event.type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY }
+                                        ?.let { EventDates.age(it) }
+                                    AukListItem(
+                                        headline = EventDates.format(event.date),
+                                        supporting = if (age != null) {
+                                            "$typeLabel · ${pluralStringResource(R.plurals.contact_age, age, age)}"
+                                        } else {
+                                            typeLabel
+                                        },
+                                        leadingIcon = ContactTypeLabels.eventTypeIcon(event.type),
+                                        onClick = { copyToClipboard(EventDates.format(event.date)) }
+                                    )
+                                    if (index < events.size - 1) {
                                         AukDivider(Modifier.padding(horizontal = 16.dp))
                                     }
                                 }

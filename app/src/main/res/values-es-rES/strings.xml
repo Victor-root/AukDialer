@@ -129,7 +129,6 @@
     <string name="contact_clear_default">Eliminar predeterminado</string>
     <string name="contact_set_as_default">Establecer como predeterminado</string>
     <string name="contact_add_to_contacts">Añadir a Contactos</string>
-    <string name="contact_events_title">Eventos &amp; más</string>
     <string name="contact_event_birthday">Cumpleaños</string>
     <string name="contact_event_generic">Evento</string>
     <string name="contact_recent_activity_title">Actividad reciente</string>

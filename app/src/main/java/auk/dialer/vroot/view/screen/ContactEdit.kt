@@ -14,8 +14,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,10 +43,12 @@ import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.ContactTypeLabels
 import auk.dialer.vroot.controller.util.ContactUtils
+import auk.dialer.vroot.controller.util.EventDates
 import auk.dialer.vroot.controller.util.deduplicateNumbers
 import auk.dialer.vroot.modal.data.AddressEntry
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.modal.data.ContactSaveResult
+import auk.dialer.vroot.modal.data.ContactEvent
 import auk.dialer.vroot.modal.data.EmailEntry
 import auk.dialer.vroot.modal.data.PhoneNumberEntry
 import auk.dialer.vroot.view.components.AukAvatar
@@ -63,6 +69,9 @@ import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
 import auk.dialer.vroot.view.theme.aukExceptBottom
 import auk.dialer.vroot.view.theme.aukScrollContentPadding
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -94,6 +103,7 @@ fun ContactEditScreen(
     val phones = remember { mutableStateListOf(PhoneNumberEntry("")) }
     val emails = remember { mutableStateListOf(EmailEntry("")) }
     val addresses = remember { mutableStateListOf(AddressEntry("")) }
+    val events = remember { mutableStateListOf<ContactEvent>() }
 
     val displayName = "${givenName.trim()} ${familyName.trim()}".trim()
 
@@ -106,7 +116,7 @@ fun ContactEditScreen(
     // The form as loaded, to tell whether leaving would lose something typed.
     fun formState(): List<Any?> = listOf(
         givenName, familyName, nickname, company, notes, photoUri, selectedAccount, isPrivate,
-        phones.toList(), emails.toList(), addresses.toList()
+        phones.toList(), emails.toList(), addresses.toList(), events.toList()
     )
     var loadedForm by remember { mutableStateOf<List<Any?>?>(null) }
     val hasChanges = loadedForm.let { it != null && it != formState() }
@@ -154,6 +164,9 @@ fun ContactEditScreen(
                 } else {
                     emails.add(EmailEntry(""))
                 }
+
+                events.clear()
+                events.addAll(existing.events)
 
                 addresses.clear()
                 val existingAddresses = existing.addressEntries.ifEmpty {
@@ -240,13 +253,13 @@ fun ContactEditScreen(
                                         accountName = if (isPrivate) null else selectedAccount?.name,
                                         accountType = if (isPrivate) null else selectedAccount?.type,
                                         isPrivate = isPrivate,
-                                        notes = notes.ifBlank { null }
+                                        notes = notes.ifBlank { null },
+                                        events = events.toList()
                                     )
                                     val contactToSave = loadedContact?.let { loaded ->
                                         editedContact.copy(
                                             isFavorite = loaded.isFavorite,
-                                            customRingtone = loaded.customRingtone,
-                                            events = loaded.events
+                                            customRingtone = loaded.customRingtone
                                         )
                                     } ?: editedContact
                                     val result = contactsVM.saveContact(contactToSave)
@@ -592,6 +605,52 @@ fun ContactEditScreen(
             }
 
             item {
+                AukSectionHeader(title = stringResource(R.string.contact_edit_dates_header))
+                AukExpressiveCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // Index of the date being picked, events.size for a new one.
+                        var pickingIndex by remember { mutableStateOf<Int?>(null) }
+                        events.forEachIndexed { index, event ->
+                            EventEditField(
+                                event = event,
+                                onPick = { pickingIndex = index },
+                                onTypeChange = { events[index] = event.copy(type = it, label = null) },
+                                onDelete = { events.removeAt(index) }
+                            )
+                        }
+                        TextButton(
+                            onClick = { pickingIndex = events.size },
+                            modifier = Modifier.align(Alignment.Start)
+                        ) {
+                            Icon(Icons.Default.Add, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.contact_edit_add_date))
+                        }
+                        pickingIndex?.let { index ->
+                            EventDatePickerDialog(
+                                initial = events.getOrNull(index)?.date,
+                                onDismissRequest = { pickingIndex = null },
+                                onConfirm = { date ->
+                                    if (index < events.size) {
+                                        events[index] = events[index].copy(date = date)
+                                    } else {
+                                        // The first date added is the birthday, the ones after it other dates.
+                                        val type = if (events.none { it.type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY }) {
+                                            ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY
+                                        } else {
+                                            ContactsContract.CommonDataKinds.Event.TYPE_OTHER
+                                        }
+                                        events.add(ContactEvent(type, null, date))
+                                    }
+                                    pickingIndex = null
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
                 AukSectionHeader(title = stringResource(R.string.contact_edit_notes_header))
                 AukExpressiveCard {
                     ContactTextField(
@@ -641,38 +700,158 @@ fun TypedEditField(
         keyboardType = keyboardType,
         onDelete = onDelete,
         leadingIcon = {
-            var showTypeMenu by remember { mutableStateOf(false) }
-            Box {
-                // The chevron tells the icon opens a choice, like the account field's.
-                Row(
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .clip(CircleShape)
-                        .clickable { showTypeMenu = true }
-                        .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(typeIcon(typeValue), contentDescription = typeLabel(typeValue))
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
-                }
-                AukDropdownMenu(
-                    expanded = showTypeMenu,
-                    onDismissRequest = { showTypeMenu = false }
-                ) {
-                    typeOptions.forEach { option ->
-                        AukDropdownMenuItem(
-                            text = { Text(typeLabel(option)) },
-                            leadingIcon = { Icon(typeIcon(option), null) },
-                            onClick = {
-                                onTypeChange(option)
-                                showTypeMenu = false
-                            }
-                        )
-                    }
-                }
-            }
+            TypeMenuIcon(typeIcon, typeValue, typeOptions, typeLabel, onTypeChange)
         }
     )
+}
+
+/** A date of the contact: shown in the user's own order, picked on a calendar, with its kind. */
+@Composable
+private fun EventEditField(
+    event: ContactEvent,
+    onPick: () -> Unit,
+    onTypeChange: (Int) -> Unit,
+    onDelete: () -> Unit
+) {
+    val context = LocalContext.current
+    val typeOptions = remember(event.type) {
+        // A custom kind from another app stays offered so it is not lost by opening the list.
+        ContactTypeLabels.eventTypeOptions + listOfNotNull(event.type.takeIf { it !in ContactTypeLabels.eventTypeOptions })
+    }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        ContactTextField(
+            value = EventDates.format(event.date),
+            onValueChange = {},
+            label = { Text(ContactTypeLabels.eventTypeLabel(context, event.type, event.label)) },
+            modifier = Modifier.weight(1f),
+            leadingIcon = {
+                TypeMenuIcon(
+                    typeIcon = ContactTypeLabels::eventTypeIcon,
+                    typeValue = event.type,
+                    typeOptions = typeOptions,
+                    typeLabel = { ContactTypeLabels.eventTypeLabel(context, it, event.label) },
+                    onTypeChange = onTypeChange
+                )
+            },
+            onClick = onPick
+        )
+        IconButton(onClick = onDelete, modifier = Modifier.padding(start = 8.dp)) {
+            Icon(Icons.Default.RemoveCircleOutline, null, tint = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+/**
+ * The calendar a date is picked on, which can leave the year out, as Google Contacts does for a
+ * birthday whose year is not known. Gives the date in the standard stored form.
+ */
+@Composable
+private fun EventDatePickerDialog(
+    initial: String?,
+    onDismissRequest: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    val initialDay = remember(initial) { initial?.let { EventDates.parse(it) } }
+    val state = rememberDatePickerState(
+        initialSelectedDateMillis = initialDay?.let {
+            LocalDate.of(it.year ?: LocalDate.now().year, it.month, it.day)
+                .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        }
+    )
+    var withoutYear by remember { mutableStateOf(initialDay != null && initialDay.year == null) }
+    DatePickerDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                enabled = state.selectedDateMillis != null,
+                onClick = {
+                    state.selectedDateMillis?.let { millis ->
+                        val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onConfirm(EventDates.store(EventDates.Day(date.year.takeUnless { withoutYear }, date.monthValue, date.dayOfMonth)))
+                    }
+                }
+            ) { Text(stringResource(R.string.action_done)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) { Text(stringResource(R.string.action_cancel)) }
+        }
+    ) {
+        DatePicker(
+            state = state,
+            title = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .toggleable(value = withoutYear, role = Role.Switch, onValueChange = { withoutYear = it })
+                        .padding(start = 24.dp, end = 12.dp, top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.contact_edit_date_no_year), modifier = Modifier.weight(1f))
+                    Switch(checked = withoutYear, onCheckedChange = null)
+                }
+            },
+            headline = {
+                val millis = state.selectedDateMillis
+                if (withoutYear && millis != null) {
+                    // The day picked, without the year it is not kept with.
+                    val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                    Text(
+                        EventDates.format(EventDates.store(EventDates.Day(null, date.monthValue, date.dayOfMonth))),
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, bottom = 12.dp)
+                    )
+                } else {
+                    DatePickerDefaults.DatePickerHeadline(
+                        selectedDateMillis = millis,
+                        displayMode = state.displayMode,
+                        dateFormatter = remember { DatePickerDefaults.dateFormatter() },
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, bottom = 12.dp)
+                    )
+                }
+            }
+        )
+    }
+}
+
+/** The kind of a field as its icon, which opens the list of kinds to pick another. */
+@Composable
+private fun TypeMenuIcon(
+    typeIcon: (Int) -> ImageVector,
+    typeValue: Int,
+    typeOptions: List<Int>,
+    typeLabel: (Int) -> String,
+    onTypeChange: (Int) -> Unit
+) {
+    var showTypeMenu by remember { mutableStateOf(false) }
+    Box {
+        // The chevron tells the icon opens a choice, like the account field's.
+        Row(
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .clip(CircleShape)
+                .clickable { showTypeMenu = true }
+                .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(typeIcon(typeValue), contentDescription = typeLabel(typeValue))
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+        }
+        AukDropdownMenu(
+            expanded = showTypeMenu,
+            onDismissRequest = { showTypeMenu = false }
+        ) {
+            typeOptions.forEach { option ->
+                AukDropdownMenuItem(
+                    text = { Text(typeLabel(option)) },
+                    leadingIcon = { Icon(typeIcon(option), null) },
+                    onClick = {
+                        onTypeChange(option)
+                        showTypeMenu = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -721,8 +900,17 @@ private fun ContactTextField(
     label: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    minLines: Int = 1
+    minLines: Int = 1,
+    // Read only: a tap calls [onClick] instead of opening the keyboard, for values picked elsewhere.
+    onClick: (() -> Unit)? = null
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    if (onClick != null) {
+        val currentOnClick by rememberUpdatedState(onClick)
+        LaunchedEffect(interactionSource) {
+            interactionSource.interactions.collect { if (it is PressInteraction.Release) currentOnClick() }
+        }
+    }
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -731,6 +919,8 @@ private fun ContactTextField(
         modifier = modifier,
         keyboardOptions = keyboardOptions,
         minLines = minLines,
+        readOnly = onClick != null,
+        interactionSource = interactionSource,
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,

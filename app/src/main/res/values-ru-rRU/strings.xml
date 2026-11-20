@@ -136,7 +136,6 @@
     <string name="contact_clear_default">Сбросить по умолчанию</string>
     <string name="contact_set_as_default">Назначить по умолчанию</string>
     <string name="contact_add_to_contacts">Добавить в контакты</string>
-    <string name="contact_events_title">События &amp; ещё</string>
     <string name="contact_event_birthday">День рождения:</string>
     <string name="contact_event_generic">Событие</string>
     <string name="contact_recent_activity_title">Недавние действия</string>

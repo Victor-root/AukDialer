@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import android.util.Log
+import auk.dialer.vroot.controller.util.EventDates
 import auk.dialer.vroot.controller.util.VCardWriter
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
@@ -928,6 +929,14 @@ class ContactsRepository(
                 ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE,
                 effectiveAddresses.map { TypedValue(it.address, it.type, it.label) }
             ) { a, b -> a == b }
+            // Dates keep the form their app wrote them in unless changed: a day is the same whether
+            // stored "03/12/1990" or "1990-03-12".
+            syncDataRows(
+                ops, rawContactIds, primaryRawContactId,
+                ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE,
+                contact.events.map { TypedValue(it.date, it.type, it.label) },
+                EventDates::sameDay
+            )
         }
 
         return try {
@@ -1267,6 +1276,9 @@ class ContactsRepository(
                     emails = entry.emails,
                     nickname = entry.nickname,
                     company = entry.company,
+                    addresses = entry.addresses.map { it.address },
+                    addressEntries = entry.addresses,
+                    events = entry.events,
                     isPrivate = true
                 ))
             }
