@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import auk.dialer.vroot.controller.util.SocialUtils
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.*
 import auk.dialer.vroot.modal.data.Contact
@@ -37,7 +38,7 @@ fun rememberVideoLauncher(): VideoLauncher {
     var showAppPicker by remember { mutableStateOf(false) }
     var pendingNumber by remember { mutableStateOf("") }
 
-    val launchApp = { pkg: String, number: String ->
+    val launchCallApp = { pkg: String, number: String ->
         val uri = Uri.parse("tel:$number")
         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
             setPackage(pkg)
@@ -53,6 +54,16 @@ fun rememberVideoLauncher(): VideoLauncher {
         }
     }
 
+    val launchApp = { pkg: String, number: String ->
+        // The messaging apps open the conversation with the number, its call buttons one tap away.
+        when (pkg) {
+            SIGNAL_PACKAGE -> SocialUtils.openSignal(context, number)
+            WHATSAPP_PACKAGE -> SocialUtils.openWhatsApp(context, number)
+            TELEGRAM_PACKAGE -> SocialUtils.openTelegram(context, number)
+            else -> launchCallApp(pkg, number)
+        }
+    }
+
     val launchSystemVideoCall = { number: String ->
         val uri = Uri.parse("tel:$number")
         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
@@ -63,10 +74,11 @@ fun rememberVideoLauncher(): VideoLauncher {
 
     // Only the apps on the phone: one that is not would fall back to a plain voice call.
     val videoApps = listOf(
-        stringResource(R.string.brand_whatsapp) to "com.whatsapp",
+        stringResource(R.string.brand_signal) to SIGNAL_PACKAGE,
+        stringResource(R.string.brand_whatsapp) to WHATSAPP_PACKAGE,
         stringResource(R.string.brand_google_meet) to "com.google.android.apps.meetings",
         stringResource(R.string.brand_zoom) to "us.zoom.videomeetings",
-        stringResource(R.string.brand_telegram) to "org.telegram.messenger"
+        stringResource(R.string.brand_telegram) to TELEGRAM_PACKAGE
     )
     val installedApps = remember(videoApps) {
         videoApps.filter { (_, pkg) -> context.packageManager.getLaunchIntentForPackage(pkg) != null }
@@ -103,3 +115,7 @@ fun rememberVideoLauncher(): VideoLauncher {
 
     return videoLauncher
 }
+
+private const val SIGNAL_PACKAGE = "org.thoughtcrime.securesms"
+private const val WHATSAPP_PACKAGE = "com.whatsapp"
+private const val TELEGRAM_PACKAGE = "org.telegram.messenger"

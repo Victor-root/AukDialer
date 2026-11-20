@@ -43,6 +43,7 @@
     <queries>
         <package android:name="moe.shizuku.privileged.api" />
         <!-- The video call apps offered from a contact, listed only when installed. -->
+        <package android:name="org.thoughtcrime.securesms" />
         <package android:name="com.whatsapp" />
         <package android:name="com.google.android.apps.meetings" />
         <package android:name="us.zoom.videomeetings" />
