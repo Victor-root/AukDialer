@@ -401,6 +401,9 @@ fun CallLogFullContent(
         // call with an answered one, and each filter has to see every call in it.
         val logs by viewModel.allCalls.collectAsState()
         val allContacts by contactsVM.allContacts.collectAsState()
+        val companies = remember(allContacts) {
+            allContacts.mapNotNull { contact -> contact.company?.takeIf { it.isNotBlank() }?.let { contact.id to it } }.toMap()
+        }
 
         val mergeFavorites = remember(settingsState) {
             prefs.getBoolean(auk.dialer.vroot.controller.util.PreferenceManager.KEY_MERGE_FAVORITES_RECENTS, true)
@@ -688,6 +691,7 @@ fun CallLogFullContent(
                                         displayOrder = displayOrder,
                                         isFavorite = isFavorite,
                                         icons = callLogIcons,
+                                        company = lg.contactId?.let { companies[it] },
                                         onTileClick = { log ->
                                             if (selectedEntries.isNotEmpty()) {
                                                 onToggleSelection(log)

@@ -143,7 +143,8 @@ fun CallLogTile(
     selected: Boolean = false,
     displayOrder: Int = 0,
     isFavorite: Boolean = false,
-    icons: CallLogTileIcons = rememberCallLogTileIcons()
+    icons: CallLogTileIcons = rememberCallLogTileIcons(),
+    company: String? = null
 ) {
     val icon = when (log.type) {
         CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE -> icons.missed
@@ -206,6 +207,20 @@ fun CallLogTile(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
+                            // The caller's company after the time; it gives way first when the row is short.
+                            if (!company.isNullOrBlank()) {
+                                Text(
+                                    text = " · ",
+                                    style = AukListItemDefaults.supportingStyle(),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                ContactCompany(
+                                    company = company,
+                                    style = AukListItemDefaults.supportingStyle(),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                            }
                         }
                     },
                     // No initial for a withheld caller: the generic silhouette, like any unknown number.
