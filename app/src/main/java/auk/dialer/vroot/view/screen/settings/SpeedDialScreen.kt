@@ -54,7 +54,7 @@ fun SpeedDialScreen(
     
     var showContactPicker by remember { mutableStateOf<Int?>(null) }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

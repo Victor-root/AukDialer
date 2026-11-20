@@ -296,7 +296,7 @@ fun DialPadScreen(
         }
     }
 
-    Scaffold(
+    AukScaffold(
         modifier = Modifier
             .focusRequester(keyFocus)
             .focusable()

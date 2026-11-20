@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.components.aukSliderColors
 import android.content.Intent
 import android.provider.Settings
@@ -57,7 +58,7 @@ fun SoundVibrationScreen(
     var showIntensityDialog by rememberSaveable { mutableStateOf(false) }
     var missedCallNotifications by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MISSED_CALL_NOTIFICATIONS, true)) }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

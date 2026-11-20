@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -135,7 +136,7 @@ fun PrivateContactsScreen(
         }
     )
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             if (isSelecting) {
                 TopAppBar(

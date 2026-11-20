@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,7 +61,7 @@ fun BottomNavScreen(
         persist(mutable, hidden)
     }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

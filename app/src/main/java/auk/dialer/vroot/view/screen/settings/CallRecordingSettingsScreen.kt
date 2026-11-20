@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -47,7 +48,7 @@ fun CallRecordingSettingsScreen(
     val shizukuStatus by ShizukuBridge.status.collectAsState()
     LaunchedEffect(Unit) { ShizukuBridge.refresh() }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

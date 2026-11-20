@@ -99,47 +99,58 @@ fun CallLogFullScreen(
         filteredLogsByContact.firstOrNull { it.name != null && it.name != it.number }?.name ?: (if (phoneNumber != null) formatPhoneNumber(phoneNumber) else null)
     }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
-            AnimatedContent(
-                targetState = selectedEntries.isNotEmpty(),
-                transitionSpec = {
-                    (fadeIn() + expandVertically()) togetherWith (fadeOut() + shrinkVertically())
-                },
-                label = "TopBarTransition"
-            ) { isSelecting ->
-                if (!isSelecting) {
-                    TopAppBar(
-                        title = {
-                            AukTopBarTitle(
-                                if (contactName != null) stringResource(R.string.call_history_with_contact, contactName) else stringResource(R.string.call_history_title),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navigator.navigateUp() }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+            Column {
+                AnimatedContent(
+                    targetState = selectedEntries.isNotEmpty(),
+                    transitionSpec = {
+                        (fadeIn() + expandVertically()) togetherWith (fadeOut() + shrinkVertically())
+                    },
+                    label = "TopBarTransition"
+                ) { isSelecting ->
+                    if (!isSelecting) {
+                        TopAppBar(
+                            title = {
+                                AukTopBarTitle(
+                                    if (contactName != null) stringResource(R.string.call_history_with_contact, contactName) else stringResource(R.string.call_history_title),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = { navigator.navigateUp() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                                }
+                            },
+                            colors = aukAccentTopAppBarColors()
+                        )
+                    } else {
+                        BatchCallLogActionBar(
+                            selectedCount = selectedEntries.size,
+                            deleteCount = selectedEntries.sumOf { it.ids.size },
+                            onClearSelection = { selectedEntries = emptySet() },
+                            onDelete = {
+                                val allIdsToDelete = selectedEntries.flatMap { it.ids }
+                                viewModel.deleteCallLogsByIds(allIdsToDelete)
+                                selectedEntries = emptySet()
+                            },
+                            onBlock = {
+                                selectedEntries.forEach { entry ->
+                                    auk.dialer.vroot.controller.util.BlockedNumbersManager.block(context, entry.number)
+                                }
+                                selectedEntries = emptySet()
                             }
-                        },
-                        colors = aukAccentTopAppBarColors()
-                    )
-                } else {
-                    BatchCallLogActionBar(
-                        selectedCount = selectedEntries.size,
-                        deleteCount = selectedEntries.sumOf { it.ids.size },
-                        onClearSelection = { selectedEntries = emptySet() },
-                        onDelete = {
-                            val allIdsToDelete = selectedEntries.flatMap { it.ids }
-                            viewModel.deleteCallLogsByIds(allIdsToDelete)
-                            selectedEntries = emptySet()
-                        },
-                        onBlock = {
-                            selectedEntries.forEach { entry ->
-                                auk.dialer.vroot.controller.util.BlockedNumbersManager.block(context, entry.number)
-                            }
-                            selectedEntries = emptySet()
-                        }
-                    )
+                        )
+                    }
+                }
+                // Part of the header, so it slides away with it rather than staying under the status bar.
+                AukAccentFilterBar {
+                    items(CallLogFilter.entries - CallLogFilter.Contacts) { filter ->
+                        AukFilterChip(filter.displayLabel(), selectedFilter == filter, {
+                            _ ->
+                            viewModel.setFilter(filter)
+                        }, isAllFilter = filter == CallLogFilter.All, onAccentBar = true)
+                    }
                 }
             }
         },
@@ -156,15 +167,6 @@ fun CallLogFullScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding.aukExceptBottom()).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
-                AukAccentFilterBar {
-                    items(CallLogFilter.entries - CallLogFilter.Contacts) { filter ->
-                        AukFilterChip(filter.displayLabel(), selectedFilter == filter, {
-                            _ ->
-                            viewModel.setFilter(filter)
-                        }, isAllFilter = filter == CallLogFilter.All, onAccentBar = true)
-                    }
-                }
-
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         AukLoadingIndicatorView()

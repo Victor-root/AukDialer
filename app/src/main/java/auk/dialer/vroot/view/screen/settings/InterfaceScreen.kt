@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.components.aukSliderColors
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
@@ -185,7 +186,7 @@ fun InterfaceScreen(
         stringResource(R.string.nav_recordings) to PreferenceManager.TAB_RECORDINGS
     )
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

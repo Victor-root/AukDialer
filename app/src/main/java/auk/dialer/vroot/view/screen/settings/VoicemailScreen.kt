@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.controller.vvm.VvmNotifier
 import android.Manifest
 import android.content.Intent
@@ -127,7 +128,7 @@ fun VoicemailScreen(
         }
     }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import android.content.Context
 import android.telecom.TelecomManager
 import androidx.compose.foundation.layout.*
@@ -108,7 +109,7 @@ fun BlockedNumbersScreen(
         }
     }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -53,7 +54,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     // rather than the in-app theme accent, which is a separate setting.
     val logoColor = remember { accentColorFromSeed(launcherIconManager.currentColor()) }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

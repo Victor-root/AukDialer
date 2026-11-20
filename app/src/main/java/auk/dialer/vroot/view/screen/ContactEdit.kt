@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.theme.softAccentColors
 import android.accounts.Account
 import android.content.ActivityNotFoundException
@@ -185,7 +186,7 @@ fun ContactEditScreen(
         onResult = { uri -> if (uri != null) photoUri = uri.toString() }
     )
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 title = {

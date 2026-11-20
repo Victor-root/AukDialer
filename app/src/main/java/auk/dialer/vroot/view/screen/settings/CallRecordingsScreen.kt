@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -163,7 +164,7 @@ fun CallRecordingsContent(
         onSelectionStateChange?.invoke(isSelecting, if (isSelecting) selectionActionBar else null)
     }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             if (onNavigateUp != null && isSelecting) {
                 selectionActionBar()
@@ -179,8 +180,10 @@ fun CallRecordingsContent(
                 )
             }
         },
-        // As a tab, the main screen's header and bottom bar already clear the system bars.
-        contentWindowInsets = if (onNavigateUp != null) ScaffoldDefaults.contentWindowInsets else WindowInsets(0)
+        // As a tab, the main screen's header and bottom bar already clear the system bars, and its
+        // header is the one that collapses.
+        contentWindowInsets = if (onNavigateUp != null) ScaffoldDefaults.contentWindowInsets else WindowInsets(0),
+        collapsing = onNavigateUp != null
     ) { padding ->
         Box(modifier = Modifier.padding(padding.aukExceptBottom()).fillMaxSize()) {
             val list = recordings

@@ -461,7 +461,7 @@ fun ContactDetailsScreen(
         }
     }
 
-    Scaffold(
+    AukScaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ScrollToTopButton(

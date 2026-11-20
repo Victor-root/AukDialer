@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.AukScaffold
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -107,7 +108,7 @@ fun CallAccountsScreen(
     var showCallWaitingDialog by rememberSaveable { mutableStateOf(false) }
     var showCallBackgroundPicker by rememberSaveable { mutableStateOf(false) }
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),

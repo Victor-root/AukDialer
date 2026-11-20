@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
@@ -106,7 +107,7 @@ fun ContactSelectionScreen(
 
     val totalSelectedCount = maxOf(selectedContactIds.size, selectedPhoneNumbers.size)
 
-    Scaffold(
+    AukScaffold(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
