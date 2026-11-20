@@ -685,6 +685,9 @@
     <string name="voicemail_status_auth_description">The mailbox rejected the settings your carrier provided. Asking your carrier for them again usually fixes it.</string>
     <string name="voicemail_status_unreachable_title">Mailbox unreachable</string>
     <string name="voicemail_status_unreachable_description">AukDialer could not reach your carrier\'s mailbox. Check your connection, and try mobile data if you are on Wi‑Fi.</string>
+    <string name="voicemail_copy_diagnostics">Copy diagnostics</string>
+    <string name="voicemail_copy_diagnostics_supporting">To report a carrier whose visual voicemail does not work yet: paste it into an issue</string>
+    <string name="voicemail_diagnostics_copied">Diagnostics copied</string>
     <string name="voicemail_status_open_settings">Voicemail settings</string>
     <string name="voicemail_audio_unavailable">This recording is no longer available.</string>
     <string name="voicemail_playback_failed">This voicemail could not be played.</string>

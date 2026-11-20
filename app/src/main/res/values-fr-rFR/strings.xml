@@ -524,6 +524,9 @@
     <string name="voicemail_status_auth_description">La boîte vocale a refusé les paramètres fournis par votre opérateur. Les redemander suffit généralement à régler le problème.</string>
     <string name="voicemail_status_unreachable_title">Boîte vocale injoignable</string>
     <string name="voicemail_status_unreachable_description">AukDialer n’a pas pu joindre la boîte vocale de votre opérateur. Vérifiez votre connexion, et essayez en données mobiles si vous êtes en Wi‑Fi.</string>
+    <string name="voicemail_copy_diagnostics">Copier le diagnostic</string>
+    <string name="voicemail_copy_diagnostics_supporting">Pour signaler un opérateur dont la messagerie visuelle ne fonctionne pas encore : collez-le dans une issue</string>
+    <string name="voicemail_diagnostics_copied">Diagnostic copié</string>
     <string name="voicemail_status_open_settings">Réglages de messagerie vocale</string>
     <string name="voicemail_audio_unavailable">Cet enregistrement n’est plus disponible.</string>
     <string name="voicemail_playback_failed">Ce message vocal n’a pas pu être lu.</string>

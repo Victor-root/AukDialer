@@ -1,5 +1,7 @@
 package auk.dialer.vroot.view.screen.settings
 
+import androidx.compose.material.icons.outlined.ContentCopy
+import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.controller.vvm.VvmNotifier
 import android.Manifest
@@ -72,6 +74,7 @@ fun VoicemailScreen(
         }
     }
 
+    val diagnostics = rememberVoicemailDiagnosticsCopy()
     val sendSmsPermission = rememberPermissionState(Manifest.permission.SEND_SMS) { granted ->
         if (granted) {
             runProvisioning()
@@ -282,6 +285,12 @@ fun VoicemailScreen(
                                 sendSmsPermission.launchPermissionRequest()
                             }
                         }
+                    )
+                    AukListItem(
+                        headline = stringResource(R.string.voicemail_copy_diagnostics),
+                        supporting = stringResource(R.string.voicemail_copy_diagnostics_supporting),
+                        leadingIcon = Icons.Outlined.ContentCopy,
+                        onClick = diagnostics.copy
                     )
                 }
             }

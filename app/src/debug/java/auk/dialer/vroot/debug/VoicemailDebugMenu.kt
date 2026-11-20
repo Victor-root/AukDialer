@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
-import auk.dialer.vroot.view.components.rememberClipboardCopy
+import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,9 +34,10 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
     val context = LocalContext.current
     val contactsRepo = koinInject<IContactsRepository>()
     val voicemailRepo = koinInject<IVoicemailRepository>()
-    val copyToClipboard = rememberClipboardCopy()
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
+    // Also emitted to logcat, so the report can be grabbed from the IDE without going through the clipboard.
+    val diagnostics = rememberVoicemailDiagnosticsCopy(onReport = ::logDiagnostics)
     var showOverrideDialog by remember { mutableStateOf(false) }
 
     fun run(action: suspend () -> Unit) {
@@ -127,14 +128,7 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
             text = { Text("Copy diagnostics") },
             onClick = {
                 expanded = false
-                scope.launch {
-                    val report = withContext(Dispatchers.IO) { VoicemailDiagnostics.build(context) }
-                    copyToClipboard(report)
-                    // Also emitted to logcat, so the report can be grabbed from
-                    // the IDE without going through the clipboard.
-                    VoicemailDiagnostics.log(report)
-                    Toast.makeText(context, "Diagnostics copied", Toast.LENGTH_SHORT).show()
-                }
+                diagnostics.copy()
             }
         )
     }
@@ -162,4 +156,9 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
             }
         )
     }
+}
+
+/** Split by line because logcat truncates long messages, which would cut the report short. */
+private fun logDiagnostics(report: String) {
+    report.lineSequence().forEach { android.util.Log.i("VvmDiagnostics", it) }
 }

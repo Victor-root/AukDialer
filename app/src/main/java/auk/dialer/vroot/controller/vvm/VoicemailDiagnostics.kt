@@ -1,4 +1,4 @@
-package auk.dialer.vroot.debug
+package auk.dialer.vroot.controller.vvm
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -10,14 +10,11 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.telephony.VisualVoicemailService
 import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
-import auk.dialer.vroot.controller.vvm.VvmCarrierConfig
-import auk.dialer.vroot.controller.vvm.VvmCredentialsStore
-import auk.dialer.vroot.controller.vvm.VvmImapClient
-import auk.dialer.vroot.controller.vvm.VvmNetwork
 
 /**
- * Debug-only snapshot of everything the voicemail feature depends on, meant to
- * be copied out of the app and pasted into a bug report.
+ * Snapshot of everything the voicemail feature depends on, meant to be copied
+ * out of the app and pasted into a bug report: what it takes to support a
+ * carrier that does not work yet.
  *
  * Secrets are never included: the report states whether a credential is present,
  * never its value. Phone numbers are masked.
@@ -370,7 +367,6 @@ object VoicemailDiagnostics {
         }
     }
 
-    /** Keeps the shape of a number visible without exposing who it belongs to. */
     /**
      * Hides all but the first two and last two digits, and keeps every other
      * character where it is: how each app formats the same caller (a +, an
@@ -391,14 +387,5 @@ object VoicemailDiagnostics {
         }.joinToString("")
     }
 
-    /**
-     * Writes the report to logcat under a single tag. Split by line because
-     * logcat truncates long messages, which would cut the report short.
-     */
-    fun log(report: String) {
-        report.lineSequence().forEach { android.util.Log.i(LOG_TAG, it) }
-    }
-
-    private const val LOG_TAG = "VvmDiagnostics"
     private const val MAX_ROWS = 25
 }

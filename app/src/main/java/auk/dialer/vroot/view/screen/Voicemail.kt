@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -406,6 +407,9 @@ private fun VoicemailStatusState(
     val description = stringResource(statusDescription(status))
     val offersSettings = status == VoicemailStatus.NotProvisioned ||
         status == VoicemailStatus.AuthenticationRejected
+    // Every state but a pending activation is a problem worth reporting, with what it takes to fix it.
+    val offersDiagnostics = status != VoicemailStatus.ActivationPending
+    val diagnostics = rememberVoicemailDiagnosticsCopy()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -446,6 +450,12 @@ private fun VoicemailStatusState(
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onOpenSettings) {
                 Text(stringResource(R.string.voicemail_status_open_settings))
+            }
+        }
+        if (offersDiagnostics) {
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = diagnostics.copy, enabled = !diagnostics.inProgress) {
+                Text(stringResource(R.string.voicemail_copy_diagnostics))
             }
         }
     }
