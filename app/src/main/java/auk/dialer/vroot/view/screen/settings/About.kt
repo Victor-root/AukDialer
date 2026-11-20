@@ -1,5 +1,8 @@
 package auk.dialer.vroot.view.screen.settings
 
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
 import auk.dialer.vroot.view.components.AukScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -77,51 +80,52 @@ fun AboutScreen(navigator: DestinationsNavigator) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            AukExpressiveCard(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+            // The app's icon on the page itself, over a soft halo of its own colour, rather than in a
+            // coloured card that drowned it.
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 4.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
+                        .size(180.dp)
+                        .background(
+                            Brush.radialGradient(listOf(logoColor.copy(alpha = 0.22f), Color.Transparent))
+                        )
                 ) {
                     Surface(
-                        modifier = Modifier.size(88.dp),
+                        modifier = Modifier.size(104.dp),
                         shape = MaterialTheme.shapes.extraLarge,
                         color = logoColor,
-                        contentColor = Color.White,
-                        shadowElevation = 4.dp
+                        shadowElevation = 6.dp
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(16.dp)) {
-                            Image(
-                                painter = painterResource(R.drawable.ic_launcher_foreground),
-                                contentDescription = stringResource(R.string.about_logo_content_desc),
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = stringResource(R.string.about_app_display_name),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = aukTint(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                        contentColor = aukOnTint(MaterialTheme.colorScheme.onPrimaryContainer)
-                    ) {
-                        Text(
-                            text = "v${appInfo.first} (${appInfo.second})",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        Image(
+                            painter = painterResource(R.drawable.ic_launcher_foreground),
+                            contentDescription = stringResource(R.string.about_logo_content_desc),
+                            modifier = Modifier.fillMaxSize().padding(16.dp)
                         )
                     }
+                }
+                Text(
+                    text = stringResource(R.string.about_app_display_name),
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Text(
+                        text = "v${appInfo.first} (${appInfo.second})",
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                    )
                 }
             }
 
