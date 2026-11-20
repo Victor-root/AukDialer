@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import android.content.Context
 import android.telecom.TelecomManager
@@ -253,10 +254,11 @@ fun BlockedNumbersScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
+                                    val privacy = LocalPrivacyMask.current
                                     if (matchedContact != null) {
                                         AukListItem(
-                                            headline = matchedContact.name,
-                                            supporting = formatPhoneNumber(entry.originalNumber),
+                                            headline = privacy.name(matchedContact.name),
+                                            supporting = privacy.number(entry.originalNumber),
                                             headlineMaxLines = 2,
                                             supportingMaxLines = 2,
                                             avatarName = matchedContact.name,
@@ -265,7 +267,7 @@ fun BlockedNumbersScreen(
                                         )
                                     } else {
                                         AukListItem(
-                                            headline = formatPhoneNumber(entry.originalNumber),
+                                            headline = privacy.number(entry.originalNumber),
                                             supporting = stringResource(R.string.blocked_list_item_supporting),
                                             headlineMaxLines = 2,
                                             supportingMaxLines = 2,
@@ -375,7 +377,7 @@ fun BlockedNumbersScreen(
             }
         ) {
             Text(
-                text = stringResource(R.string.blocked_unblock_confirm_message, formatPhoneNumber(target.originalNumber)),
+                text = stringResource(R.string.blocked_unblock_confirm_message, LocalPrivacyMask.current.number(target.originalNumber)),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

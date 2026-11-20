@@ -30,7 +30,6 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.controller.util.ContactUtils
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineStart
@@ -104,6 +103,7 @@ fun AZListScroll(
 
     Box(modifier = modifier.fillMaxSize()) {
         val unknownLabel = stringResource(R.string.label_unknown)
+        val privacy = LocalPrivacyMask.current
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
@@ -133,12 +133,11 @@ fun AZListScroll(
                     contentType = { _, _ -> "contact" }
                 ) { index, contact ->
                     val isLast = index == contactsForChar.lastIndex
-                    val displayName = ContactUtils.formatContactName(
-                        contact.name.ifEmpty {
-                            contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: unknownLabel
-                        },
-                        displayOrder
-                    )
+                    val displayName = if (contact.name.isNotEmpty()) {
+                        privacy.name(contact.name, ContactUtils.formatContactName(contact.name, displayOrder))
+                    } else {
+                        contact.phoneNumbers.firstOrNull()?.let { privacy.number(it) } ?: unknownLabel
+                    }
                     // Right side leaves room for the alphabet index bar so its letters don't sit on
                     // top of the card's own border.
                     AukExpressiveCardSegment(
@@ -151,7 +150,7 @@ fun AZListScroll(
                     ) {
                         AukListItem(
                             headline = displayName,
-                            supporting = contact.subtitle,
+                            supporting = contact.subtitle?.let(privacy::text),
                             headlineMaxLines = 2,
                             avatarName = contact.name,
                             photoUri = contact.photoUri,

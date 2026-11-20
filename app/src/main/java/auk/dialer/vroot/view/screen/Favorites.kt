@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -300,7 +301,7 @@ private fun FavoriteGridItem(
         }
 
         Text(
-            text = ContactUtils.formatContactName(contact.name, displayOrder),
+            text = LocalPrivacyMask.current.name(contact.name, ContactUtils.formatContactName(contact.name, displayOrder)),
             style = MaterialTheme.typography.labelMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

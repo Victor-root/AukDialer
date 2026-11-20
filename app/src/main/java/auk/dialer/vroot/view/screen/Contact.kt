@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.accounts.Account
 import androidx.activity.compose.BackHandler
@@ -260,7 +261,7 @@ fun AccountFilterBar(viewModel: ContactsViewModel) {
             }, onAccentBar = true)
         }
         items(accounts) { account ->
-            AukFilterChip(ContactUtils.getFriendlyAccountName(LocalContext.current, account), selectedAccount == account, {
+            AukFilterChip(ContactUtils.getFriendlyAccountName(LocalContext.current, account, LocalPrivacyMask.current), selectedAccount == account, {
                 viewModel.selectAccount(account)
             }, onAccentBar = true)
         }
@@ -432,12 +433,12 @@ fun BatchActionBar(
                         Spacer(Modifier.width(16.dp))
                         Column {
                             Text(
-                                ContactUtils.getFriendlyAccountName(LocalContext.current, account),
+                                ContactUtils.getFriendlyAccountName(LocalContext.current, account, LocalPrivacyMask.current),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                account.name,
+                                LocalPrivacyMask.current.text(account.name),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

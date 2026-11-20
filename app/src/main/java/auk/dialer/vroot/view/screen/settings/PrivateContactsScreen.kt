@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,7 +31,6 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.makeCall
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.view.components.AukAvatar
@@ -406,9 +406,10 @@ fun PrivateContactsScreen(
     if (showMoveAccountDialog && targetContactsToMove.isNotEmpty()) {
         val publicLabel = stringResource(R.string.contact_move_to_public_storage)
         val publicDesc = stringResource(R.string.contact_visible_to_other_apps)
-        val storageOptions = remember(availableAccounts, publicLabel) {
+        val privacy = LocalPrivacyMask.current
+        val storageOptions = remember(availableAccounts, publicLabel, privacy) {
             listOf("public" to Pair(publicLabel, publicDesc)) +
-            availableAccounts.map { acc -> acc.name to Pair(acc.name, acc.type) }
+            availableAccounts.map { acc -> acc.name to Pair(privacy.text(acc.name), acc.type) }
         }
         AukSelectionDialog(
             onDismissRequest = {
@@ -492,7 +493,7 @@ fun PrivateContactCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = contact.name,
+                        text = LocalPrivacyMask.current.name(contact.name),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -518,7 +519,7 @@ fun PrivateContactCard(
                 Spacer(Modifier.height(2.dp))
                 if (contact.phoneNumbers.isNotEmpty()) {
                     Text(
-                        text = formatPhoneNumber(contact.phoneNumbers.first()),
+                        text = LocalPrivacyMask.current.number(contact.phoneNumbers.first()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

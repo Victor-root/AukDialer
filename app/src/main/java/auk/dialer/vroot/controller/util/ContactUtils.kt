@@ -10,24 +10,25 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import auk.dialer.vroot.R
 
 object ContactUtils {
-    fun getFriendlyAccountName(context: Context, account: Account): String {
+    /** [privacy] hides the account's own name, often its owner's e-mail address. */
+    fun getFriendlyAccountName(context: Context, account: Account, privacy: PrivacyMask = PrivacyMask.Off): String {
         return when {
-            account.type == "com.google" -> account.name
+            account.type == "com.google" -> privacy.text(account.name)
             account.type == "com.whatsapp" -> context.getString(R.string.brand_whatsapp)
             account.type.contains("telegram", ignoreCase = true) -> context.getString(R.string.brand_telegram)
             account.type.contains("xiaomi", ignoreCase = true) -> context.getString(R.string.account_mi_account)
             account.type.contains("sim", ignoreCase = true) -> context.getString(R.string.account_sim_card)
-            else -> account.name
+            else -> privacy.text(account.name)
         }
     }
 
     /** The service an account belongs to, as a picker titles it: a Google account's own name is its address. */
-    fun getAccountTitle(context: Context, account: Account): String =
-        if (account.type == "com.google") context.getString(R.string.brand_google) else getFriendlyAccountName(context, account)
+    fun getAccountTitle(context: Context, account: Account, privacy: PrivacyMask = PrivacyMask.Off): String =
+        if (account.type == "com.google") context.getString(R.string.brand_google) else getFriendlyAccountName(context, account, privacy)
 
     /** The account itself under its [getAccountTitle], or null when that already says it. */
-    fun getAccountSubtitle(context: Context, account: Account): String? =
-        account.name.takeIf { it != getAccountTitle(context, account) }
+    fun getAccountSubtitle(context: Context, account: Account, privacy: PrivacyMask = PrivacyMask.Off): String? =
+        account.name.takeIf { it != getAccountTitle(context, account) }?.let(privacy::text)
 
     fun getAccountIcon(account: Account): ImageVector {
         return when {

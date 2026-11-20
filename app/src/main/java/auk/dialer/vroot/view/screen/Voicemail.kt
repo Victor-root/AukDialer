@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -28,7 +29,6 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.controller.util.formatDuration
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.formatTime
 import auk.dialer.vroot.controller.util.getDefaultDialerIntent
 import auk.dialer.vroot.debug.VoicemailDebugMenu
@@ -330,8 +330,9 @@ private fun VoicemailRow(
     onToggleSelection: () -> Unit
 ) {
     val context = LocalContext.current
-    val displayName = voicemail.contactName
-        ?: voicemail.number?.takeIf { it.isNotBlank() }?.let { formatPhoneNumber(it) }
+    val privacy = LocalPrivacyMask.current
+    val displayName = voicemail.contactName?.let { privacy.name(it) }
+        ?: voicemail.number?.takeIf { it.isNotBlank() }?.let { privacy.number(it) }
         ?: stringResource(R.string.label_unknown)
 
     key(voicemail.id) {

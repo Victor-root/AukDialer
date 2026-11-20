@@ -26,6 +26,7 @@ import auk.dialer.vroot.controller.util.getDefaultDialerIntent
 import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
 import auk.dialer.vroot.view.components.AukExpressiveCard
 import auk.dialer.vroot.view.components.AukListItem
+import auk.dialer.vroot.view.components.AukSwitchListItem
 import org.koin.compose.koinInject
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -44,6 +45,7 @@ fun SettingsScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     val prefs = koinInject<PreferenceManager>()
+    var screenshotMode by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, false)) }
     var debugCallNumber by remember {
         mutableStateOf(prefs.getString(PreferenceManager.KEY_DEBUG_CALL_NUMBER, "") ?: "")
     }
@@ -157,6 +159,16 @@ fun SettingsScreen(
 
             item {
                 AukExpressiveCard {
+                    AukSwitchListItem(
+                        headline = stringResource(R.string.settings_screenshot_mode),
+                        supporting = stringResource(R.string.settings_screenshot_mode_supporting),
+                        leadingIcon = Icons.Outlined.Screenshot,
+                        checked = screenshotMode,
+                        onCheckedChange = {
+                            screenshotMode = it
+                            prefs.setBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, it)
+                        }
+                    )
                     AukListItem(
                         headline = stringResource(R.string.settings_about_headline),
                         supporting = stringResource(R.string.settings_about_supporting),

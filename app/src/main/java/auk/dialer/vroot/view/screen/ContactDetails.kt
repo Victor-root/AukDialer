@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
@@ -176,6 +177,7 @@ fun ContactDetailsScreen(
     val unknownLabel = stringResource(R.string.label_unknown)
     val displayPhone = phoneNumber ?: fullContact?.phoneNumbers?.firstOrNull() ?: unknownLabel
     val displayName = fullContact?.name ?: phoneNumber ?: unknownLabel
+    val privacy = LocalPrivacyMask.current
     val shareContactLabel = stringResource(R.string.contact_share)
 
     val context = LocalContext.current
@@ -350,7 +352,7 @@ fun ContactDetailsScreen(
             onDismissRequest = { showNumberSelectionDialog = false },
             title = selectionTitle,
             items = fullContact!!.phoneNumbers,
-            itemLabel = { formatPhoneNumber(it) },
+            itemLabel = { privacy.number(it) },
             onItemSelected = { pendingSocialAction?.invoke(it) },
             itemSupporting = { mobileLabel },
             icon = Icons.Default.Phone,
@@ -424,9 +426,16 @@ fun ContactDetailsScreen(
                 }
             }
         ) {
-            val vCard = remember(displayName, displayPhone, fullContact?.emails?.firstOrNull()) {
+            val vCard = remember(displayName, displayPhone, fullContact?.emails?.firstOrNull(), privacy) {
                 // The real number only: displayPhone falls back to the "Unknown" label for the screen.
-                QrCodeUtils.generateVCard(displayName, phoneNumber ?: fullContact?.phoneNumbers?.firstOrNull(), fullContact?.emails?.firstOrNull())
+                val number = phoneNumber ?: fullContact?.phoneNumbers?.firstOrNull()
+                val email = fullContact?.emails?.firstOrNull()
+                // In screenshot mode the code carries what the screen shows, not the real details.
+                if (privacy.enabled) {
+                    QrCodeUtils.generateVCard(privacy.name(displayName), number?.let(privacy::number), email?.let(privacy::text))
+                } else {
+                    QrCodeUtils.generateVCard(displayName, number, email)
+                }
             }
             val qrBitmap = remember(vCard) { QrCodeUtils.generateQrCode(vCard, 600) }
 
@@ -447,13 +456,13 @@ fun ContactDetailsScreen(
 
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    displayName,
+                    privacy.name(displayName),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    formatPhoneNumber(displayPhone),
+                    privacy.number(displayPhone),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -543,13 +552,13 @@ fun ContactDetailsScreen(
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
                                 // A number with no contact behind it is the title: in its national form.
-                                text = if (fullContact?.name == null) formatPhoneNumber(displayName) else displayName,
+                                text = if (fullContact?.name == null) privacy.number(displayName) else privacy.name(displayName),
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             fullContact?.nickname?.takeIf { it.isNotBlank() }?.let { nickname ->
                                 Text(
-                                    text = nickname,
+                                    text = privacy.text(nickname),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(top = 2.dp)
@@ -658,7 +667,7 @@ fun ContactDetailsScreen(
 
                                     Box {
                                         AukListItem(
-                                            headline = formatPhoneNumber(number),
+                                            headline = privacy.number(number),
                                             supporting = buildString {
                                                 append(typeText.ifBlank { mobileLabel })
                                                 if (isFav) append(bulletFavorite)
@@ -732,7 +741,7 @@ fun ContactDetailsScreen(
 
                                     Box {
                                         AukListItem(
-                                            headline = email,
+                                            headline = privacy.text(email),
                                             supporting = emailTypeText.ifBlank { stringResource(R.string.label_email) } + if (isFav) stringResource(R.string.contact_bullet_favorite) else "",
                                             leadingIcon = Icons.Default.Email,
                                             onClick = { emailLauncher.sendEmail(email, fullContact) },
@@ -775,7 +784,7 @@ fun ContactDetailsScreen(
                                 var showMenu by remember { mutableStateOf(false) }
                                 Box {
                                     AukListItem(
-                                        headline = formatPhoneNumber(phoneNumber),
+                                        headline = privacy.number(phoneNumber),
                                         supporting = stringResource(R.string.label_unknown_number),
                                         leadingIcon = Icons.Default.Phone,
                                         onClick = { callLauncher.dial(phoneNumber, null) },
@@ -835,7 +844,7 @@ fun ContactDetailsScreen(
                                 addressEntries.forEachIndexed { index, addressEntry ->
                                     val address = addressEntry.address
                                     AukListItem(
-                                        headline = address,
+                                        headline = privacy.text(address),
                                         supporting = ContactTypeLabels.addressTypeLabel(context, addressEntry.type, addressEntry.label)
                                             .ifBlank { stringResource(R.string.label_address) },
                                         leadingIcon = ContactTypeLabels.addressTypeIcon(addressEntry.type),
@@ -860,10 +869,10 @@ fun ContactDetailsScreen(
                                     val typeLabel = ContactTypeLabels.eventTypeLabel(context, event.type, event.label)
                                     // A birthday with its year also tells how old the contact is.
                                     val age = EventDates.parse(event.date)
-                                        ?.takeIf { event.type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY }
+                                        ?.takeIf { event.type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY && !privacy.enabled }
                                         ?.let { EventDates.age(it) }
                                     AukListItem(
-                                        headline = EventDates.format(event.date),
+                                        headline = privacy.text(EventDates.format(event.date)),
                                         supporting = if (age != null) {
                                             "$typeLabel · ${pluralStringResource(R.plurals.contact_age, age, age)}"
                                         } else {
@@ -886,7 +895,7 @@ fun ContactDetailsScreen(
                             AukExpressiveCard(title = stringResource(R.string.label_notes), icon = Icons.AutoMirrored.Filled.Notes) {
                                 Box {
                                     Text(
-                                        text = fullContact!!.notes!!,
+                                        text = privacy.text(fullContact!!.notes!!),
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .combinedClickable(

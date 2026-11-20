@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -26,7 +27,6 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
 import com.ramcosta.composedestinations.generated.destinations.ContactDetailsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -197,11 +197,12 @@ private fun ContactSearchResults(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Box(modifier = Modifier.weight(1f)) {
+                                                val privacy = LocalPrivacyMask.current
                                                 AukListItem(
-                                                    headline = contact.name,
+                                                    headline = privacy.name(contact.name),
                                                     supporting = buildString {
-                                                        contact.subtitle?.let { append("$it • ") }
-                                                        contact.phoneNumbers.firstOrNull()?.let { append(formatPhoneNumber(it)) }
+                                                        contact.subtitle?.let { append("${privacy.text(it)} • ") }
+                                                        contact.phoneNumbers.firstOrNull()?.let { append(privacy.number(it)) }
                                                     }.ifEmpty { null },
                                                     headlineMaxLines = 2,
                                                     supportingMaxLines = 2,

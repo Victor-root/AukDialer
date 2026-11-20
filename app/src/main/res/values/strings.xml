@@ -297,6 +297,9 @@
     <string name="settings_backup_restore_headline">Backup &amp; restore</string>
     <string name="settings_backup_restore_supporting">Import and export contacts and logs</string>
     <string name="settings_manage_contacts_headline">Manage contacts</string>
+    <string name="settings_screenshot_mode">Screenshot mode</string>
+    <string name="settings_screenshot_mode_supporting">Hides names, numbers, photos and other personal details, so screenshots can be shared safely</string>
+    <string name="screenshot_mode_contact">Contact %1$d</string>
     <string name="settings_about_headline">About AukDialer</string>
     <string name="settings_about_supporting">Version, author and source code</string>
     <string name="settings_debug_simulate_call_number_label">Caller number or text</string>

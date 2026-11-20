@@ -1,5 +1,6 @@
 package auk.dialer.vroot.controller
 
+import auk.dialer.vroot.controller.util.PrivacyMask
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,7 +11,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import auk.dialer.vroot.controller.util.decodeSampledBitmap
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import android.graphics.Color
 import android.net.Uri
 import android.provider.BlockedNumberContract
@@ -389,7 +389,7 @@ class CallService : InCallService() {
     private fun handleBlockedCall(call: Call, number: String) {
         call.reject(Call.REJECT_REASON_DECLINED)
         if (preferenceManager.getBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, true)) {
-            BlockedCallNotifier.notify(this, number)
+            BlockedCallNotifier.notify(this, number, PrivacyMask.of(this, preferenceManager))
         }
     }
 
@@ -420,10 +420,11 @@ class CallService : InCallService() {
             } catch (e: Exception) { null }
         } else null
 
-        val contactName = contact?.name
-            ?: number.ifEmpty { null }?.let { formatPhoneNumber(it) }
+        val privacy = PrivacyMask.of(this, preferenceManager)
+        val contactName = contact?.name?.let { privacy.name(it) }
+            ?: number.ifEmpty { null }?.let { privacy.number(it) }
             ?: getString(R.string.label_unknown_number)
-        val contactPhoto = getContactBitmap(contact?.photoUri)
+        val contactPhoto = getContactBitmap(privacy.photo(contact?.photoUri))
 
         val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
         val simLabel = call.details.accountHandle?.let {
@@ -653,13 +654,14 @@ class CallService : InCallService() {
             } catch (e: Exception) { null }
         } else null
 
+        val privacy = PrivacyMask.of(this, preferenceManager)
         val contactName = when {
-            contact != null -> contact.name
-            number.isNotEmpty() -> formatPhoneNumber(number)
+            contact != null -> privacy.name(contact.name)
+            number.isNotEmpty() -> privacy.number(number)
             else -> getString(R.string.label_unknown_number)
         }
-        
-        val contactPhoto = getContactBitmap(contact?.photoUri)
+
+        val contactPhoto = getContactBitmap(privacy.photo(contact?.photoUri))
 
         val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
         val accountHandle = call.details.accountHandle

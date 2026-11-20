@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import android.accounts.Account
 import androidx.compose.foundation.layout.*
@@ -92,8 +93,8 @@ fun ContactVisibilityScreen(
                     accounts.forEach { account ->
                         val key = "${account.type}|${account.name}"
                         AukSwitchListItem(
-                            headline = ContactUtils.getAccountTitle(LocalContext.current, account),
-                            supporting = ContactUtils.getAccountSubtitle(LocalContext.current, account),
+                            headline = ContactUtils.getAccountTitle(LocalContext.current, account, LocalPrivacyMask.current),
+                            supporting = ContactUtils.getAccountSubtitle(LocalContext.current, account, LocalPrivacyMask.current),
                             leadingIcon = ContactUtils.getAccountIcon(account),
                             checked = currentVisible.contains(key),
                             onCheckedChange = { isChecked: Boolean -> toggleAccount(key, isChecked) }

@@ -1,5 +1,10 @@
 package auk.dialer.vroot.view.screen
 
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.AnnotatedString
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.theme.softAccentColors
 import android.accounts.Account
@@ -391,14 +396,15 @@ fun ContactEditScreen(
                 val pickerAccounts = remember(availableAccounts, loadedContact) {
                     (availableAccounts + listOfNotNull(loadedContact?.account())).distinct()
                 }
-                val accountOptions = remember(pickerAccounts, privateTitle, localTitle, localDesc) {
+                val privacy = LocalPrivacyMask.current
+                val accountOptions = remember(pickerAccounts, privateTitle, localTitle, localDesc, privacy) {
                     listOf(
                         "private" to Triple(privateTitle, privateDesc, Icons.Default.Lock),
                         "local" to Triple(localTitle, localDesc, Icons.Default.CloudOff)
                     ) + pickerAccounts.map { acc ->
                         accountKey(acc) to Triple(
-                            ContactUtils.getAccountTitle(context, acc),
-                            ContactUtils.getAccountSubtitle(context, acc).orEmpty(),
+                            ContactUtils.getAccountTitle(context, acc, privacy),
+                            ContactUtils.getAccountSubtitle(context, acc, privacy).orEmpty(),
                             ContactUtils.getAccountIcon(acc)
                         )
                     }
@@ -905,6 +911,15 @@ private fun ContactTextField(
     onClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    // Screenshot mode hides what the field holds while it is typed in, as a password field does.
+    val privacy = LocalPrivacyMask.current
+    val visualTransformation = remember(privacy) {
+        if (privacy.enabled) {
+            VisualTransformation { text -> TransformedText(AnnotatedString(privacy.text(text.text)), OffsetMapping.Identity) }
+        } else {
+            VisualTransformation.None
+        }
+    }
     if (onClick != null) {
         val currentOnClick by rememberUpdatedState(onClick)
         LaunchedEffect(interactionSource) {
@@ -921,6 +936,7 @@ private fun ContactTextField(
         minLines = minLines,
         readOnly = onClick != null,
         interactionSource = interactionSource,
+        visualTransformation = visualTransformation,
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,

@@ -35,7 +35,7 @@ fun ContactCompany(
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Icon(Icons.Outlined.Business, contentDescription = null, tint = color, modifier = Modifier.size(iconSize))
-        Text(text = company, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text = LocalPrivacyMask.current.text(company), style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

@@ -283,6 +283,9 @@
     <string name="settings_backup_restore_headline">Sauvegarde et restauration</string>
     <string name="settings_backup_restore_supporting">Importer et exporter les contacts et journaux</string>
     <string name="settings_manage_contacts_headline">Gérer les contacts</string>
+    <string name="settings_screenshot_mode">Mode capture d’écran</string>
+    <string name="settings_screenshot_mode_supporting">Masque les noms, numéros, photos et autres infos personnelles, pour partager des captures sans risque</string>
+    <string name="screenshot_mode_contact">Contact %1$d</string>
     <string name="settings_about_headline">À propos d\'AukDialer</string>
     <string name="settings_about_supporting">Version, auteur et code source</string>
     <string name="settings_debug_simulate_call_number_label">Numéro ou texte de l’appelant</string>

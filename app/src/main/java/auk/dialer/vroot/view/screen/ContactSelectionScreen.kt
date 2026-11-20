@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.theme.softAccentColors
 import androidx.compose.animation.*
@@ -30,7 +31,6 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.view.theme.LocalCardRoundness
 import auk.dialer.vroot.view.components.NumberPickerDialog
@@ -482,7 +482,7 @@ fun ContactSelectionScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
-                                                text = contact.name,
+                                                text = LocalPrivacyMask.current.name(contact.name),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -500,9 +500,9 @@ fun ContactSelectionScreen(
                                         if (contact.phoneNumbers.isNotEmpty()) {
                                             Text(
                                                 text = if (contact.phoneNumbers.size > 1) {
-                                                    stringResource(R.string.contact_selection_more_numbers, formatPhoneNumber(primaryNumber), contact.phoneNumbers.size - 1)
+                                                    stringResource(R.string.contact_selection_more_numbers, LocalPrivacyMask.current.number(primaryNumber), contact.phoneNumbers.size - 1)
                                                 } else {
-                                                    formatPhoneNumber(primaryNumber)
+                                                    LocalPrivacyMask.current.number(primaryNumber)
                                                 },
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant

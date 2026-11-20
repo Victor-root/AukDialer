@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.provider.CallLog
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -27,7 +28,6 @@ import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.formatDateHeader
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.modal.data.CallLogFilter
@@ -95,8 +95,10 @@ fun CallLogFullScreen(
         }
     }
 
-    val contactName = remember(filteredLogsByContact) {
-        filteredLogsByContact.firstOrNull { it.name != null && it.name != it.number }?.name ?: (if (phoneNumber != null) formatPhoneNumber(phoneNumber) else null)
+    val privacy = LocalPrivacyMask.current
+    val contactName = remember(filteredLogsByContact, privacy) {
+        filteredLogsByContact.firstOrNull { it.name != null && it.name != it.number }?.name?.let { privacy.name(it) }
+            ?: phoneNumber?.let { privacy.number(it) }
     }
 
     AukScaffold(

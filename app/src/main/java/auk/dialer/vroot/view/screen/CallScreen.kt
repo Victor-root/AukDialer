@@ -75,7 +75,7 @@ import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.BuildConfig
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.controller.util.formatPhoneNumber
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import coil.compose.AsyncImage
 import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.CallService
@@ -137,8 +137,10 @@ fun ExpressiveCallScreen(
 
     val recordingLabel = contactName.ifBlank { phoneNumber }
     // An unknown caller is named by their number: both read in the familiar national form.
-    val shownNumber = remember(phoneNumber) { formatPhoneNumber(phoneNumber) }
-    val shownName = if (contactName == phoneNumber) shownNumber else contactName
+    val privacy = LocalPrivacyMask.current
+    val shownNumber = remember(phoneNumber, privacy) { privacy.number(phoneNumber) }
+    val shownName = if (contactName == phoneNumber) shownNumber else privacy.name(contactName)
+    val shownPhoto = privacy.photo(photoUri)
     val microphoneDeniedText = stringResource(R.string.call_recording_microphone_denied)
     // Asked when recording is tapped without the microphone and without Shizuku to capture instead.
     val microphonePermissionLauncher = rememberLauncherForActivityResult(
@@ -298,13 +300,13 @@ fun ExpressiveCallScreen(
             otherCall?.let { oc ->
                 val unknownLabel = stringResource(R.string.label_unknown)
                 var ocName by remember(oc, unknownLabel) {
-                    mutableStateOf(oc.details.handle?.schemeSpecificPart?.let { formatPhoneNumber(it) } ?: unknownLabel)
+                    mutableStateOf(oc.details.handle?.schemeSpecificPart?.let { privacy.number(it) } ?: unknownLabel)
                 }
                 LaunchedEffect(oc) {
                     val number = oc.details.handle?.schemeSpecificPart ?: ""
                     if (number.isNotEmpty()) {
                         val contact = try { contactsRepo.getContactByNumber(number) } catch (_: Exception) { null }
-                        if (contact != null) ocName = contact.name
+                        if (contact != null) ocName = privacy.name(contact.name)
                     }
                 }
 
@@ -445,9 +447,9 @@ fun ExpressiveCallScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (callState == Call.STATE_RINGING || callState == Call.STATE_DIALING) {
-                            PulsingAvatar(photoUri, isLandscape)
+                            PulsingAvatar(shownPhoto, isLandscape)
                         } else {
-                            HeroAvatar(photoUri, isLandscape)
+                            HeroAvatar(shownPhoto, isLandscape)
                         }
                         Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 20.dp))
                     }
@@ -659,7 +661,7 @@ fun ExpressiveCallScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        ExpressiveBackground(photoUri, backgroundUri, backgroundStyle)
+        ExpressiveBackground(shownPhoto, privacy.photo(backgroundUri), backgroundStyle)
 
         if (isLandscape) {
             Row(

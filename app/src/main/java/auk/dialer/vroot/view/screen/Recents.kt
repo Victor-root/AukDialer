@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.provider.CallLog
 import androidx.activity.compose.BackHandler
@@ -33,7 +34,6 @@ import auk.dialer.vroot.controller.CallLogViewModel
 import auk.dialer.vroot.controller.CallService
 import androidx.lifecycle.compose.currentStateAsState
 import auk.dialer.vroot.controller.util.formatDateHeader
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.controller.util.PreferenceManager
 import com.ramcosta.composedestinations.annotation.Destination
@@ -300,7 +300,10 @@ fun FavoriteCircleItem(
             }
         }
         Text(
-            text = auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder).split(" ").firstOrNull() ?: "",
+            text = LocalPrivacyMask.current.name(
+                contact.name,
+                auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder).split(" ").firstOrNull() ?: ""
+            ),
             style = MaterialTheme.typography.labelMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -356,10 +359,11 @@ fun AddFavoriteDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                val privacy = LocalPrivacyMask.current
                 availableContacts.take(40).forEach { contact ->
                     AukListItem(
-                        headline = contact.name,
-                        supporting = contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: "",
+                        headline = privacy.name(contact.name),
+                        supporting = contact.phoneNumbers.firstOrNull()?.let { privacy.number(it) } ?: "",
                         headlineMaxLines = 2,
                         supportingMaxLines = 2,
                         avatarName = contact.name,

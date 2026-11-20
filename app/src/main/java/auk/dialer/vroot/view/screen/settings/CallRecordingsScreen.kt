@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import android.content.Context
 import android.net.Uri
@@ -323,12 +324,15 @@ private fun RecordingRow(
 ) {
     val context = LocalContext.current
     val recording = entry.recording
+    val privacy = LocalPrivacyMask.current
+    // An unknown caller goes by their number, which the mask then treats as one.
+    val shownName = privacy.name(entry.name)
 
     key(recording.file.absolutePath) {
         AudioMessageRow(
-            title = entry.name,
+            title = shownName,
             subtitle = recordingSubtitle(context, recording),
-            avatarName = entry.name,
+            avatarName = shownName,
             photoUri = entry.photoUri,
             avatarIcon = if (entry.isIdentified) null else Icons.Outlined.MicNone,
             emphasized = false,

@@ -70,12 +70,13 @@ fun rememberMessageLauncher(): MessageLauncher {
     if (showNumberPicker && pendingContact != null) {
         val contact = pendingContact!!
         val lastUsed = prefs.getLastUsedNumber(contact.id)
-        
+        val privacy = LocalPrivacyMask.current
+
         AukSelectionDialog(
             onDismissRequest = { showNumberPicker = false },
             title = stringResource(R.string.select_number_title),
             items = contact.phoneNumbers,
-            itemLabel = { formatPhoneNumber(it) },
+            itemLabel = { privacy.number(it) },
             onItemSelected = { selectedNumber ->
                 initiateMessage(selectedNumber, contact)
             },

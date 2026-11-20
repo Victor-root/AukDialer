@@ -277,6 +277,10 @@ fun AukAvatar(
     morphStart: RoundedPolygon = AukMaterialShapes.AvatarMorphStart,
     morphEnd: RoundedPolygon = AukMaterialShapes.AvatarMorphEnd
 ) {
+    // Screenshot mode: the letters come from the contact's pseudonym, and no photo shows.
+    val privacy = LocalPrivacyMask.current
+    val shownName = privacy.name(name)
+    val shownPhoto = if (photoUri == "voicemail://icon") photoUri else privacy.photo(photoUri)
     val ownInteractionSource = remember { MutableInteractionSource() }
     val resolvedInteractionSource = interactionSource ?: ownInteractionSource
 
@@ -329,7 +333,7 @@ fun AukAvatar(
 
     // A heart's notch takes the top of the shape: its body, where the letter or icon has room, sits
     // lower than the box's middle.
-    val showsPhoto = style.showPicture && !photoUri.isNullOrEmpty() && photoUri != "voicemail://icon"
+    val showsPhoto = style.showPicture && !shownPhoto.isNullOrEmpty() && shownPhoto != "voicemail://icon"
     val contentModifier = if (!showsPhoto && avatarShape == style.shape && style.shapeIndex == AUK_AVATAR_SHAPE_HEART) {
         Modifier.layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
@@ -358,7 +362,7 @@ fun AukAvatar(
         ) {
             if (showsPhoto) {
                 AsyncImage(
-                    model = photoUri,
+                    model = shownPhoto,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -379,7 +383,7 @@ fun AukAvatar(
                 )
             } else if (style.showFirstLetter && hasLetters) {
                 Text(
-                    text = contactInitials(name, style.gradient),
+                    text = contactInitials(shownName, style.gradient),
                     style = textStyle,
                     color = colors.content
                 )

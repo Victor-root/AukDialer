@@ -28,7 +28,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.formatDate
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.formatTime
 import auk.dialer.vroot.modal.data.CallLogEntry
 
@@ -159,7 +158,8 @@ fun CallLogTile(
     
     val context = LocalContext.current
     val time = remember(log.date) { formatTime(context, log.date) }
-    val formattedNumber = remember(log.number) { formatPhoneNumber(log.number) }
+    val privacy = LocalPrivacyMask.current
+    val formattedNumber = remember(log.number, privacy) { privacy.number(log.number) }
 
     Box(
         modifier = Modifier
@@ -173,9 +173,9 @@ fun CallLogTile(
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 // A caller with no name is listed under their number, which is then shown formatted.
-                val displayName = remember(log.name, log.number, displayOrder, formattedNumber) {
+                val displayName = remember(log.name, log.number, displayOrder, formattedNumber, privacy) {
                     log.name?.takeIf { it.isNotEmpty() && it != log.number }?.let {
-                        auk.dialer.vroot.controller.util.ContactUtils.formatContactName(it, displayOrder)
+                        privacy.name(it, auk.dialer.vroot.controller.util.ContactUtils.formatContactName(it, displayOrder))
                     } ?: formattedNumber
                 }
 

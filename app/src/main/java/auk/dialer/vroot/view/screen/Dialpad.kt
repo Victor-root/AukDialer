@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
@@ -81,7 +82,6 @@ import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.ShizukuBridge
 import auk.dialer.vroot.view.components.*
 import auk.dialer.vroot.view.screen.transitions.SlideUpTransitions
@@ -404,11 +404,12 @@ fun DialPadScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Box(modifier = Modifier.weight(1f)) {
+                                            val privacy = LocalPrivacyMask.current
                                             AukListItem(
-                                                headline = auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder),
+                                                headline = privacy.name(contact.name, auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder)),
                                                 supporting = buildString {
-                                                    contact.subtitle?.let { append("$it • ") }
-                                                    contactNumber?.let { append(formatPhoneNumber(it)) }
+                                                    contact.subtitle?.let { append("${privacy.text(it)} • ") }
+                                                    contactNumber?.let { append(privacy.number(it)) }
                                                 }.ifEmpty { null },
                                                 headlineMaxLines = 2,
                                                 supportingMaxLines = 2,

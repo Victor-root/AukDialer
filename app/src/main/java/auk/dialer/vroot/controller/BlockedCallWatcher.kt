@@ -1,5 +1,6 @@
 package auk.dialer.vroot.controller
 
+import auk.dialer.vroot.controller.util.PrivacyMask
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -17,7 +18,6 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -25,7 +25,7 @@ import org.koin.core.component.inject
 object BlockedCallNotifier {
     private const val CHANNEL_ID = "blocked_call_channel"
 
-    fun notify(context: Context, number: String) {
+    fun notify(context: Context, number: String, privacy: PrivacyMask) {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(
             NotificationChannel(
@@ -38,7 +38,7 @@ object BlockedCallNotifier {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
             .setContentTitle(context.getString(R.string.notif_blocked_call_title))
-            .setContentText(context.getString(R.string.notif_blocked_call_text, formatPhoneNumber(number)))
+            .setContentText(context.getString(R.string.notif_blocked_call_text, privacy.number(number)))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
 
@@ -68,6 +68,7 @@ class BlockedCallWorker(
         val seenUntil = seen.getLong(KEY_SEEN_UNTIL, System.currentTimeMillis())
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
             var latest = seenUntil
+            val privacy = PrivacyMask.of(context, preferenceManager)
             runCatching {
                 context.contentResolver.query(
                     CallLog.Calls.CONTENT_URI,
@@ -77,7 +78,7 @@ class BlockedCallWorker(
                     "${CallLog.Calls.DATE} ASC"
                 )?.use { cursor ->
                     while (cursor.moveToNext()) {
-                        BlockedCallNotifier.notify(context, cursor.getString(0).orEmpty())
+                        BlockedCallNotifier.notify(context, cursor.getString(0).orEmpty(), privacy)
                         latest = maxOf(latest, cursor.getLong(1))
                     }
                 }

@@ -49,6 +49,10 @@ import auk.dialer.vroot.view.components.LocalAukSurfaceStyle
 import auk.dialer.vroot.view.components.rememberAukAvatarIcons
 import auk.dialer.vroot.view.components.rememberAukAvatarStyle
 import auk.dialer.vroot.view.components.rememberAukSurfaceStyle
+import androidx.compose.ui.res.stringResource
+import auk.dialer.vroot.R
+import auk.dialer.vroot.view.components.LocalPrivacyMask
+import auk.dialer.vroot.controller.util.PrivacyMask
 import org.koin.compose.koinInject
 import kotlin.math.abs
 
@@ -174,6 +178,11 @@ fun AukTheme(
         prefs.getInt(PreferenceManager.KEY_CARD_ROUNDNESS, AukShapeDefaults.DefaultRoundness)
     }
     val edgeToEdge by prefs.edgeToEdge.collectAsState()
+    val screenshotMode = remember(settingsVersion) {
+        prefs.getBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, false)
+    }
+    val contactPattern = stringResource(R.string.screenshot_mode_contact)
+    val privacyMask = remember(screenshotMode, contactPattern) { PrivacyMask(screenshotMode, contactPattern) }
 
     val wallpaperColorsVersion = rememberWallpaperColorsVersion(context, enabled = dynamicColor)
 
@@ -211,7 +220,8 @@ fun AukTheme(
         LocalEdgeToEdge provides edgeToEdge,
         LocalVividColors provides vividColors,
         LocalStatusBarBackground provides statusBarBackground,
-        LocalPlainStatusBar provides plainStatusBar
+        LocalPlainStatusBar provides plainStatusBar,
+        LocalPrivacyMask provides privacyMask
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,

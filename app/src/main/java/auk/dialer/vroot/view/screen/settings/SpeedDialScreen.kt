@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.LocalPrivacyMask
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.view.components.AukTopBarTitle
@@ -126,14 +126,14 @@ fun SpeedDialScreen(
                         
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = name ?: stringResource(R.string.settings_speed_dial_not_assigned),
+                                text = name?.let { LocalPrivacyMask.current.name(it) } ?: stringResource(R.string.settings_speed_dial_not_assigned),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (name == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                             )
                             if (number != null) {
                                 Text(
-                                    text = formatPhoneNumber(number),
+                                    text = LocalPrivacyMask.current.number(number),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -215,10 +215,11 @@ fun ContactPickerDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                val privacy = LocalPrivacyMask.current
                 filteredContacts.take(30).forEach { contact ->
                     AukListItem(
-                        headline = contact.name,
-                        supporting = contact.phoneNumbers.firstOrNull()?.let { formatPhoneNumber(it) } ?: stringResource(R.string.settings_speed_dial_no_number),
+                        headline = privacy.name(contact.name),
+                        supporting = contact.phoneNumbers.firstOrNull()?.let { privacy.number(it) } ?: stringResource(R.string.settings_speed_dial_no_number),
                         headlineMaxLines = 2,
                         supportingMaxLines = 2,
                         avatarName = contact.name,
