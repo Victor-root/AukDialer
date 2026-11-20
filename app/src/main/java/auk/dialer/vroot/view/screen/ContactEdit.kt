@@ -80,6 +80,7 @@ fun ContactEditScreen(
     var givenName by remember { mutableStateOf(initialSplit.first) }
     var familyName by remember { mutableStateOf(initialSplit.second) }
     var nickname by remember { mutableStateOf("") }
+    var company by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var photoUri by remember { mutableStateOf<String?>(null) }
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
@@ -103,7 +104,7 @@ fun ContactEditScreen(
 
     // The form as loaded, to tell whether leaving would lose something typed.
     fun formState(): List<Any?> = listOf(
-        givenName, familyName, nickname, notes, photoUri, selectedAccount, isPrivate,
+        givenName, familyName, nickname, company, notes, photoUri, selectedAccount, isPrivate,
         phones.toList(), emails.toList(), addresses.toList()
     )
     var loadedForm by remember { mutableStateOf<List<Any?>?>(null) }
@@ -125,6 +126,7 @@ fun ContactEditScreen(
                 givenName = split.first
                 familyName = split.second
                 nickname = existing.nickname ?: ""
+                company = existing.company ?: ""
                 notes = existing.notes ?: ""
                 photoUri = existing.photoUri
                 isPrivate = existing.isPrivate
@@ -226,6 +228,7 @@ fun ContactEditScreen(
                                         givenName = givenName.trim().ifBlank { null },
                                         familyName = familyName.trim().ifBlank { null },
                                         nickname = nickname.ifBlank { null },
+                                        company = company.trim().ifBlank { null },
                                         phoneNumbers = savedPhones.map { it.number },
                                         emails = savedEmails.map { it.address },
                                         phones = savedPhones,
@@ -462,6 +465,13 @@ fun ContactEditScreen(
                             label = { Text(stringResource(R.string.contact_edit_nickname)) },
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = { Icon(Icons.AutoMirrored.Filled.Label, null) }
+                        )
+                        ContactTextField(
+                            value = company,
+                            onValueChange = { company = it },
+                            label = { Text(stringResource(R.string.contact_edit_company)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = { Icon(Icons.Default.Business, null) }
                         )
                     }
                 }

@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import auk.dialer.vroot.controller.util.subtitle
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
@@ -265,7 +266,8 @@ fun DialPadScreen(
                         val matchesNumber = contact.phoneNumbers.any { numberMatchesQuery(it, cleanQuery) }
                         val matchesName = t9Enabled && T9Matcher.isMatch(contact.name, cleanQuery)
                         val matchesNickname = t9Enabled && contact.nickname?.let { T9Matcher.isMatch(it, cleanQuery) } ?: false
-                        matchesNumber || matchesName || matchesNickname
+                        val matchesCompany = t9Enabled && contact.company?.let { T9Matcher.isMatch(it, cleanQuery) } ?: false
+                        matchesNumber || matchesName || matchesNickname || matchesCompany
                     }
                     .take(50)
                     .toList()
@@ -405,7 +407,7 @@ fun DialPadScreen(
                                             AukListItem(
                                                 headline = auk.dialer.vroot.controller.util.ContactUtils.formatContactName(contact.name, displayOrder),
                                                 supporting = buildString {
-                                                    contact.nickname?.let { append("$it • ") }
+                                                    contact.subtitle?.let { append("$it • ") }
                                                     contactNumber?.let { append(formatPhoneNumber(it)) }
                                                 }.ifEmpty { null },
                                                 headlineMaxLines = 2,

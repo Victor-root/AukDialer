@@ -107,23 +107,27 @@ class ContactsRepository(
         }
         val list = contactsMap.values.toList()
         
-        // Nicknames, and the family names sorting by last name files contacts under.
+        // Nicknames and companies, shown under the name, and the family names sorting by last name
+        // files contacts under.
         val nicknameMap = mutableMapOf<String, String>()
+        val companyMap = mutableMapOf<String, String>()
         val familyNameMap = mutableMapOf<String, String>()
         val nicknameType = ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE
+        val organizationType = ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
         val nameType = ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
         try {
             contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
                 arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1, ContactsContract.Data.DATA3),
-                "${ContactsContract.Data.MIMETYPE} IN (?, ?)",
-                arrayOf(nicknameType, nameType),
+                "${ContactsContract.Data.MIMETYPE} IN (?, ?, ?)",
+                arrayOf(nicknameType, organizationType, nameType),
                 null
             )?.use { cursor ->
                 while (cursor.moveToNext()) {
                     val id = cursor.getString(0) ?: continue
                     when (cursor.getString(1)) {
                         nicknameType -> cursor.getString(2)?.let { nicknameMap[id] = it }
+                        organizationType -> cursor.getString(2)?.takeIf { it.isNotBlank() }?.let { companyMap.putIfAbsent(id, it) }
                         nameType -> cursor.getString(3)?.takeIf { it.isNotBlank() }?.let { familyNameMap.putIfAbsent(id, it) }
                     }
                 }
@@ -136,6 +140,7 @@ class ContactsRepository(
             val account = accounts[contact.id]
             contact.copy(
                 nickname = nicknameMap[contact.id] ?: contact.nickname,
+                company = companyMap[contact.id] ?: contact.company,
                 familyName = familyNameMap[contact.id],
                 accountName = account?.first,
                 accountType = account?.second
@@ -165,6 +170,24 @@ class ContactsRepository(
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun getCompanyForContactId(contactId: String): String? = try {
+        contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.Organization.COMPANY),
+            "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
+            arrayOf(contactId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE),
+            null
+        )?.use { cursor ->
+            var company: String? = null
+            while (company == null && cursor.moveToNext()) {
+                company = cursor.getString(0)?.takeIf { it.isNotBlank() }
+            }
+            company
+        }
+    } catch (e: Exception) {
+        null
     }
 
     private fun getNumbersForContactId(contactId: String): List<String> {
@@ -322,6 +345,9 @@ class ContactsRepository(
                         }
                         ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE -> {
                             currentContact.copy(nickname = data1)
+                        }
+                        ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE -> {
+                            if (currentContact.company.isNullOrBlank()) currentContact.copy(company = data1) else currentContact
                         }
                         ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE -> {
                             val type = cursor.getInt(data2Idx)
@@ -511,6 +537,38 @@ class ContactsRepository(
      * form does not show (middle name, prefix, suffix, phonetic names) stays, and the provider
      * rebuilds the display name from all of them. Inserts the row where there is none yet.
      */
+    /**
+     * Sets the company on a contact being edited. An organization row also holds a job title or a
+     * department another app may have filled in: the company is changed on it rather than the row
+     * replaced, and a row is only added when there is none.
+     */
+    private fun companyOperation(rawContactIds: List<String>, primaryRawContactId: String, company: String?): ContentProviderOperation {
+        val organization = ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
+        val hasRow = contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            arrayOf(ContactsContract.Data._ID),
+            "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.RAW_CONTACT_ID} IN (${rawContactIds.joinToString(",") { "?" }})",
+            arrayOf(organization) + rawContactIds,
+            null
+        )?.use { it.count > 0 } ?: false
+        return if (hasRow) {
+            ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                .withSelection(
+                    "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.RAW_CONTACT_ID} IN (${rawContactIds.joinToString(",") { "?" }})",
+                    arrayOf(organization) + rawContactIds
+                )
+                .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, company)
+                .build()
+        } else {
+            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, primaryRawContactId)
+                .withValue(ContactsContract.Data.MIMETYPE, organization)
+                .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, company)
+                .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, ContactsContract.CommonDataKinds.Organization.TYPE_WORK)
+                .build()
+        }
+    }
+
     private fun structuredNameOperation(rawContactId: String, contact: Contact): ContentProviderOperation {
         val name = ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
         val selection = "${ContactsContract.Data.RAW_CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=?"
@@ -703,6 +761,17 @@ class ContactsRepository(
                 )
             }
 
+            if (contact.company != null) {
+                ops.add(
+                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactIndex)
+                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, contact.company)
+                        .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, ContactsContract.CommonDataKinds.Organization.TYPE_WORK)
+                        .build()
+                )
+            }
+
             if (contact.notes != null) {
                 ops.add(
                     ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -823,6 +892,10 @@ class ContactsRepository(
                             .build()
                     )
                 }
+            }
+
+            if (contact.company != current.company) {
+                ops.add(companyOperation(rawContactIds, primaryRawContactId, contact.company))
             }
 
             if (contact.notes != current.notes) {
@@ -1089,6 +1162,7 @@ class ContactsRepository(
                     return Contact(
                         id = id,
                         name = formatName(name ?: unknownLabel),
+                        company = if (id.isNotBlank()) getCompanyForContactId(id) else null,
                         photoUri = photoUri,
                         isFavorite = starred,
                         phoneNumbers = numbers,
@@ -1191,6 +1265,8 @@ class ContactsRepository(
                     name = entry.name.ifBlank { entry.phoneNumbers.firstOrNull() ?: unknownLabel },
                     phoneNumbers = entry.phoneNumbers,
                     emails = entry.emails,
+                    nickname = entry.nickname,
+                    company = entry.company,
                     isPrivate = true
                 ))
             }

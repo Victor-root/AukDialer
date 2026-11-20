@@ -3,11 +3,13 @@ package auk.dialer.vroot.controller.util
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 
-/** Name, numbers and e-mails of one card, the parts the imports keep. */
+/** Name, nickname, company, numbers and e-mails of one card, the parts the imports keep. */
 data class VCardEntry(
     val name: String,
     val phoneNumbers: List<String>,
-    val emails: List<String>
+    val emails: List<String>,
+    val nickname: String? = null,
+    val company: String? = null
 )
 
 /**
@@ -24,6 +26,8 @@ object VCardReader {
         var inCard = false
         var fullName = ""
         var structuredName = ""
+        var nickname = ""
+        var company = ""
         val numbers = mutableListOf<String>()
         val emails = mutableListOf<String>()
 
@@ -41,6 +45,8 @@ object VCardReader {
                     inCard = true
                     fullName = ""
                     structuredName = ""
+                    nickname = ""
+                    company = ""
                     numbers.clear()
                     emails.clear()
                 }
@@ -48,11 +54,20 @@ object VCardReader {
                     inCard = false
                     val name = fullName.ifBlank { structuredName }
                     if (name.isNotBlank() || numbers.isNotEmpty()) {
-                        entries += VCardEntry(name.trim(), numbers.toList(), emails.toList())
+                        entries += VCardEntry(
+                            name.trim(),
+                            numbers.toList(),
+                            emails.toList(),
+                            nickname = nickname.trim().ifBlank { null },
+                            company = company.trim().ifBlank { null }
+                        )
                     }
                 }
                 "FN" -> if (inCard) fullName = unescape(decode(rawValue, params))
                 "N" -> if (inCard) structuredName = nameFromParts(decode(rawValue, params))
+                "NICKNAME" -> if (inCard) nickname = unescape(decode(rawValue, params))
+                // Company;Department;...: the company is the first part.
+                "ORG" -> if (inCard) company = splitUnescaped(decode(rawValue, params)).firstOrNull()?.let(::unescape).orEmpty()
                 "TEL" -> if (inCard) {
                     val number = decode(rawValue, params).removePrefix("tel:").trim()
                     if (number.isNotEmpty()) numbers += number

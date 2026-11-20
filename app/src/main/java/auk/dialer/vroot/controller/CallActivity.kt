@@ -53,7 +53,8 @@ private data class CallIdentity(
     val number: String,
     val name: String,
     val photoUri: String?,
-    val backgroundUri: String?
+    val backgroundUri: String?,
+    val company: String? = null
 )
 
 private data class CachedCallIdentity(
@@ -231,6 +232,7 @@ class CallActivity : ComponentActivity() {
                                 contactName = targetIdentity.name,
                                 phoneNumber = targetIdentity.number,
                                 photoUri = targetIdentity.photoUri,
+                                company = targetIdentity.company,
                                 audioState = audioState,
                                 initialConnectTime = connectTime,
                                 backgroundUri = targetIdentity.backgroundUri
@@ -300,7 +302,8 @@ class CallActivity : ComponentActivity() {
                     ?: identity.name.takeIf { contactFailed && it.isNotBlank() }
                     ?: number.ifEmpty { unknownLabel },
                 photoUri = contact?.photoUri ?: identity.photoUri.takeIf { contactFailed },
-                backgroundUri = background
+                backgroundUri = background,
+                company = contact?.company ?: identity.company.takeIf { contactFailed }
             )
             cacheIdentity(number, resolved, settingsState)
             identity = resolved

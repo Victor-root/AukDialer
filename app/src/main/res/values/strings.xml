@@ -198,6 +198,7 @@
     <string name="contact_edit_first_name">First name</string>
     <string name="contact_edit_last_name">Last name</string>
     <string name="contact_edit_nickname">Nickname</string>
+    <string name="contact_edit_company">Company</string>
     <string name="contact_edit_phone_numbers_header">Phone numbers</string>
     <string name="contact_edit_phone_field_label">Phone</string>
     <string name="contact_edit_add_phone">Add phone</string>

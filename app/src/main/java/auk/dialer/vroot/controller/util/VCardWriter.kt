@@ -11,7 +11,12 @@ object VCardWriter {
 
     fun cards(contacts: List<Contact>): String = buildString {
         contacts.forEach { contact ->
-            append(card(contact.name, contact.givenName, contact.familyName, contact.phoneNumbers, contact.emails))
+            append(
+                card(
+                    contact.name, contact.givenName, contact.familyName, contact.phoneNumbers, contact.emails,
+                    nickname = contact.nickname, company = contact.company
+                )
+            )
         }
     }
 
@@ -20,7 +25,9 @@ object VCardWriter {
         givenName: String?,
         familyName: String?,
         phones: List<String>,
-        emails: List<String>
+        emails: List<String>,
+        nickname: String? = null,
+        company: String? = null
     ): String = buildString {
         line("BEGIN:VCARD")
         line("VERSION:3.0")
@@ -28,6 +35,8 @@ object VCardWriter {
         val given = givenName?.takeIf { it.isNotBlank() } ?: name.takeIf { familyName.isNullOrBlank() }
         line("N:${escape(familyName.orEmpty())};${escape(given.orEmpty())};;;")
         line("FN:${escape(name)}")
+        nickname?.takeIf { it.isNotBlank() }?.let { line("NICKNAME:${escape(it)}") }
+        company?.takeIf { it.isNotBlank() }?.let { line("ORG:${escape(it)}") }
         phones.filter { it.isNotBlank() }.forEach { line("TEL;TYPE=CELL:${escape(it)}") }
         emails.filter { it.isNotBlank() }.forEach { line("EMAIL;TYPE=INTERNET:${escape(it)}") }
         line("END:VCARD")

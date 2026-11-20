@@ -81,6 +81,7 @@ import auk.dialer.vroot.controller.CallRecorder
 import auk.dialer.vroot.controller.CallService
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.view.components.AukSelectionDialog
+import auk.dialer.vroot.view.components.ContactCompany
 import auk.dialer.vroot.view.theme.callColors
 import auk.dialer.vroot.view.theme.aukAvatarShape
 import kotlinx.coroutines.delay
@@ -100,7 +101,8 @@ fun ExpressiveCallScreen(
     photoUri: String?,
     audioState: CallAudioState?,
     initialConnectTime: Long = 0L,
-    backgroundUri: String? = null
+    backgroundUri: String? = null,
+    company: String? = null
 ) {
     val view = LocalView.current
     val context = LocalContext.current
@@ -459,6 +461,15 @@ fun ExpressiveCallScreen(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                if (!company.isNullOrBlank()) {
+                    ContactCompany(
+                        company = company,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
 
                 if (phoneNumber.isNotEmpty() && phoneNumber != contactName) {
                     Text(

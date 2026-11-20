@@ -69,7 +69,9 @@ class BackupViewModel(
                                 id = "0",
                                 name = entry.name.ifBlank { entry.phoneNumbers.first() },
                                 phoneNumbers = entry.phoneNumbers,
-                                emails = entry.emails
+                                emails = entry.emails,
+                                nickname = entry.nickname,
+                                company = entry.company
                             )
                         )
                     }

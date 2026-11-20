@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import auk.dialer.vroot.controller.util.subtitle
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.matchesSearch
 import auk.dialer.vroot.controller.ContactsViewModel
@@ -199,7 +200,7 @@ private fun ContactSearchResults(
                                                 AukListItem(
                                                     headline = contact.name,
                                                     supporting = buildString {
-                                                        contact.nickname?.let { append("$it • ") }
+                                                        contact.subtitle?.let { append("$it • ") }
                                                         contact.phoneNumbers.firstOrNull()?.let { append(formatPhoneNumber(it)) }
                                                     }.ifEmpty { null },
                                                     headlineMaxLines = 2,

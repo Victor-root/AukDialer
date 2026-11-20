@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import auk.dialer.vroot.controller.util.subtitle
 import auk.dialer.vroot.R
 import auk.dialer.vroot.modal.data.Contact
 import auk.dialer.vroot.controller.util.ContactUtils
@@ -150,7 +151,7 @@ fun AZListScroll(
                     ) {
                         AukListItem(
                             headline = displayName,
-                            supporting = null,
+                            supporting = contact.subtitle,
                             headlineMaxLines = 2,
                             avatarName = contact.name,
                             photoUri = contact.photoUri,

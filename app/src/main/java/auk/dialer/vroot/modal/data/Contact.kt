@@ -45,6 +45,7 @@ data class Contact(
     val givenName: String? = null,
     val familyName: String? = null,
     val nickname: String? = null,
+    val company: String? = null,
     val phoneNumbers: List<String> = emptyList(),
     val emails: List<String> = emptyList(),
     val phones: List<PhoneNumberEntry> = emptyList(),

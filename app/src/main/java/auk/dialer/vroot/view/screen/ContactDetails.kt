@@ -547,12 +547,16 @@ fun ContactDetailsScreen(
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold
                             )
-                            fullContact?.nickname?.let { nickname ->
+                            fullContact?.nickname?.takeIf { it.isNotBlank() }?.let { nickname ->
                                 Text(
                                     text = nickname,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 2.dp)
                                 )
+                            }
+                            fullContact?.company?.takeIf { it.isNotBlank() }?.let { company ->
+                                ContactCompanyPill(company, modifier = Modifier.padding(top = 12.dp))
                             }
                         }
                     }
