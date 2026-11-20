@@ -86,18 +86,18 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 4.dp)
+                    .padding(bottom = 4.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(128.dp)
                         .background(
                             Brush.radialGradient(listOf(logoColor.copy(alpha = 0.22f), Color.Transparent))
                         )
                 ) {
                     Surface(
-                        modifier = Modifier.size(104.dp),
+                        modifier = Modifier.size(88.dp),
                         shape = MaterialTheme.shapes.extraLarge,
                         color = logoColor,
                         shadowElevation = 6.dp
@@ -105,13 +105,13 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         Image(
                             painter = painterResource(R.drawable.ic_launcher_foreground),
                             contentDescription = stringResource(R.string.about_logo_content_desc),
-                            modifier = Modifier.fillMaxSize().padding(16.dp)
+                            modifier = Modifier.fillMaxSize().padding(14.dp)
                         )
                     }
                 }
                 Text(
                     text = stringResource(R.string.about_app_display_name),
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -119,7 +119,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 10.dp)
+                    modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text(
                         text = "v${appInfo.first} (${appInfo.second})",
