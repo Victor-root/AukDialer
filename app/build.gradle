@@ -6,24 +6,18 @@ plugins {
 }
 
 // versionCode is what Android compares to decide whether an APK is an upgrade,
-// so it only ever goes up. It restarts at 1 here because the application id
-// changed: to a device this is a new app, not an update of the old one.
-def baseVersionCode = 1
-def buildNumberEnv = System.getenv("BUILD_NUMBER") ?: System.getenv("GITHUB_RUN_NUMBER")
-def buildNumber = (buildNumberEnv ?: "0") as int
-// With no build number, as when a build is shipped to the F-Droid repository, the
-// minutes since 2024: every build is above the last, which the signer requires.
-// Counting from 2024 keeps it far below the largest version code Android takes.
+// so it only ever goes up: the minutes since 2024 at build time, so every build
+// is above the last, which the signer requires. Counting from 2024 keeps it far
+// below the largest version code Android takes.
 def minutesTo2024 = 28_401_120L
-def versionCodeValue = buildNumberEnv != null
-    ? baseVersionCode + buildNumber
-    : (int) (System.currentTimeMillis().intdiv(60_000) - minutesTo2024)
-def isPreviewBuild = System.getenv("PREVIEW_BUILD") == "true"
-def baseVersionName = "1.0"
+def versionCodeValue = (int) (System.currentTimeMillis().intdiv(60_000) - minutesTo2024)
+// Always three numbers: update checkers compare them one by one, and read "1.0"
+// as older than "1.0.0".
+def baseVersionName = "0.9.1-alpha"
 
-// Signing details come from keystore.properties when building locally and from
-// the environment on CI. The file is untracked because it holds passwords, so
-// see keystore.properties.example for the keys it expects.
+// Signing details come from keystore.properties, or from the environment. The
+// file is untracked because it holds passwords, so see keystore.properties.example
+// for the keys it expects.
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 if (keystorePropertiesFile.exists()) {
@@ -49,7 +43,7 @@ android {
         minSdk = 31
         targetSdk = 36
         versionCode = versionCodeValue
-        versionName = isPreviewBuild ? "${baseVersionName}.${buildNumber}-preview" : baseVersionName
+        versionName = baseVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
