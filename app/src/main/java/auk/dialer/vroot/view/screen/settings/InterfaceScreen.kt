@@ -42,6 +42,7 @@ import auk.dialer.vroot.view.components.AukListItemDefaults
 import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
+import auk.dialer.vroot.view.components.scrollBackToTop
 import auk.dialer.vroot.view.theme.CUSTOM_PRIMARY_COLOR_UNSET
 import auk.dialer.vroot.view.theme.aukDynamicColorScheme
 import auk.dialer.vroot.view.theme.accentColorFromSeed
@@ -201,7 +202,7 @@ fun InterfaceScreen(
             ScrollToTopButton(
                 visible = showButton,
                 onClick = {
-                    scope.launch { listState.animateScrollToItem(0) }
+                    scope.launch { listState.scrollBackToTop() }
                 }
             )
         }

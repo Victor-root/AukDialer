@@ -22,6 +22,7 @@ import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.AukSelectListItem
 import auk.dialer.vroot.view.components.AukSwitchListItem
 import auk.dialer.vroot.view.components.ScrollToTopButton
+import auk.dialer.vroot.view.components.scrollBackToTop
 import auk.dialer.vroot.view.components.rememberCallCapablePhoneAccounts
 import auk.dialer.vroot.view.components.rememberSimLabels
 import com.ramcosta.composedestinations.annotation.Destination
@@ -123,7 +124,7 @@ fun CallAccountsScreen(
                 visible = showButton,
                 onClick = {
                     scope.launch {
-                        listState.animateScrollToItem(0)
+                        listState.scrollBackToTop()
                     }
                 }
             )

@@ -148,7 +148,7 @@ fun CallLogFullScreen(
                 visible = showButton && selectedEntries.isEmpty(),
                 onClick = {
                     scope.launch {
-                        listState.animateScrollToItem(0)
+                        listState.scrollBackToTop()
                     }
                 }
             )

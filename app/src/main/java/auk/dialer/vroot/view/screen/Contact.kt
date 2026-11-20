@@ -49,6 +49,7 @@ import auk.dialer.vroot.view.components.AukFilterChip
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.ScrollToTopButton
+import auk.dialer.vroot.view.components.scrollBackToTop
 import auk.dialer.vroot.view.components.ScrollToTopFabGap
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
@@ -191,7 +192,7 @@ fun ContactScreenContent(
                     visible = showButton && selectedIds.isEmpty(),
                     onClick = {
                         scope.launch {
-                            listState.animateScrollToItem(0)
+                            listState.scrollBackToTop()
                         }
                     }
                 )

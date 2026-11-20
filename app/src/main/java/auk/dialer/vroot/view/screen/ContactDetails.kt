@@ -468,7 +468,7 @@ fun ContactDetailsScreen(
                 visible = showButton,
                 onClick = {
                     scope.launch {
-                        listState.animateScrollToItem(0)
+                        listState.scrollBackToTop()
                     }
                 }
             )
