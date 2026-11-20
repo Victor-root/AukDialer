@@ -1,6 +1,10 @@
 package auk.dialer.vroot.view.components
 
 import androidx.compose.animation.AnimatedVisibility
+import kotlinx.coroutines.launch
+import auk.dialer.vroot.view.theme.LocalCollapsingHeader
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,6 +46,8 @@ fun ScrollToTopButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val header = LocalCollapsingHeader.current
+    val scope = rememberCoroutineScope()
     AnimatedVisibility(
         visible = visible,
         enter = scaleIn(tween(ScrollToTopAnimationMillis), initialScale = ScrollToTopHiddenScale) +
@@ -52,7 +58,16 @@ fun ScrollToTopButton(
     ) {
         Box(modifier = Modifier.width(FabWidth), contentAlignment = Alignment.Center) {
             Surface(
-                onClick = onClick,
+                onClick = {
+                    header?.let { collapsing ->
+                        scope.launch {
+                            animate(collapsing.state.heightOffset, 0f) { value, _ ->
+                                collapsing.state.heightOffset = value
+                            }
+                        }
+                    }
+                    onClick()
+                },
                 modifier = Modifier.size(ScrollToTopSize),
                 shape = CircleShape,
                 color = LocalAccentBarColor.current,

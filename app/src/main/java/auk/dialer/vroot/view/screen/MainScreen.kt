@@ -18,6 +18,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -43,6 +44,7 @@ import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import auk.dialer.vroot.view.theme.AukStaticMotion
+import auk.dialer.vroot.view.theme.LocalCollapsingHeader
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import auk.dialer.vroot.view.theme.aukCollapsingHeader
 import auk.dialer.vroot.view.theme.aukSampleStatusBarContent
@@ -219,65 +221,68 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = pagerAlpha.value }) {
-                // Every page is kept, but only filled once it comes within a page of the current one,
-                // as before. Dropping a page when it went out of reach meant building it again each
-                // time it came back, which on a phone took a whole tab's worth of work in one frame,
-                // in the middle of the page animation.
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = visibleTabs.size
-                ) { page ->
-                    val inReach by remember(page) {
-                        derivedStateOf { abs(pagerState.currentPage - page) <= 1 }
-                    }
-                    var built by remember(page) { mutableStateOf(false) }
-                    LaunchedEffect(inReach) { if (inReach) built = true }
-                    if (!inReach && !built) return@HorizontalPager
-                    LaunchedEffect(Unit) { PerfLog.d("page $page built") }
-                    when (visibleTabs.getOrNull(page)) {
-                        PreferenceManager.TAB_RECENTS -> RecentScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingRecents = selecting
-                                recentsActionBar = actionBar
-                            },
-                            onFilterBarChange = { filterBar -> recentsFilterBar = filterBar },
-                            isShown = pagerState.currentPage == page
-                        )
-                        PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            showTopBar = false
-                        )
-                        PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingContacts = selecting
-                                contactsActionBar = actionBar
-                            },
-                            onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
-                        )
-                        PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
-                            navigator = navigator,
-                            showTopBar = false,
-                            isShown = pagerState.currentPage == page,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingVoicemail = selecting
-                                voicemailActionBar = actionBar
-                            }
-                        )
-                        PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
-                            isShown = pagerState.currentPage == page,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingRecordings = selecting
-                                recordingsActionBar = actionBar
-                            }
-                        )
+        // The scroll to top buttons of the tabs bring this header back with the list.
+        CompositionLocalProvider(LocalCollapsingHeader provides scrollBehavior) {
+            HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = pagerAlpha.value }) {
+                    // Every page is kept, but only filled once it comes within a page of the current one,
+                    // as before. Dropping a page when it went out of reach meant building it again each
+                    // time it came back, which on a phone took a whole tab's worth of work in one frame,
+                    // in the middle of the page animation.
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = visibleTabs.size
+                    ) { page ->
+                        val inReach by remember(page) {
+                            derivedStateOf { abs(pagerState.currentPage - page) <= 1 }
+                        }
+                        var built by remember(page) { mutableStateOf(false) }
+                        LaunchedEffect(inReach) { if (inReach) built = true }
+                        if (!inReach && !built) return@HorizontalPager
+                        LaunchedEffect(Unit) { PerfLog.d("page $page built") }
+                        when (visibleTabs.getOrNull(page)) {
+                            PreferenceManager.TAB_RECENTS -> RecentScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingRecents = selecting
+                                    recentsActionBar = actionBar
+                                },
+                                onFilterBarChange = { filterBar -> recentsFilterBar = filterBar },
+                                isShown = pagerState.currentPage == page
+                            )
+                            PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                showTopBar = false
+                            )
+                            PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingContacts = selecting
+                                    contactsActionBar = actionBar
+                                },
+                                onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
+                            )
+                            PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
+                                navigator = navigator,
+                                showTopBar = false,
+                                isShown = pagerState.currentPage == page,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingVoicemail = selecting
+                                    voicemailActionBar = actionBar
+                                }
+                            )
+                            PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
+                                isShown = pagerState.currentPage == page,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingRecordings = selecting
+                                    recordingsActionBar = actionBar
+                                }
+                            )
+                        }
                     }
                 }
             }

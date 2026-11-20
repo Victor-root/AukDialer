@@ -149,6 +149,13 @@ fun aukAccentTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarCol
 )
 
 /**
+ * The collapsing header of the screen around, if any: what scrolls a list back to its top brings the
+ * header back down with it, as scrolling up by hand does.
+ */
+val LocalCollapsingHeader: ProvidableCompositionLocal<TopAppBarScrollBehavior?> =
+    staticCompositionLocalOf { null }
+
+/**
  * Collapses the header off the top of the screen as the body scrolls.
  *
  * It reports a height that shrinks with the scroll offset, so the Scaffold slides the body up into
