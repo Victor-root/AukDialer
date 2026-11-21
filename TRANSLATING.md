@@ -1,6 +1,6 @@
-# Translating Rivo
+# Translating AukDialer
 
-Thank you for helping translate Rivo into your language.
+Thank you for helping translate AukDialer into your language.
 
 ## Where translations live
 

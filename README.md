@@ -1,73 +1,84 @@
 <div align="center">
 
-<img src="app/src/main/res/drawable/logo.png" width="120" height="120" alt="AukDialer logo">
+<img src=".github/assets/logo.svg" width="120" height="120" alt="AukDialer logo">
 
 # AukDialer
 
-**A modern Android dialer with no ads, no tracking, and no Google dependency.**
+**A modern, free and open-source Phone app for Android.**<br>
+**No ads, no tracking, no Google services.**
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
-[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84.svg?style=flat-square&logo=android)](https://www.android.com)
-[![Jetpack Compose](https://img.shields.io/badge/Built_with-Jetpack_Compose-4285F4.svg?style=flat-square&logo=android)](https://developer.android.com/jetpack/compose)
-[![No ads](https://img.shields.io/badge/Ads-none-success.svg?style=flat-square)](#why-this-fork-exists)
-
-A phone app should place calls and stay out of the way. That is the whole brief.
+![Version](https://img.shields.io/badge/version-0.9.0--alpha-bf8700?style=for-the-badge)
+![Android](https://img.shields.io/badge/Android-12%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![License](https://img.shields.io/badge/license-GPL%20v3-1976D2?style=for-the-badge)
 
 </div>
 
 ---
 
-## Why this fork exists
+## 📸 Screenshots
 
-AukDialer is a fork of an open source dialer that did one job well. In August 2026 that project added AdMob banner advertising to the contact list, the call log, search results and the settings screen, along with the `play-services-ads` dependency that comes with it.
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/recents-dark.png"><img width="200" alt="Recents" src=".github/assets/screenshots/recents-light.png"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/details-dark.png"><img width="200" alt="Contact details" src=".github/assets/screenshots/details-light.png"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/incoming-dark.png"><img width="200" alt="Incoming call" src=".github/assets/screenshots/incoming-light.png"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/custom-dark.png"><img width="200" alt="Call screen background picker" src=".github/assets/screenshots/custom-light.png"></picture>
+</p>
 
-A dialer reads your entire contact list and your full call history. Putting an advertising SDK in the same process as that data is not a trade-off worth making, whatever the banner is worth. It also makes the app dependent on Google Play Services, which not every Android phone has and not everyone wants.
+<p align="center"><sub>A different color on every screenshot: I like to leave the choice to you, the app and even its icon take the color you want.</sub></p>
 
-This fork takes the project in its own direction from that point on. It is maintained independently and it will not carry advertising.
+---
 
-## What is different here
+## ✨ Highlights
 
-- **No advertising.** No banners, no ad SDK, no ad unit IDs, nothing to switch off in settings because there is nothing to switch off.
-- **No Google Play Services.** Not a single component. The app works identically on a phone with no Google apps installed at all, including LineageOS, GrapheneOS, /e/OS and Huawei devices.
-- **One build.** Upstream splits into a `play` flavour and a `foss` flavour. There is only one build here, and it is the clean one.
-- **No app bundle.** A plain APK, nothing shaped for a store.
+- **Customizable call screen**: animated, plain, gradient or photo backgrounds, and four ways to answer.
+- **Call recording** through Shizuku.
+- **T9 search**, filterable call history, encrypted private contacts and call blocking.
+- **Customizable from end to end**: Material You colors or 20 colors of your choice, and the **app icon** on your home screen can take the same color. AMOLED mode, 11 avatar shapes, Material 3 Expressive design.
+- **Edge to edge mode**, optional: the app draws under the status and navigation bars, and the header folds away as you scroll to leave all the room to the content.
+- **Adjustable vibrations**, one by one, with a live preview.
+- **No ads, no tracking, no Google services**: works on LineageOS, GrapheneOS or /e/OS.
 
-## Features
+> [!NOTE]
+> **Visual voicemail** is experimental: it has only been tested with one French carrier, and support for other carriers will depend on feedback from the community.
 
-- **Material 3 Expressive** interface, built entirely with Jetpack Compose
-- **T9 search** to reach a contact in a couple of taps
-- **Custom in-call screen** with proximity sensor handling
-- **Readable call history**, grouped and easy to scan
-- **Private contacts** you can keep out of the main list
-- **Call blocking** with its own visibility rules
-- **Backup and restore** of your settings
-- **Per-app language** on Android 13 and above
+---
 
-## Building it yourself
+## 🧪 Why an alpha?
 
-Android Studio, JDK 17, and:
+AukDialer is still under development. I use it every day as my main Phone app, but I prefer to test it thoroughly, on more phones and in more situations, before releasing a final version.
 
-```bash
-./gradlew assembleDebug     # debug build
-./gradlew assembleRelease   # release build
-```
+Until then, bugs are still possible. If you find one, open an issue: every report helps reach the final version sooner.
 
-Signing is read from `keystore.properties` at the root of the repository. That file is untracked because it holds passwords, so copy `keystore.properties.example` to `keystore.properties` and fill it in. Both the debug and the release build then use that key, which means a debug build installs straight over a release build without an uninstall.
+Using AukDialer heavily and noticing lots of things day after day? Rather than opening one issue per bug, open **a single one** with the full list, and keep adding to it as you go. Tracking is much simpler for everyone.
 
-Without that file the debug build falls back to Android's throwaway debug key and the release build comes out unsigned, on purpose: an APK that refuses to install is easier to notice than one signed with the wrong key.
+I'm also open to **feature requests**: if something is missing from your daily use, suggest it in an issue.
 
-On CI the same values come from the `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` repository secrets.
+---
 
-## Contributing
+## 📥 Download
 
-Issues and pull requests are welcome on [this repository](https://github.com/Victor-root/AukDialer/issues).
+I recommend installing AukDialer with **[Omnify](https://github.com/Victor-root/Omnify)**, my app store: an F-Droid client that also installs and updates apps published directly on GitHub, GitLab or Codeberg. You get every AukDialer update as soon as it is out, without having to fetch it by hand.
 
-Translations live in `app/src/main/res/values-<language>/strings.xml`. Copy `values/strings.xml`, translate the values, leave the `name` attributes alone, and open a pull request.
+<p align="center">
+  <a href="https://victor-root.github.io/Omnify/add.html?url=https%3A%2F%2Fgithub.com%2FVictor-root%2FAukDialer"><img src="https://victor-root.github.io/Omnify/assets/get-it-on-omnify.svg" alt="Get it on Omnify"/></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/Victor-root/AukDialer/releases"><img src=".github/assets/badges/get-it-on-github.svg" alt="Get it on GitHub"/></a>
+</p>
 
-Two rules for code: no advertising, and no dependency that needs Google Play Services to work.
+---
 
-## License
+## 🤝 Contributing
 
-GNU General Public License v3.0. See [LICENSE](LICENSE).
+Bug reports, ideas, translations and pull requests are welcome. Everything is explained in the [Contributing Guide](CONTRIBUTING.md).
 
-This is a modified version of the Rivo dialer. It was forked in September 2026 and has been maintained separately since.
+---
+
+## 🔀 Why this fork?
+
+AukDialer is a fork of **Rivo**, created in September 2026 after AdMob ads were added to the app. A Phone app has access to all your contacts and your call history: building an ad kit into it was not acceptable.
+
+Rivo has since become proprietary. AukDialer only relies on the code it published under GPL v3, before that change, and will stay free.
+
+---
+
+## 📄 License
+
+GPL v3. See [LICENSE](LICENSE). Based on the GPL v3 code of Rivo by Grinch_.
