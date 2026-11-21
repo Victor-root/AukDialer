@@ -1,0 +1,32 @@
+name: "Feature Request"
+description: "Have an idea? Tell us what would help"
+title: "[Feature Request] "
+labels: ["enhancement"]
+type: feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to suggest an idea. This request also serves as a public history of the project, so it must stay understandable to everyone. Describe simply what you need and what you would like to see. Please do not propose code changes: the maintainer takes care of that.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Before you submit"
+      options:
+        - label: "I have checked that no identical request already exists."
+          required: true
+        - label: "I know AukDialer is maintained by a single person and that this idea may not be implemented."
+          required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: "Your idea"
+      description: "What is missing or frustrating for you today, and what you would like to see instead."
+    validations:
+      required: true
+  - type: input
+    id: other-app
+    attributes:
+      label: "Does another app already do it?"
+      description: "If so, which one: it helps to understand what you have in mind."
+      placeholder: "E.g.: Google Phone"

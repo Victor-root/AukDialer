@@ -1,0 +1,59 @@
+name: "Bug Report"
+description: "Something's broken? Let us know what went wrong"
+title: "[BUG] "
+labels: ["bug"]
+type: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report this problem! Describe it simply, without proposing code changes: the maintainer takes care of that.
+
+        Lots of bugs to report? Open **a single** report with the full list. Before taking a screenshot, turn on **Screenshot mode** (Settings) to hide your contacts.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Before you report"
+      options:
+        - label: "I have checked that no identical report already exists."
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "What happens?"
+      description: "What you see, and what you expected instead. For a call, say whether it was incoming or outgoing, and over Bluetooth or in a car."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "How to reproduce it?"
+      placeholder: |
+        1. I lock the phone.
+        2. Someone calls me.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots"
+      description: "Drag and drop your images here."
+  - type: input
+    id: device
+    attributes:
+      label: "Phone and Android version"
+      placeholder: "E.g.: Pixel 9, Android 16"
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: "AukDialer version"
+      description: "Settings → About AukDialer"
+      placeholder: "E.g.: 0.9.0-alpha"
+    validations:
+      required: true
+  - type: textarea
+    id: voicemail-diagnostics
+    attributes:
+      label: "Voicemail diagnostics (if needed)"
+      description: "Only for a visual voicemail problem: Settings → Voicemail → Copy diagnostics."
+      render: text
