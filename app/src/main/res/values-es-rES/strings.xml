@@ -371,7 +371,7 @@
     <string name="about_source_code_supporting">Ver el código fuente en GitHub</string>
     <string name="about_check_updates">Buscar actualizaciones</string>
     <string name="about_current_version">Versión actual: %1$s</string>
-    <string name="about_copyright">©️ Proyecto AukDialer 2025-2026</string>
+    <string name="about_copyright">©️ Proyecto AukDialer 2026</string>
     <!-- Favorites -->
     <string name="nav_favorites">Favoritos</string>
     <string name="favorites_permission_title">Se necesita permiso de contactos</string>

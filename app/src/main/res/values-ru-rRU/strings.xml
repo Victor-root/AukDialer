@@ -408,7 +408,7 @@
     <string name="about_source_code_supporting">Ознакомьтесь с исходным кодом на GitHub.</string>
     <string name="about_check_updates">Проверить наличие обновлений</string>
     <string name="about_current_version">Текущая версия: %1$s</string>
-    <string name="about_copyright">©️ 2025-2026 AukDialer Project</string>
+    <string name="about_copyright">©️ 2026 AukDialer Project</string>
     <!-- Favorites -->
     <string name="nav_favorites">Избранные</string>
     <string name="favorites_permission_title">Требуется разрешение на доступ к контактам</string>

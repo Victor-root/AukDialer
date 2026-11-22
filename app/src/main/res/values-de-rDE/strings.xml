@@ -402,7 +402,7 @@
     <string name="about_source_code_supporting">Den Source Code bei Github ansehen</string>
     <string name="about_check_updates">Auf Updates überprüfen</string>
     <string name="about_current_version">Aktuelle Version: %1$s</string>
-    <string name="about_copyright">© 2025-2026 AukDialer Project</string>
+    <string name="about_copyright">© 2026 AukDialer Project</string>
     <!-- Favorites -->
     <string name="nav_favorites">Favoriten</string>
     <string name="favorites_permission_title">Kontakt-Berechtigung erforderlich</string>
