@@ -1,5 +1,10 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.theme.LocalEdgeToEdge
+import auk.dialer.vroot.view.components.LocalMainPageBottomInset
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -168,6 +173,14 @@ fun MainScreen(
         }
     }
     val openMenu: (() -> Unit)? = if (sideMenu) ({ scope.launch { drawerState.open() } }) else null
+    // Without the bottom bar, the pages meet the navigation bar: behind it with edge to edge, which
+    // they then keep their end and buttons clear of; above its opaque band otherwise.
+    val pagesBehindNavigationBar = sideMenu && LocalEdgeToEdge.current
+    val pageBottomInset = if (pagesBehindNavigationBar) {
+        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    } else {
+        0.dp
+    }
 
     val screen: @Composable () -> Unit = { AukScaffold(
         scrollBehavior = scrollBehavior,
@@ -210,8 +223,10 @@ fun MainScreen(
             Column {
                 OngoingCallBanner()
                 if (sideMenu) {
-                    // No bottom bar to hold the content clear of the navigation bar: this does.
-                    Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                    if (!pagesBehindNavigationBar) {
+                        // No bottom bar to hold the content clear of the navigation bar: this does.
+                        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                    }
                 } else {
                     BottomBar(
                         navController = navController,
@@ -224,65 +239,67 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = pagerAlpha.value }) {
-                // Every page is kept, but only filled once it comes within a page of the current one,
-                // as before. Dropping a page when it went out of reach meant building it again each
-                // time it came back, which on a phone took a whole tab's worth of work in one frame,
-                // in the middle of the page animation.
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = visibleTabs.size
-                ) { page ->
-                    val inReach by remember(page) {
-                        derivedStateOf { abs(pagerState.currentPage - page) <= 1 }
-                    }
-                    var built by remember(page) { mutableStateOf(false) }
-                    LaunchedEffect(inReach) { if (inReach) built = true }
-                    if (!inReach && !built) return@HorizontalPager
-                    LaunchedEffect(Unit) { PerfLog.d("page $page built") }
-                    when (visibleTabs.getOrNull(page)) {
-                        PreferenceManager.TAB_RECENTS -> RecentScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingRecents = selecting
-                                recentsActionBar = actionBar
-                            },
-                            onFilterBarChange = { filterBar -> recentsFilterBar = filterBar },
-                            isShown = pagerState.currentPage == page
-                        )
-                        PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            showTopBar = false
-                        )
-                        PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
-                            navController = navController,
-                            navigator = navigator,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingContacts = selecting
-                                contactsActionBar = actionBar
-                            },
-                            onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
-                        )
-                        PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
-                            navigator = navigator,
-                            showTopBar = false,
-                            isShown = pagerState.currentPage == page,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingVoicemail = selecting
-                                voicemailActionBar = actionBar
-                            }
-                        )
-                        PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
-                            isShown = pagerState.currentPage == page,
-                            onSelectionStateChange = { selecting, actionBar ->
-                                isSelectingRecordings = selecting
-                                recordingsActionBar = actionBar
-                            }
-                        )
+        CompositionLocalProvider(LocalMainPageBottomInset provides pageBottomInset) {
+            HeaderSearchContent(headerSearch, navigator, Modifier.padding(innerPadding).fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = pagerAlpha.value }) {
+                    // Every page is kept, but only filled once it comes within a page of the current one,
+                    // as before. Dropping a page when it went out of reach meant building it again each
+                    // time it came back, which on a phone took a whole tab's worth of work in one frame,
+                    // in the middle of the page animation.
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = visibleTabs.size
+                    ) { page ->
+                        val inReach by remember(page) {
+                            derivedStateOf { abs(pagerState.currentPage - page) <= 1 }
+                        }
+                        var built by remember(page) { mutableStateOf(false) }
+                        LaunchedEffect(inReach) { if (inReach) built = true }
+                        if (!inReach && !built) return@HorizontalPager
+                        LaunchedEffect(Unit) { PerfLog.d("page $page built") }
+                        when (visibleTabs.getOrNull(page)) {
+                            PreferenceManager.TAB_RECENTS -> RecentScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingRecents = selecting
+                                    recentsActionBar = actionBar
+                                },
+                                onFilterBarChange = { filterBar -> recentsFilterBar = filterBar },
+                                isShown = pagerState.currentPage == page
+                            )
+                            PreferenceManager.TAB_FAVORITES -> FavoritesScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                showTopBar = false
+                            )
+                            PreferenceManager.TAB_CONTACTS -> ContactScreenContent(
+                                navController = navController,
+                                navigator = navigator,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingContacts = selecting
+                                    contactsActionBar = actionBar
+                                },
+                                onFilterBarChange = { filterBar -> contactsFilterBar = filterBar }
+                            )
+                            PreferenceManager.TAB_VOICEMAIL -> VoicemailScreenContent(
+                                navigator = navigator,
+                                showTopBar = false,
+                                isShown = pagerState.currentPage == page,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingVoicemail = selecting
+                                    voicemailActionBar = actionBar
+                                }
+                            )
+                            PreferenceManager.TAB_RECORDINGS -> CallRecordingsContent(
+                                isShown = pagerState.currentPage == page,
+                                onSelectionStateChange = { selecting, actionBar ->
+                                    isSelectingRecordings = selecting
+                                    recordingsActionBar = actionBar
+                                }
+                            )
+                        }
                     }
                 }
             }

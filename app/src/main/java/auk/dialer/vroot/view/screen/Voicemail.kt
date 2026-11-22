@@ -1,5 +1,7 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalMainPageBottomInset
+import auk.dialer.vroot.view.components.mainPageBottom
 import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import androidx.activity.compose.BackHandler
@@ -209,7 +211,11 @@ fun VoicemailScreenContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         // Debug builds only: the release source set makes this an empty function.
-        floatingActionButton = { VoicemailDebugMenu(onChanged = { viewModel.fetchVoicemails() }) },
+        floatingActionButton = {
+            Box(modifier = Modifier.padding(bottom = LocalMainPageBottomInset.current)) {
+                VoicemailDebugMenu(onChanged = { viewModel.fetchVoicemails() })
+            }
+        },
         // Inside the main screen, its bottom bar already clears the navigation bar.
         contentWindowInsets = if (showTopBar) {
             WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
@@ -255,7 +261,7 @@ fun VoicemailScreenContent(
                                     modifier = Modifier.fillMaxSize(),
                                     contentPadding = PaddingValues(
                                         top = 8.dp,
-                                        bottom = 16.dp + padding.calculateBottomPadding()
+                                        bottom = mainPageBottom(16.dp + padding.calculateBottomPadding())
                                     )
                                 ) {
                                     groupedVoicemails.forEach { (header, group) ->

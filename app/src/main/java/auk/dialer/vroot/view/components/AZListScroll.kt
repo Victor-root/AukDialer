@@ -107,7 +107,7 @@ fun AZListScroll(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = mainPageBottom(100.dp))
         ) {
             finalGrouped.entries.forEach { (initial, contactsForChar) ->
                 stickyHeader(key = "header:$initial", contentType = "header") {

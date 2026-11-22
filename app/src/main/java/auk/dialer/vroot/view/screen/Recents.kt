@@ -1,5 +1,7 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.mainPageBottom
+import auk.dialer.vroot.view.components.LocalMainPageBottomInset
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.provider.CallLog
@@ -207,7 +209,11 @@ fun RecentScreenContent(
             }
         },
         floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(ScrollToTopFabGap)) {
+            Column(
+                modifier = Modifier.padding(bottom = LocalMainPageBottomInset.current),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(ScrollToTopFabGap)
+            ) {
                 ScrollToTopButton(
                     visible = showButton && selectedEntries.isEmpty(),
                     onClick = {
@@ -526,7 +532,7 @@ fun CallLogFullContent(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
+                        contentPadding = PaddingValues(top = 8.dp, bottom = mainPageBottom(100.dp))
                     ) {
                         if (showFavorites) {
                             item(key = "favorites", contentType = "favorites") {

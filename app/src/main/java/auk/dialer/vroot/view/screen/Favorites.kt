@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.mainPageBottom
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.view.HapticFeedbackConstants
@@ -209,7 +210,7 @@ private fun FavoritesGridContent(navigator: DestinationsNavigator) {
                         Modifier
                     }
                 ),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = mainPageBottom(100.dp)),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

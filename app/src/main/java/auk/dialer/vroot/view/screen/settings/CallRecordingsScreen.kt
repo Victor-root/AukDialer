@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen.settings
 
+import auk.dialer.vroot.view.components.mainPageBottom
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import auk.dialer.vroot.view.components.AukScaffold
 import android.content.Context
@@ -196,7 +197,7 @@ fun CallRecordingsContent(
                     val grouped = remember(list, today) { list.groupBy { formatDateHeader(context, it.recording.startedAt) } }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + padding.calculateBottomPadding())
+                        contentPadding = PaddingValues(top = 8.dp, bottom = mainPageBottom(16.dp + padding.calculateBottomPadding()))
                     ) {
                         grouped.forEach { (header, group) ->
                             item(key = "header:$header", contentType = "header") {

@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.LocalMainPageBottomInset
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.accounts.Account
@@ -188,7 +189,11 @@ fun ContactScreenContent(
             }
         },
         floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(ScrollToTopFabGap)) {
+            Column(
+                modifier = Modifier.padding(bottom = LocalMainPageBottomInset.current),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(ScrollToTopFabGap)
+            ) {
                 ScrollToTopButton(
                     visible = showButton && selectedIds.isEmpty(),
                     onClick = {
