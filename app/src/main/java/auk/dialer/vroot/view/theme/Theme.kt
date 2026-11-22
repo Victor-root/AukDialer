@@ -215,6 +215,7 @@ fun AukTheme(
 
     val statusBarBackground = remember { mutableStateOf<Color?>(null) }
     val plainStatusBar = remember { mutableStateOf(false) }
+    val plainNavigationBar = remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
         LocalCallColors provides callColors,
@@ -229,6 +230,7 @@ fun AukTheme(
         LocalVividColors provides vividColors,
         LocalStatusBarBackground provides statusBarBackground,
         LocalPlainStatusBar provides plainStatusBar,
+        LocalPlainNavigationBar provides plainNavigationBar,
         LocalPrivacyMask provides privacyMask
     ) {
         MaterialExpressiveTheme(
@@ -249,6 +251,7 @@ fun AukTheme(
                         darkTheme = darkTheme,
                         edgeToEdge = edgeToEdge,
                         plainStatusBar = plainStatusBar,
+                        plainNavigationBar = plainNavigationBar,
                         statusBarBackground = statusBarBackground
                     )
                 }
@@ -271,9 +274,9 @@ fun AukTheme(
                             content()
                         }
                         // Edge to edge off: an opaque header-coloured band over the navigation bar area, so it
-                        // reads as a solid bar matching the header. On: nothing, and the app shows
-                        // through the transparent navigation bar.
-                        if (!edgeToEdge) {
+                        // reads as a solid bar matching the header. On, or with something of the screen's
+                        // own colour over the bar (the side menu): nothing, and the app shows through.
+                        if (!edgeToEdge && !plainNavigationBar.value) {
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)

@@ -95,6 +95,27 @@ val LocalPlainStatusBar: ProvidableCompositionLocal<MutableState<Boolean>> =
     staticCompositionLocalOf { mutableStateOf(false) }
 
 /**
+ * Set while something drawn in the screen's own colour covers the navigation bar, the side menu. Read
+ * by [AukTheme], declared by [AukPlainNavigationBar].
+ */
+val LocalPlainNavigationBar: ProvidableCompositionLocal<MutableState<Boolean>> =
+    staticCompositionLocalOf { mutableStateOf(false) }
+
+/**
+ * Declares that the navigation bar shows the screen's own colour rather than the header-coloured
+ * band painted under it while edge to edge is off: the band gives way, and the bar's buttons read on
+ * that colour instead.
+ */
+@Composable
+fun AukPlainNavigationBar() {
+    val plain = LocalPlainNavigationBar.current
+    DisposableEffect(plain) {
+        plain.value = true
+        onDispose { plain.value = false }
+    }
+}
+
+/**
  * Declares that this screen shows its own background behind the status bar rather than an accent
  * header, so its icons have to contrast with that background instead.
  */
@@ -127,6 +148,7 @@ internal fun AukSystemBars(
     darkTheme: Boolean,
     edgeToEdge: Boolean,
     plainStatusBar: State<Boolean>,
+    plainNavigationBar: State<Boolean>,
     statusBarBackground: State<Color?>
 ) {
     val view = LocalView.current
@@ -139,7 +161,7 @@ internal fun AukSystemBars(
 
     val isStatusBarDark = statusBarBackground.value?.let { it.luminance() < 0.5f }
         ?: if (plainStatusBar.value) backgroundIsDark else headerIsDark
-    val isNavigationBarDark = if (edgeToEdge) darkTheme else headerIsDark
+    val isNavigationBarDark = if (edgeToEdge || plainNavigationBar.value) darkTheme else headerIsDark
     DisposableEffect(activity, isStatusBarDark, isNavigationBarDark) {
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) {

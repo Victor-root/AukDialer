@@ -1,6 +1,5 @@
 package auk.dialer.vroot.view.components
 
-import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -113,22 +112,21 @@ fun AukNavigationDrawer(
     val settingsVersion by prefs.settingsChanged.collectAsState()
     val screenshotMode = remember(settingsVersion) { prefs.getBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, false) }
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val edgeToEdge = LocalEdgeToEdge.current
     // As OpenMessages' drawer: 320dp, and never so wide that the screen behind no longer shows.
     val width = minOf(DrawerWidth, LocalConfiguration.current.screenWidthDp.dp - DrawerMinPeek)
     ModalDrawerSheet(
         modifier = Modifier.width(width),
         drawerShape = DrawerShape,
         drawerContainerColor = MaterialTheme.colorScheme.surface,
-        // Behind the status bar with edge to edge, as the rest of the app; below it otherwise.
-        windowInsets = if (edgeToEdge) WindowInsets(0) else WindowInsets.statusBars
+        // Behind both system bars, as VFiles' drawer: the bars take the menu's colour on its side.
+        windowInsets = WindowInsets(0)
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
-            if (edgeToEdge) Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             DrawerHeader()
             tabs.forEach { tab ->
                 DrawerEntry(

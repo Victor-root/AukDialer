@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DrawerValue
@@ -41,6 +39,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
@@ -57,6 +56,7 @@ import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
+import auk.dialer.vroot.view.theme.AukPlainNavigationBar
 import auk.dialer.vroot.view.theme.AukPlainStatusBar
 import auk.dialer.vroot.view.theme.AukStaticMotion
 import auk.dialer.vroot.view.theme.LocalEdgeToEdge
@@ -310,39 +310,45 @@ fun MainScreen(
     } }
 
     if (sideMenu) {
-        val edgeToEdge = LocalEdgeToEdge.current
-        // With edge to edge, the open menu lies behind the status bar: its icons have to read on it.
-        if (edgeToEdge && drawerState.targetValue == DrawerValue.Open) AukPlainStatusBar()
+        // The open menu lies behind both system bars, as VFiles' does: their icons read on it.
+        if (drawerState.targetValue == DrawerValue.Open) {
+            AukPlainStatusBar()
+            AukPlainNavigationBar()
+        }
         BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
-        Box {
-            // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
-            ModalNavigationDrawer(
-                drawerState = drawerState,
-                gesturesEnabled = drawerState.isOpen,
-                drawerContent = {
-                    AukNavigationDrawer(
-                        tabs = visibleTabs,
-                        currentTab = currentTab,
-                        onTabSelected = { tab ->
-                            scope.launch { drawerState.close() }
-                            selectPage(visibleTabs.indexOf(tab))
-                        },
-                        onOpen = { direction ->
-                            scope.launch { drawerState.close() }
-                            navigator.navigate(direction)
-                        }
-                    )
-                },
-                content = screen
-            )
-            // Without edge to edge the status bar keeps the header's colour, over the menu's shade too.
-            if (!edgeToEdge) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .windowInsetsTopHeight(WindowInsets.statusBars)
-                        .background(LocalHeaderColor.current)
+        val edgeToEdge = LocalEdgeToEdge.current
+        // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = drawerState.isOpen,
+            drawerContent = {
+                AukNavigationDrawer(
+                    tabs = visibleTabs,
+                    currentTab = currentTab,
+                    onTabSelected = { tab ->
+                        scope.launch { drawerState.close() }
+                        selectPage(visibleTabs.indexOf(tab))
+                    },
+                    onOpen = { direction ->
+                        scope.launch { drawerState.close() }
+                        navigator.navigate(direction)
+                    }
                 )
+            }
+        ) {
+            Box {
+                screen()
+                // Without edge to edge, the header-coloured band over the navigation bar, under the
+                // menu: the theme's own band, drawn over everything, gives way while the menu is open.
+                if (!edgeToEdge) {
+                    Box(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                            .background(LocalHeaderColor.current)
+                    )
+                }
             }
         }
     } else {
