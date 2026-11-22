@@ -22,15 +22,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +57,14 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.theme.LocalAccentBarColor
 import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
+import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.BackupRestoreScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.BlockedNumbersScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.PrivateContactsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SpeedDialScreenDestination
+import com.ramcosta.composedestinations.spec.Direction
+import org.koin.compose.koinInject
 
 // The drawer of OpenMessages: a sheet rounded on its open side, the app's tile and name on top,
 // one colour per entry, thin separators, and the page showing as a pill in the accent.
@@ -58,7 +75,9 @@ private val DrawerWidth = 320.dp
 private val DrawerMinPeek = 64.dp
 
 /** Each entry's icon colour: deeper on a light drawer, lighter on a dark one. */
-private class EntryColor(val light: Color, val dark: Color)
+private class EntryColor(val light: Color, val dark: Color) {
+    fun pick(dark: Boolean) = if (dark) this.dark else light
+}
 
 private fun tabColor(tabId: Int): EntryColor = when (tabId) {
     PreferenceManager.TAB_CONTACTS -> EntryColor(Color(0xFF2E9E64), Color(0xFF4CC38A))
@@ -68,21 +87,28 @@ private fun tabColor(tabId: Int): EntryColor = when (tabId) {
     else -> EntryColor(Color(0xFF2C88C9), Color(0xFF4FB3E8))
 }
 
+private val BlockedColor = EntryColor(Color(0xFFD2508C), Color(0xFFF08AB8))
+private val PrivateColor = EntryColor(Color(0xFF8A5CD6), Color(0xFFB38BF5))
+private val SpeedDialColor = EntryColor(Color(0xFF1E9A9A), Color(0xFF4CC9C9))
+private val BackupColor = EntryColor(Color(0xFF5C6BC0), Color(0xFF8C9EFF))
+private val ScreenshotColor = EntryColor(Color(0xFF8D6E63), Color(0xFFBCAAA4))
 private val SettingsColor = EntryColor(Color(0xFF6B7A88), Color(0xFFA3AFBB))
 private val AboutColor = EntryColor(Color(0xFF4E74E0), Color(0xFF7AA7FF))
 
 /**
  * The side menu that stands in for the bottom bar with the "Side menu" setting: the tabs in their
- * bottom bar order, then Settings and About.
+ * bottom bar order, the tools opened most often, the screenshot mode switch, then Settings and About.
  */
 @Composable
 fun AukNavigationDrawer(
     tabs: List<Int>,
     currentTab: Int?,
     onTabSelected: (Int) -> Unit,
-    onSettings: () -> Unit,
-    onAbout: () -> Unit
+    onOpen: (Direction) -> Unit
 ) {
+    val prefs = koinInject<PreferenceManager>()
+    val settingsVersion by prefs.settingsChanged.collectAsState()
+    val screenshotMode = remember(settingsVersion) { prefs.getBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, false) }
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     // As OpenMessages' drawer: 320dp, and never so wide that the screen behind no longer shows.
     val width = minOf(DrawerWidth, LocalConfiguration.current.screenWidthDp.dp - DrawerMinPeek)
@@ -104,28 +130,58 @@ fun AukNavigationDrawer(
                 DrawerEntry(
                     icon = navigationTabIcon(tab),
                     label = navigationTabLabel(tab),
-                    iconColor = tabColor(tab).let { if (dark) it.dark else it.light },
+                    iconColor = tabColor(tab).pick(dark),
                     selected = tab == currentTab,
                     onClick = { onTabSelected(tab) }
                 )
             }
-            HorizontalDivider(
-                modifier = Modifier.padding(start = 28.dp, end = 28.dp, top = 8.dp, bottom = 10.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+            DrawerSeparator()
+            DrawerEntry(
+                icon = Icons.Filled.Block,
+                label = stringResource(R.string.settings_blocked_numbers_headline),
+                iconColor = BlockedColor.pick(dark),
+                onClick = { onOpen(BlockedNumbersScreenDestination) }
             )
+            DrawerEntry(
+                icon = Icons.Filled.Lock,
+                label = stringResource(R.string.settings_manage_private_contacts),
+                iconColor = PrivateColor.pick(dark),
+                onClick = { onOpen(PrivateContactsScreenDestination) }
+            )
+            DrawerEntry(
+                icon = Icons.Filled.Speed,
+                label = stringResource(R.string.settings_speed_dial_title),
+                iconColor = SpeedDialColor.pick(dark),
+                onClick = { onOpen(SpeedDialScreenDestination) }
+            )
+            DrawerEntry(
+                icon = Icons.Filled.Backup,
+                label = stringResource(R.string.settings_backup_restore_headline),
+                iconColor = BackupColor.pick(dark),
+                onClick = { onOpen(BackupRestoreScreenDestination) }
+            )
+            DrawerSeparator()
+            DrawerEntry(
+                icon = Icons.Filled.Screenshot,
+                label = stringResource(R.string.settings_screenshot_mode),
+                iconColor = ScreenshotColor.pick(dark),
+                onClick = { prefs.setBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, !screenshotMode) },
+                trailing = {
+                    Switch(checked = screenshotMode, onCheckedChange = null, colors = aukSwitchColors())
+                }
+            )
+            DrawerSeparator()
             DrawerEntry(
                 icon = Icons.Filled.Settings,
                 label = stringResource(R.string.settings_title),
-                iconColor = if (dark) SettingsColor.dark else SettingsColor.light,
-                selected = false,
-                onClick = onSettings
+                iconColor = SettingsColor.pick(dark),
+                onClick = { onOpen(SettingsScreenDestination) }
             )
             DrawerEntry(
                 icon = Icons.Filled.Info,
                 label = stringResource(R.string.settings_about_headline),
-                iconColor = if (dark) AboutColor.dark else AboutColor.light,
-                selected = false,
-                onClick = onAbout
+                iconColor = AboutColor.pick(dark),
+                onClick = { onOpen(AboutScreenDestination) }
             )
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
@@ -176,12 +232,21 @@ private fun DrawerHeader() {
 }
 
 @Composable
+private fun DrawerSeparator() {
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 28.dp, end = 28.dp, top = 8.dp, bottom = 10.dp),
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
+}
+
+@Composable
 private fun DrawerEntry(
     icon: ImageVector,
     label: String,
     iconColor: Color,
-    selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    selected: Boolean = false,
+    trailing: (@Composable () -> Unit)? = null
 ) {
     val accent = LocalAccentBarColor.current
     val onAccent = LocalOnAccentBarColor.current
@@ -214,8 +279,10 @@ private fun DrawerEntry(
                 fontWeight = FontWeight.Bold,
                 color = if (selected) onAccent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
             )
+            trailing?.invoke()
         }
     }
 }

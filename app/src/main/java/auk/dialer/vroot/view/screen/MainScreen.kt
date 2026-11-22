@@ -58,8 +58,6 @@ import auk.dialer.vroot.view.theme.AukPlainStatusBar
 import auk.dialer.vroot.view.theme.AukStaticMotion
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.abs
 import kotlinx.coroutines.Job
@@ -322,13 +320,9 @@ fun MainScreen(
                         scope.launch { drawerState.close() }
                         selectPage(visibleTabs.indexOf(tab))
                     },
-                    onSettings = {
+                    onOpen = { direction ->
                         scope.launch { drawerState.close() }
-                        navigator.navigate(SettingsScreenDestination)
-                    },
-                    onAbout = {
-                        scope.launch { drawerState.close() }
-                        navigator.navigate(AboutScreenDestination)
+                        navigator.navigate(direction)
                     }
                 )
             },
