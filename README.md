@@ -57,6 +57,8 @@ I'm also open to **feature requests**: if something is missing from your daily u
 
 ## 📥 Download
 
+AukDialer will **never** be published on the Google Play Store. I don't want to depend on Google, nor pay for the right to share a free app, nor bend to rules that keep changing at Google's whim. For me, that goes against the very spirit of open source.
+
 I recommend installing AukDialer with **[Omnify](https://github.com/Victor-root/Omnify)**, my app store: an F-Droid client that also installs and updates apps published directly on GitHub, GitLab or Codeberg. You get every AukDialer update as soon as it is out, without having to fetch it by hand.
 
 <p align="center">
@@ -73,12 +75,27 @@ Bug reports, ideas, translations and pull requests are welcome. Everything is ex
 
 ## 🔀 Why this fork?
 
-AukDialer is a fork of **Rivo**, created in September 2026 after AdMob ads were added to the app. A Phone app has access to all your contacts and your call history: building an ad kit into it was not acceptable.
+I started out as a contributor to **Rivo**. I loved the app and gave my time to make it better.
 
-Rivo has since become proprietary. AukDialer only relies on the code it published under GPL v3, before that change, and will stay free.
+Then, in September 2026, AdMob ads were added to it. That's the day I stopped contributing and started this fork. A Phone app has access to all your contacts and your call history: putting an ad kit in it is a betrayal of the people who trusted it, and a slap in the face of open source, from a project built with the help of its community.
+
+Rivo has since [become proprietary](https://github.com/user-grinch/RivoPhone/discussions/371): one more betrayal, this time of everyone who contributed code and translations to it under GPL v3. It only confirmed I was right to leave. AukDialer only relies on the code Rivo published under GPL v3, before that change, and will stay free: no ads, no tracking, ever.
+
+---
+
+## 💜 Support
+
+AukDialer is free, and will stay that way. I build it in my spare time, because I love open source and want a Phone app I can trust.
+
+The simplest way to help costs nothing: **⭐ star the repository**. It helps other people find AukDialer, and it shows me the project is worth the time I put into it. A bug report or a translation helps a lot too.
+
+And if you feel like giving something back, you can, entirely optional:
+
+- **Bitcoin (BTC)**: `bc1q0juq85jc0ja56uw6y3vgr027czsw26cam926tn`
+- **Monero (XMR)**: `8BwqFRk7ofSLkYq2gtRyWEBQit86C58M6SebpEL7kP5R2vWPsAUGobGDMfR3aKA1jHJ5Qp8qbYyNLZLFv9z6YBdaKixGyPt`
 
 ---
 
 ## 📄 License
 
-GPL v3. See [LICENSE](LICENSE). Based on the GPL v3 code of Rivo by Grinch_.
+GPL v3. See [LICENSE](LICENSE). Based on the GPL v3 code of Rivo by [Grinch_ (user-grinch)](https://github.com/user-grinch).
