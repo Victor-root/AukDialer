@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -66,7 +67,8 @@ fun TopBar(
     navigator: DestinationsNavigator,
     title: String,
     search: HeaderSearchState,
-    hasFilters: Boolean = true
+    hasFilters: Boolean = true,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val prefs = koinInject<PreferenceManager>()
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
@@ -89,6 +91,14 @@ fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // With the side menu, the button that opens it.
+                onMenuClick?.let {
+                    TopBarAction(
+                        icon = Icons.Default.Menu,
+                        contentDescription = stringResource(R.string.content_desc_open_menu),
+                        onClick = it
+                    )
+                }
                 AukTopBarTitle(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,

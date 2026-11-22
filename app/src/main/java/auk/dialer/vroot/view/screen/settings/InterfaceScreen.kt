@@ -89,6 +89,7 @@ fun InterfaceScreen(
     var gradientAvatars by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_GRADIENT_AVATARS, false)) }
     var showPicture by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SHOW_PICTURE, true)) }
     var iconOnlyNav by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_ICON_ONLY_NAV, false)) }
+    var sideMenu by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU, false)) }
     var transitionStyle by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_TRANSITION_STYLE, 0)) }
     var customPrimaryColor by remember { mutableStateOf(prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, CUSTOM_PRIMARY_COLOR_UNSET)) }
     var avatarShape by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_AVATAR_SHAPE, 0)) }
@@ -457,6 +458,17 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 iconOnlyNav = it
                                 prefs.setBoolean(PreferenceManager.KEY_ICON_ONLY_NAV, it)
+                            }
+                        )
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_side_menu),
+                            supporting = stringResource(R.string.settings_interface_side_menu_supporting),
+                            leadingIcon = Icons.Outlined.Menu,
+                            checked = sideMenu,
+                            onCheckedChange = {
+                                sideMenu = it
+                                prefs.setBoolean(PreferenceManager.KEY_SIDE_MENU, it)
                             }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))

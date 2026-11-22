@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -10,12 +11,18 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,14 +32,15 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.view.components.AukNavigationDrawer
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.components.BottomBar
 import auk.dialer.vroot.view.components.OngoingCallBanner
@@ -41,13 +49,16 @@ import auk.dialer.vroot.view.components.navigationTabLabel
 import auk.dialer.vroot.view.components.rememberHeaderSearchState
 import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
+import auk.dialer.vroot.view.theme.AukPlainStatusBar
 import auk.dialer.vroot.view.theme.AukStaticMotion
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.flow.drop
 import kotlin.math.abs
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -66,6 +77,8 @@ fun MainScreen(
         prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)
     }
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
+    val sideMenu = remember(settingsState) { prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU, false) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
     val requestedTab = initialTab ?: defaultTab
     val startPage = visibleTabs.indexOf(requestedTab).coerceAtLeast(0)
@@ -141,7 +154,22 @@ fun MainScreen(
         it == PreferenceManager.TAB_RECENTS || it == PreferenceManager.TAB_CONTACTS
     }
 
-    AukScaffold(
+    val selectPage: (Int) -> Unit = { page ->
+        PerfLog.d("tab tapped: page $page")
+        val heading = if (tabSwitch?.isActive == true) tabSwitchTarget else pagerState.currentPage
+        if (page != heading) {
+            tabSwitch?.cancel()
+            tabSwitchTarget = page
+            tabSwitch = scope.launch {
+                pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
+                pagerState.scrollToPage(page)
+                pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
+            }
+        }
+    }
+    val openMenu: (() -> Unit)? = if (sideMenu) ({ scope.launch { drawerState.open() } }) else null
+
+    val screen: @Composable () -> Unit = { AukScaffold(
         scrollBehavior = scrollBehavior,
         contentWindowInsets = WindowInsets(0),
         topBar = {
@@ -158,11 +186,11 @@ fun MainScreen(
                         PreferenceManager.TAB_VOICEMAIL -> voicemailActionBar?.invoke()
                         PreferenceManager.TAB_RECORDINGS -> recordingsActionBar?.invoke()
                         PreferenceManager.TAB_CONTACTS -> contactsActionBar?.invoke()
-                        else -> TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters)
+                        else -> TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters, onMenuClick = openMenu)
                     }
                 } else {
                     Column {
-                        TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters)
+                        TopBar(navigator, headerTitle, headerSearch, hasFilters = tabHasFilters, onMenuClick = openMenu)
                         AnimatedVisibility(
                             visible = filtersVisible && !headerSearch.expanded,
                             enter = fadeIn() + expandVertically(),
@@ -181,25 +209,18 @@ fun MainScreen(
         bottomBar = {
             Column {
                 OngoingCallBanner()
-                BottomBar(
-                    navController = navController,
-                    navigator = navigator,
-                    pagerState = pagerState,
-                    visibleTabs = visibleTabs,
-                    onPageSelected = { page ->
-                        PerfLog.d("tab tapped: page $page")
-                        val heading = if (tabSwitch?.isActive == true) tabSwitchTarget else pagerState.currentPage
-                        if (page != heading) {
-                            tabSwitch?.cancel()
-                            tabSwitchTarget = page
-                            tabSwitch = scope.launch {
-                                pagerAlpha.animateTo(0f, AukStaticMotion.tabFadeOut())
-                                pagerState.scrollToPage(page)
-                                pagerAlpha.animateTo(1f, AukStaticMotion.tabFadeIn())
-                            }
-                        }
-                    }
-                )
+                if (sideMenu) {
+                    // No bottom bar to hold the content clear of the navigation bar: this does.
+                    Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                } else {
+                    BottomBar(
+                        navController = navController,
+                        navigator = navigator,
+                        pagerState = pagerState,
+                        visibleTabs = visibleTabs,
+                        onPageSelected = selectPage
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -266,5 +287,37 @@ fun MainScreen(
                 }
             }
         }
+    } }
+
+    if (sideMenu) {
+        // The open menu lies behind the status bar: its icons have to read on the menu instead.
+        if (drawerState.targetValue == DrawerValue.Open) AukPlainStatusBar()
+        BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
+        // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = drawerState.isOpen,
+            drawerContent = {
+                AukNavigationDrawer(
+                    tabs = visibleTabs,
+                    currentTab = currentTab,
+                    onTabSelected = { tab ->
+                        scope.launch { drawerState.close() }
+                        selectPage(visibleTabs.indexOf(tab))
+                    },
+                    onSettings = {
+                        scope.launch { drawerState.close() }
+                        navigator.navigate(SettingsScreenDestination)
+                    },
+                    onAbout = {
+                        scope.launch { drawerState.close() }
+                        navigator.navigate(AboutScreenDestination)
+                    }
+                )
+            },
+            content = screen
+        )
+    } else {
+        screen()
     }
 }
