@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +54,8 @@ import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
 private val DrawerShape = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
 private val PillShape = RoundedCornerShape(26.dp)
 private val LogoShape = RoundedCornerShape(14.dp)
+private val DrawerWidth = 320.dp
+private val DrawerMinPeek = 64.dp
 
 /** Each entry's icon colour: deeper on a light drawer, lighter on a dark one. */
 private class EntryColor(val light: Color, val dark: Color)
@@ -81,7 +84,10 @@ fun AukNavigationDrawer(
     onAbout: () -> Unit
 ) {
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    // As OpenMessages' drawer: 320dp, and never so wide that the screen behind no longer shows.
+    val width = minOf(DrawerWidth, LocalConfiguration.current.screenWidthDp.dp - DrawerMinPeek)
     ModalDrawerSheet(
+        modifier = Modifier.width(width),
         drawerShape = DrawerShape,
         drawerContainerColor = MaterialTheme.colorScheme.surface,
         // Drawn behind the status bar, as the rest of the app is.

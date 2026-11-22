@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import androidx.compose.ui.draw.alpha
 import auk.dialer.vroot.view.theme.LocalPlainBars
 import auk.dialer.vroot.view.theme.softAccentColors
 import auk.dialer.vroot.view.theme.animateCornerDpAsState
@@ -577,7 +578,9 @@ fun AukListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = AukListItemDefaults.MinHeight)
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                // A row that can't be used is dimmed as a whole, icon, text and control alike.
+                .alpha(if (enabled) 1f else DisabledRowAlpha),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (leadingContent != null) {
@@ -667,6 +670,9 @@ fun AukListItem(
     }
 }
 
+/** The opacity Material gives a disabled control. */
+private const val DisabledRowAlpha = 0.38f
+
 @Composable
 fun AukSwitchListItem(
     headline: String,
@@ -687,10 +693,10 @@ fun AukSwitchListItem(
         toggled = checked,
         role = Role.Switch,
         trailingContent = {
+            // Left enabled-looking: the row around it already dims it.
             Switch(
                 checked = checked,
                 onCheckedChange = null,
-                enabled = enabled,
                 colors = aukSwitchColors()
             )
         }

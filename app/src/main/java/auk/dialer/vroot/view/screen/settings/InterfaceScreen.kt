@@ -430,6 +430,17 @@ fun InterfaceScreen(
 
                 item {
                     AukExpressiveCard(title = stringResource(R.string.settings_group_navigation)) {
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_side_menu),
+                            supporting = stringResource(R.string.settings_interface_side_menu_supporting),
+                            leadingIcon = Icons.Outlined.Menu,
+                            checked = sideMenu,
+                            onCheckedChange = {
+                                sideMenu = it
+                                prefs.setBoolean(PreferenceManager.KEY_SIDE_MENU, it)
+                            }
+                        )
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
                         AukSelectListItem(
                             headline = stringResource(R.string.settings_interface_default_bottom_bar),
                             supporting = stringResource(R.string.settings_interface_default_bottom_bar_supporting),
@@ -455,20 +466,11 @@ fun InterfaceScreen(
                             supporting = stringResource(R.string.settings_interface_icon_only_bar_supporting),
                             leadingIcon = Icons.Outlined.ViewStream,
                             checked = iconOnlyNav,
+                            // Only the bottom bar has labels to remove.
+                            enabled = !sideMenu,
                             onCheckedChange = {
                                 iconOnlyNav = it
                                 prefs.setBoolean(PreferenceManager.KEY_ICON_ONLY_NAV, it)
-                            }
-                        )
-                        AukDivider(Modifier.padding(horizontal = 16.dp))
-                        AukSwitchListItem(
-                            headline = stringResource(R.string.settings_interface_side_menu),
-                            supporting = stringResource(R.string.settings_interface_side_menu_supporting),
-                            leadingIcon = Icons.Outlined.Menu,
-                            checked = sideMenu,
-                            onCheckedChange = {
-                                sideMenu = it
-                                prefs.setBoolean(PreferenceManager.KEY_SIDE_MENU, it)
                             }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))
