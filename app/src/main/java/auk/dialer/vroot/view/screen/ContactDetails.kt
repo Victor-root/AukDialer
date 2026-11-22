@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.screen
 
+import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.Manifest
 import android.content.*
@@ -188,6 +189,8 @@ fun ContactDetailsScreen(
     val displayPhone = phoneNumber ?: fullContact?.phoneNumbers?.firstOrNull() ?: unknownLabel
     val displayName = fullContact?.name ?: phoneNumber ?: unknownLabel
     val privacy = LocalPrivacyMask.current
+    // A number with no contact behind it is the title: in its national form.
+    val shownTitle = if (fullContact?.name == null) privacy.number(displayName) else privacy.name(displayName)
     val shareContactLabel = stringResource(R.string.contact_share)
 
     val context = LocalContext.current
@@ -498,7 +501,8 @@ fun ContactDetailsScreen(
         topBar = {
             TopAppBar(
                 colors = aukAccentTopAppBarColors(),
-                title = { },
+                // A long name goes on a second line, never cut: the bar keeps its height.
+                title = { if (!isFullLoading) AukTopBarTitle(shownTitle, maxLines = 2) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
@@ -564,8 +568,7 @@ fun ContactDetailsScreen(
                             )
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
-                                // A number with no contact behind it is the title: in its national form.
-                                text = if (fullContact?.name == null) privacy.number(displayName) else privacy.name(displayName),
+                                text = shownTitle,
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold
                             )

@@ -15,21 +15,22 @@ import androidx.compose.ui.unit.sp
 private val TitleMinFontSize = 16.sp
 
 /**
- * A top bar title kept to one line, whatever the language or the name in it: one too long for the
- * room the actions leave shrinks a little, then ends in an ellipsis.
+ * A top bar title kept within the bar, whatever the language or the name in it: one too long for
+ * the room the actions leave shrinks a little, takes up to [maxLines] lines, then ends in an ellipsis.
  */
 @Composable
 fun AukTopBarTitle(
     text: String,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
-    fontWeight: FontWeight? = FontWeight.Bold
+    fontWeight: FontWeight? = FontWeight.Bold,
+    maxLines: Int = 1
 ) {
     BasicText(
         text = text,
         modifier = modifier,
         style = style.copy(color = LocalContentColor.current, fontWeight = fontWeight ?: style.fontWeight),
-        maxLines = 1,
+        maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         autoSize = if (style.fontSize.isSpecified && style.fontSize > TitleMinFontSize) {
             TextAutoSize.StepBased(minFontSize = TitleMinFontSize, maxFontSize = style.fontSize)
