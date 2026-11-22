@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import auk.dialer.vroot.view.theme.LocalEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -73,6 +75,7 @@ private val PillShape = RoundedCornerShape(26.dp)
 private val LogoShape = RoundedCornerShape(14.dp)
 private val DrawerWidth = 320.dp
 private val DrawerMinPeek = 64.dp
+private const val SwitchScale = 0.8f
 
 /** Each entry's icon colour: deeper on a light drawer, lighter on a dark one. */
 private class EntryColor(val light: Color, val dark: Color) {
@@ -110,21 +113,22 @@ fun AukNavigationDrawer(
     val settingsVersion by prefs.settingsChanged.collectAsState()
     val screenshotMode = remember(settingsVersion) { prefs.getBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, false) }
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val edgeToEdge = LocalEdgeToEdge.current
     // As OpenMessages' drawer: 320dp, and never so wide that the screen behind no longer shows.
     val width = minOf(DrawerWidth, LocalConfiguration.current.screenWidthDp.dp - DrawerMinPeek)
     ModalDrawerSheet(
         modifier = Modifier.width(width),
         drawerShape = DrawerShape,
         drawerContainerColor = MaterialTheme.colorScheme.surface,
-        // Drawn behind the status bar, as the rest of the app is.
-        windowInsets = WindowInsets(0)
+        // Behind the status bar with edge to edge, as the rest of the app; below it otherwise.
+        windowInsets = if (edgeToEdge) WindowInsets(0) else WindowInsets.statusBars
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
-            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+            if (edgeToEdge) Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             DrawerHeader()
             tabs.forEach { tab ->
                 DrawerEntry(
@@ -167,7 +171,13 @@ fun AukNavigationDrawer(
                 iconColor = ScreenshotColor.pick(dark),
                 onClick = { prefs.setBoolean(PreferenceManager.KEY_SCREENSHOT_MODE, !screenshotMode) },
                 trailing = {
-                    Switch(checked = screenshotMode, onCheckedChange = null, colors = aukSwitchColors())
+                    // A size down, so it sits within its row as the other entries' text does.
+                    Switch(
+                        checked = screenshotMode,
+                        onCheckedChange = null,
+                        colors = aukSwitchColors(),
+                        modifier = Modifier.scale(SwitchScale)
+                    )
                 }
             )
             DrawerSeparator()
@@ -214,8 +224,8 @@ private fun DrawerHeader() {
         Column(modifier = Modifier.padding(start = 16.dp).weight(1f)) {
             Text(
                 text = stringResource(R.string.about_app_display_name),
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -275,8 +285,10 @@ private fun DrawerEntry(
             Spacer(Modifier.width(20.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
+                // As OpenMessages: 15sp set tight, regular weight, the page showing a step heavier.
+                fontSize = 15.sp,
+                letterSpacing = 0.sp,
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
                 color = if (selected) onAccent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -1,10 +1,5 @@
 package auk.dialer.vroot.view.screen
 
-import auk.dialer.vroot.view.theme.LocalEdgeToEdge
-import auk.dialer.vroot.view.components.LocalMainPageBottomInset
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -14,14 +9,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DrawerValue
@@ -29,6 +29,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -42,12 +43,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukNavigationDrawer
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.components.BottomBar
+import auk.dialer.vroot.view.components.LocalMainPageBottomInset
 import auk.dialer.vroot.view.components.OngoingCallBanner
 import auk.dialer.vroot.view.components.TopBar
 import auk.dialer.vroot.view.components.navigationTabLabel
@@ -56,6 +59,8 @@ import auk.dialer.vroot.view.screen.settings.CallRecordingsContent
 import auk.dialer.vroot.view.screen.transitions.NoTransitions
 import auk.dialer.vroot.view.theme.AukPlainStatusBar
 import auk.dialer.vroot.view.theme.AukStaticMotion
+import auk.dialer.vroot.view.theme.LocalEdgeToEdge
+import auk.dialer.vroot.view.theme.LocalHeaderColor
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -305,29 +310,41 @@ fun MainScreen(
     } }
 
     if (sideMenu) {
-        // The open menu lies behind the status bar: its icons have to read on the menu instead.
-        if (drawerState.targetValue == DrawerValue.Open) AukPlainStatusBar()
+        val edgeToEdge = LocalEdgeToEdge.current
+        // With edge to edge, the open menu lies behind the status bar: its icons have to read on it.
+        if (edgeToEdge && drawerState.targetValue == DrawerValue.Open) AukPlainStatusBar()
         BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
-        // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            gesturesEnabled = drawerState.isOpen,
-            drawerContent = {
-                AukNavigationDrawer(
-                    tabs = visibleTabs,
-                    currentTab = currentTab,
-                    onTabSelected = { tab ->
-                        scope.launch { drawerState.close() }
-                        selectPage(visibleTabs.indexOf(tab))
-                    },
-                    onOpen = { direction ->
-                        scope.launch { drawerState.close() }
-                        navigator.navigate(direction)
-                    }
+        Box {
+            // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                gesturesEnabled = drawerState.isOpen,
+                drawerContent = {
+                    AukNavigationDrawer(
+                        tabs = visibleTabs,
+                        currentTab = currentTab,
+                        onTabSelected = { tab ->
+                            scope.launch { drawerState.close() }
+                            selectPage(visibleTabs.indexOf(tab))
+                        },
+                        onOpen = { direction ->
+                            scope.launch { drawerState.close() }
+                            navigator.navigate(direction)
+                        }
+                    )
+                },
+                content = screen
+            )
+            // Without edge to edge the status bar keeps the header's colour, over the menu's shade too.
+            if (!edgeToEdge) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .windowInsetsTopHeight(WindowInsets.statusBars)
+                        .background(LocalHeaderColor.current)
                 )
-            },
-            content = screen
-        )
+            }
+        }
     } else {
         screen()
     }
