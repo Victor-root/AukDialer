@@ -1,5 +1,6 @@
 package auk.dialer.vroot.controller
 
+import java.util.concurrent.ConcurrentHashMap
 import android.accounts.Account
 import android.content.ContentResolver
 import android.database.ContentObserver
@@ -52,6 +53,14 @@ class ContactsViewModel(
 
     private val _allContacts = MutableStateFlow<List<Contact>>(emptyList())
     val allContacts: StateFlow<List<Contact>> = _allContacts.asStateFlow()
+
+    // Each contact as last loaded in full or saved, so its page opens on its details at once
+    // instead of waiting for the contacts database.
+    private val fullContacts = ConcurrentHashMap<String, Contact>()
+
+    /** What is known of [contactId] without a query: its full details if loaded before, else its list entry. */
+    fun cachedContact(contactId: String): Contact? =
+        fullContacts[contactId] ?: _allContacts.value.find { it.id == contactId }
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -188,13 +197,13 @@ class ContactsViewModel(
 
     suspend fun getFullContactById(contactId: String): Contact? {
         return withContext(Dispatchers.IO) {
-            contactsRepo.getContactById(contactId)
+            contactsRepo.getContactById(contactId)?.also { fullContacts[contactId] = it }
         }
     }
-    
+
     suspend fun getFullContactByNumber(number: String): Contact? {
         return withContext(Dispatchers.IO) {
-            contactsRepo.getContactByNumber(number)
+            contactsRepo.getContactByNumber(number)?.also { fullContacts[it.id] = it }
         }
     }
 
@@ -287,6 +296,8 @@ class ContactsViewModel(
             }
 
             if (saved == ContactSaveResult.SAVED) {
+                // Back on its page, the contact shows as just saved, before it is read again.
+                if (contact.id.isNotEmpty() && contact.id != "0") fullContacts[contact.id] = contact
                 // A private contact has no account: it would leave the next new contact on none.
                 if (!contact.isPrivate) {
                     preferenceManager.setString(PreferenceManager.KEY_LAST_USED_ACCOUNT_NAME, contact.accountName)
@@ -316,6 +327,7 @@ class ContactsViewModel(
     suspend fun deleteContactNow(contactId: String) {
         withContext(Dispatchers.IO) {
             contactsRepo.deleteContact(contactId)
+            fullContacts.remove(contactId)
 
             val currentOrder = preferenceManager.getFavoritesOrder().toMutableList()
             if (currentOrder.contains(contactId)) {
@@ -330,6 +342,7 @@ class ContactsViewModel(
     fun deleteContacts(contactIds: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             contactsRepo.deleteContacts(contactIds)
+            contactIds.forEach(fullContacts::remove)
             
             val currentOrder = preferenceManager.getFavoritesOrder().toMutableList()
             var changed = false

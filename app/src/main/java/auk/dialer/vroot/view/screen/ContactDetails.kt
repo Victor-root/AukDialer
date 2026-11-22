@@ -13,6 +13,7 @@ import auk.dialer.vroot.controller.util.EventDates
 import androidx.compose.ui.res.pluralStringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -60,6 +61,9 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.CallLogFullScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ContactEditScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import auk.dialer.vroot.view.theme.aukAccentTopAppBarColors
@@ -113,7 +117,8 @@ private fun CallBackgroundRow(
 fun ContactDetailsScreen(
     contactId: String? = null,
     phoneNumber: String? = null,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val prefs = org.koin.compose.koinInject<auk.dialer.vroot.controller.util.PreferenceManager>()
     val contactsViewModel: ContactsViewModel = koinActivityViewModel()
@@ -122,11 +127,14 @@ fun ContactDetailsScreen(
 
     val allLogs by callLogViewModel.allCalls.collectAsState()
 
-    var fullContact by remember { mutableStateOf<Contact?>(null) }
+    // What is already known of the contact, so the page slides in whole rather than loading.
+    var fullContact by remember {
+        mutableStateOf(contactId?.takeIf { it != "null" }?.let(contactsViewModel::cachedContact))
+    }
     // The voicemail line stands in for a contact but is none: no favorite, edit, ringtone, storage
     // or delete applies to it, and the contacts database would refuse each of them.
     val isVoicemailEntry = fullContact?.id == "voicemail"
-    var isFullLoading by remember { mutableStateOf(true) }
+    var isFullLoading by remember { mutableStateOf(fullContact == null) }
     val scope = rememberCoroutineScope()
 
     suspend fun loadContact(): Contact? {
@@ -143,8 +151,10 @@ fun ContactDetailsScreen(
     }
 
     LaunchedEffect(contactId, phoneNumber) {
-        isFullLoading = true
-        fullContact = loadContact()
+        val loaded = loadContact()
+        // Building the page while it slides in stalls the slide: the details land once it is still.
+        snapshotFlow { animatedVisibilityScope.transition.isRunning }.first { !it }
+        fullContact = loaded
         isFullLoading = false
         // Back from its edit screen, this screen starts afresh: a contact deleted there, or moved to
         // other storage under a new id, is simply not found, and only an empty page would be left.
@@ -211,8 +221,11 @@ fun ContactDetailsScreen(
     val knownNumbers = remember(fullContact, phoneNumber) {
         ((fullContact?.phoneNumbers ?: emptyList()) + listOfNotNull(phoneNumber)).distinct()
     }
-    val blockedNumbers = remember(knownNumbers, blockedVersion) {
-        knownNumbers.filter { BlockedNumbersManager.isBlocked(context, it) }.toSet()
+    // Each check asks the system's blocked numbers list, off the main thread.
+    val blockedNumbers by produceState(emptySet<String>(), knownNumbers, blockedVersion) {
+        value = withContext(Dispatchers.IO) {
+            knownNumbers.filter { BlockedNumbersManager.isBlocked(context, it) }.toSet()
+        }
     }
     val isNumberBlocked: (String) -> Boolean = { number ->
         blockedNumbers.any { areNumbersEqual(it, number) }
@@ -632,15 +645,15 @@ fun ContactDetailsScreen(
                                     },
                                     modifier = Modifier.weight(1f)
                                 )
-                                val hasEmails = fullContact?.emails?.isNotEmpty() == true
-                                AukExpressiveButton(
-                                    icon = Icons.Default.Email,
-                                    label = stringResource(R.string.label_email),
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    enabled = hasEmails,
-                                    onClick = { emailLauncher.sendEmail("", fullContact) },
-                                    modifier = Modifier.weight(1f)
-                                )
+                                if (fullContact?.emails?.isNotEmpty() == true) {
+                                    AukExpressiveButton(
+                                        icon = Icons.Default.Email,
+                                        label = stringResource(R.string.label_email),
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        onClick = { emailLauncher.sendEmail("", fullContact) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
                             }
                         }
                     }
