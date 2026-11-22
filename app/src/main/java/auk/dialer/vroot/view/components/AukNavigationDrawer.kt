@@ -7,17 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +24,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -118,15 +114,14 @@ fun AukNavigationDrawer(
         modifier = Modifier.width(width),
         drawerShape = DrawerShape,
         drawerContainerColor = MaterialTheme.colorScheme.surface,
-        // Behind both system bars, as VFiles' drawer: the bars take the menu's colour on its side.
-        windowInsets = WindowInsets(0)
+        // The sheet runs behind both system bars, as VFiles' drawer, while its entries stay between them.
+        windowInsets = DrawerDefaults.windowInsets
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
-            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             DrawerHeader()
             tabs.forEach { tab ->
                 DrawerEntry(
@@ -191,7 +186,6 @@ fun AukNavigationDrawer(
                 iconColor = AboutColor.pick(dark),
                 onClick = { onOpen(AboutScreenDestination) }
             )
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
