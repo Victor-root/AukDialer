@@ -82,6 +82,7 @@ fun InterfaceScreen(
     var amoledMode by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_AMOLED_MODE, false)) }
     var vividColors by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_VIVID_COLORS, true)) }
     var edgeToEdge by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, false)) }
+    var plainBars by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_PLAIN_BARS, false)) }
     var defaultBottomBar by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_DEFAULT_BOTTOM_NAV, PreferenceManager.TAB_RECENTS)) }
     var mergeFavorites by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MERGE_FAVORITES_RECENTS, true)) }
     var colorfulAvatars by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_COLORFUL_AVATARS, true)) }
@@ -324,6 +325,18 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 edgeToEdge = it
                                 prefs.setBoolean(PreferenceManager.KEY_EDGE_TO_EDGE, it)
+                            }
+                        )
+
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_plain_bars),
+                            supporting = stringResource(R.string.settings_interface_plain_bars_supporting),
+                            leadingIcon = Icons.Outlined.FormatColorReset,
+                            checked = plainBars,
+                            onCheckedChange = {
+                                plainBars = it
+                                prefs.setBoolean(PreferenceManager.KEY_PLAIN_BARS, it)
                             }
                         )
                     }

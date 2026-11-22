@@ -207,6 +207,11 @@ fun AukTheme(
 
     val barColor = colorScheme.accentBarColor(darkTheme)
     val onBarColor = contentColorOnAccent(barColor)
+    val plainBars = remember(settingsVersion) {
+        prefs.getBoolean(PreferenceManager.KEY_PLAIN_BARS, false)
+    }
+    val headerColor = if (plainBars) colorScheme.background else barColor
+    val onHeaderColor = if (plainBars) colorScheme.onBackground else onBarColor
 
     val statusBarBackground = remember { mutableStateOf<Color?>(null) }
     val plainStatusBar = remember { mutableStateOf(false) }
@@ -218,6 +223,9 @@ fun AukTheme(
         LocalAccentBarColor provides barColor,
         LocalOnAccentBarColor provides onBarColor,
         LocalEdgeToEdge provides edgeToEdge,
+        LocalPlainBars provides plainBars,
+        LocalHeaderColor provides headerColor,
+        LocalOnHeaderColor provides onHeaderColor,
         LocalVividColors provides vividColors,
         LocalStatusBarBackground provides statusBarBackground,
         LocalPlainStatusBar provides plainStatusBar,
@@ -236,7 +244,7 @@ fun AukTheme(
             ) {
                 if (systemBars) {
                     AukSystemBars(
-                        accentIsDark = barColor.luminance() <= 0.5f,
+                        headerIsDark = headerColor.luminance() <= 0.5f,
                         backgroundIsDark = colorScheme.background.luminance() <= 0.5f,
                         darkTheme = darkTheme,
                         edgeToEdge = edgeToEdge,
@@ -262,7 +270,7 @@ fun AukTheme(
                         ) {
                             content()
                         }
-                        // Edge to edge off: an opaque accent band over the navigation bar area, so it
+                        // Edge to edge off: an opaque header-coloured band over the navigation bar area, so it
                         // reads as a solid bar matching the header. On: nothing, and the app shows
                         // through the transparent navigation bar.
                         if (!edgeToEdge) {
@@ -271,7 +279,7 @@ fun AukTheme(
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
                                     .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                                    .background(barColor)
+                                    .background(headerColor)
                             )
                             // Turned, the navigation bar stands at a side: the same band there,
                             // which its light buttons are drawn for.
@@ -280,14 +288,14 @@ fun AukTheme(
                                     .align(Alignment.CenterStart)
                                     .fillMaxHeight()
                                     .windowInsetsStartWidth(WindowInsets.navigationBars)
-                                    .background(barColor)
+                                    .background(headerColor)
                             )
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
                                     .fillMaxHeight()
                                     .windowInsetsEndWidth(WindowInsets.navigationBars)
-                                    .background(barColor)
+                                    .background(headerColor)
                             )
                         }
                     }

@@ -64,6 +64,22 @@ val LocalAccentBarColor: ProvidableCompositionLocal<Color> =
 val LocalOnAccentBarColor: ProvidableCompositionLocal<Color> =
     staticCompositionLocalOf { Color.White }
 
+/**
+ * Whether the headers and the system bars are plain, from the "Plain bars" setting: the screen's own
+ * background instead of the accent.
+ */
+val LocalPlainBars: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
+
+/**
+ * The colour of the headers and of the system bars, and the colour their content needs on it: the
+ * accent bar colour, or the screen's background with [LocalPlainBars].
+ */
+val LocalHeaderColor: ProvidableCompositionLocal<Color> =
+    staticCompositionLocalOf { Color(AUK_BRAND_SEED) }
+
+val LocalOnHeaderColor: ProvidableCompositionLocal<Color> =
+    staticCompositionLocalOf { Color.White }
+
 /** Whether the app draws behind the system bars, from the "Edge to edge" setting. */
 val LocalEdgeToEdge: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
 
@@ -95,8 +111,8 @@ fun AukPlainStatusBar() {
  * Keeps both system bars fully transparent, with icons that stay readable on what is behind them.
  *
  * The status bar icons follow, in order: the content a collapsed header uncovered, the background of
- * a screen that declared [AukPlainStatusBar], or the accent header. The navigation bar sits on the
- * accent band the theme paints while edge to edge is off, and on the app itself once it is on.
+ * a screen that declared [AukPlainStatusBar], or the header. The navigation bar sits on the
+ * header-coloured band the theme paints while edge to edge is off, and on the app itself once it is on.
  *
  * The bar styles are explicit rather than auto(), which keeps the system from laying its own
  * translucent scrim over three button navigation.
@@ -106,7 +122,7 @@ fun AukPlainStatusBar() {
  */
 @Composable
 internal fun AukSystemBars(
-    accentIsDark: Boolean,
+    headerIsDark: Boolean,
     backgroundIsDark: Boolean,
     darkTheme: Boolean,
     edgeToEdge: Boolean,
@@ -122,8 +138,8 @@ internal fun AukSystemBars(
     } ?: return
 
     val isStatusBarDark = statusBarBackground.value?.let { it.luminance() < 0.5f }
-        ?: if (plainStatusBar.value) backgroundIsDark else accentIsDark
-    val isNavigationBarDark = if (edgeToEdge) darkTheme else accentIsDark
+        ?: if (plainStatusBar.value) backgroundIsDark else headerIsDark
+    val isNavigationBarDark = if (edgeToEdge) darkTheme else headerIsDark
     DisposableEffect(activity, isStatusBarDark, isNavigationBarDark) {
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) {
@@ -141,11 +157,11 @@ internal fun AukSystemBars(
 
 @Composable
 fun aukAccentTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-    containerColor = LocalAccentBarColor.current,
-    scrolledContainerColor = LocalAccentBarColor.current,
-    navigationIconContentColor = LocalOnAccentBarColor.current,
-    titleContentColor = LocalOnAccentBarColor.current,
-    actionIconContentColor = LocalOnAccentBarColor.current
+    containerColor = LocalHeaderColor.current,
+    scrolledContainerColor = LocalHeaderColor.current,
+    navigationIconContentColor = LocalOnHeaderColor.current,
+    titleContentColor = LocalOnHeaderColor.current,
+    actionIconContentColor = LocalOnHeaderColor.current
 )
 
 /**

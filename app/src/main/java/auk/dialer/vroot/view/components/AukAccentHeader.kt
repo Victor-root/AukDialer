@@ -19,11 +19,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import auk.dialer.vroot.view.theme.LocalAccentBarColor
-import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
+import auk.dialer.vroot.view.theme.LocalHeaderColor
+import auk.dialer.vroot.view.theme.LocalOnHeaderColor
 
 /**
- * The accent band the main screen headers sit on.
+ * The band the main screen headers sit on, in the header colour (the accent, unless the bars are plain).
  *
  * It paints behind the status bar, which is what gives the bar its colour, and insets its content
  * below it. Screens built on a Material [androidx.compose.material3.TopAppBar] get the same for
@@ -36,8 +36,8 @@ fun AukAccentHeader(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = LocalAccentBarColor.current,
-        contentColor = LocalOnAccentBarColor.current
+        color = LocalHeaderColor.current,
+        contentColor = LocalOnHeaderColor.current
     ) {
         Box(
             modifier = Modifier.windowInsetsPadding(
@@ -61,8 +61,8 @@ fun AukAccentFilterBar(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = LocalAccentBarColor.current,
-        contentColor = LocalOnAccentBarColor.current
+        color = LocalHeaderColor.current,
+        contentColor = LocalOnHeaderColor.current
     ) {
         LazyRow(
             modifier = Modifier

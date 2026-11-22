@@ -46,8 +46,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import auk.dialer.vroot.R
 import auk.dialer.vroot.controller.util.PreferenceManager
-import auk.dialer.vroot.view.theme.LocalAccentBarColor
-import auk.dialer.vroot.view.theme.LocalOnAccentBarColor
+import auk.dialer.vroot.view.theme.LocalHeaderColor
+import auk.dialer.vroot.view.theme.LocalOnHeaderColor
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
@@ -112,7 +112,7 @@ fun TopBar(
                         contentColor = if (filtersVisible) {
                             MaterialTheme.colorScheme.onPrimary
                         } else {
-                            LocalOnAccentBarColor.current
+                            LocalOnHeaderColor.current
                         }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -156,7 +156,7 @@ private fun TopBarAction(icon: ImageVector, contentDescription: String, onClick:
         modifier = Modifier.size(TopBarActionButtonSize),
         shape = CircleShape,
         color = Color.Transparent,
-        contentColor = LocalOnAccentBarColor.current
+        contentColor = LocalOnHeaderColor.current
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(imageVector = icon, contentDescription = contentDescription)
@@ -167,7 +167,7 @@ private fun TopBarAction(icon: ImageVector, contentDescription: String, onClick:
 /** The search row, on the header's own colour so it covers the row it unrolls over. */
 @Composable
 private fun HeaderSearchField(search: HeaderSearchState, padding: PaddingValues) {
-    val onAccent = LocalOnAccentBarColor.current
+    val onHeader = LocalOnHeaderColor.current
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     // A fresh search opens the keyboard; coming back to one that already holds a query does not.
@@ -176,7 +176,7 @@ private fun HeaderSearchField(search: HeaderSearchState, padding: PaddingValues)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(LocalAccentBarColor.current)
+            .background(LocalHeaderColor.current)
             .padding(padding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -196,8 +196,8 @@ private fun HeaderSearchField(search: HeaderSearchState, padding: PaddingValues)
                 .weight(1f)
                 .focusRequester(focusRequester),
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = onAccent),
-            cursorBrush = SolidColor(onAccent),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = onHeader),
+            cursorBrush = SolidColor(onHeader),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             // Results follow the typing already: the keyboard's search key only puts the keyboard away.
             keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
@@ -207,7 +207,7 @@ private fun HeaderSearchField(search: HeaderSearchState, padding: PaddingValues)
                         Text(
                             text = stringResource(R.string.search_contacts_placeholder),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = onAccent.copy(alpha = 0.7f),
+                            color = onHeader.copy(alpha = 0.7f),
                             maxLines = 1
                         )
                     }

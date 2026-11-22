@@ -1,5 +1,6 @@
 package auk.dialer.vroot.view.components
 
+import auk.dialer.vroot.view.theme.LocalPlainBars
 import auk.dialer.vroot.view.theme.softAccentColors
 import auk.dialer.vroot.view.theme.animateCornerDpAsState
 import androidx.compose.animation.animateColorAsState
@@ -760,8 +761,8 @@ fun AukFilterChip(
     val accent = LocalAccentBarColor.current
     val onAccent = LocalOnAccentBarColor.current
     // On the accent band the usual colours vanish: the selected chip is filled with primary, which
-    // is the band itself. Swapped for the band's own pair instead.
-    val chipColors = if (onAccentBar) {
+    // is the band itself. Swapped for the band's own pair instead. Plain bars keep the usual ones.
+    val chipColors = if (onAccentBar && !LocalPlainBars.current) {
         FilterChipDefaults.filterChipColors(
             containerColor = onAccent.copy(alpha = AccentChipContainerAlpha),
             labelColor = onAccent,
