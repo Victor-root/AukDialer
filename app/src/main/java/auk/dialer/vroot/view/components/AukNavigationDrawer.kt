@@ -158,7 +158,7 @@ private fun DrawerHeader() {
         Column(modifier = Modifier.padding(start = 16.dp).weight(1f)) {
             Text(
                 text = stringResource(R.string.about_app_display_name),
-                fontSize = 21.sp,
+                fontSize = 19.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -210,7 +210,7 @@ private fun DrawerEntry(
             Spacer(Modifier.width(20.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = if (selected) onAccent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,

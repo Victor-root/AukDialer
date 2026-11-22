@@ -136,11 +136,14 @@ fun TopBar(
                     }
                 }
 
-                TopBarAction(
-                    icon = Icons.Default.Tune,
-                    contentDescription = stringResource(R.string.settings_title),
-                    onClick = { navigator.navigate(SettingsScreenDestination) }
-                )
+                // With the side menu, Settings is in the menu.
+                if (onMenuClick == null) {
+                    TopBarAction(
+                        icon = Icons.Default.Tune,
+                        contentDescription = stringResource(R.string.settings_title),
+                        onClick = { navigator.navigate(SettingsScreenDestination) }
+                    )
+                }
             }
 
             AnimatedVisibility(
