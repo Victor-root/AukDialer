@@ -261,6 +261,7 @@ class PreferenceManager(context: Context) : SharedPreferences.OnSharedPreference
         const val KEY_SCREENSHOT_MODE = "screenshot_mode"
         const val KEY_PLAIN_BARS = "plain_bars"
         const val KEY_SIDE_MENU = "side_menu"
+        const val KEY_SIDE_MENU_SWIPE = "side_menu_swipe"
         const val KEY_SHOW_FIRST_LETTER = "show_first_letter"
         const val KEY_COLORFUL_AVATARS = "colorful_avatars"
         const val KEY_GRADIENT_AVATARS = "gradient_avatars"

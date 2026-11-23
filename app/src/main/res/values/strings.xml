@@ -337,6 +337,8 @@
     <string name="settings_interface_plain_bars_supporting">Header, status bar and navigation bar in white or black instead of the accent colour.</string>
     <string name="settings_interface_side_menu">Side menu</string>
     <string name="settings_interface_side_menu_supporting">Shows the tabs in a menu that opens from the left, instead of the bottom bar.</string>
+    <string name="settings_interface_side_menu_swipe">Swipe to open the menu</string>
+    <string name="settings_interface_side_menu_swipe_supporting">Swipe right from the first tab to open the side menu.</string>
     <string name="drawer_subtitle">Phone</string>
     <string name="content_desc_open_menu">Open menu</string>
     <string name="settings_interface_colorful_avatars">Use colorful avatars</string>

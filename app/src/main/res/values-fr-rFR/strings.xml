@@ -318,6 +318,8 @@
     <string name="settings_interface_plain_bars_supporting">En-tête, barre d’état et barre de navigation en blanc ou en noir plutôt que dans la couleur d’accent.</string>
     <string name="settings_interface_side_menu">Menu latéral</string>
     <string name="settings_interface_side_menu_supporting">Affiche les onglets dans un menu qui s’ouvre sur la gauche, à la place de la barre du bas.</string>
+    <string name="settings_interface_side_menu_swipe">Glisser pour ouvrir le menu</string>
+    <string name="settings_interface_side_menu_swipe_supporting">Glissez vers la droite depuis le premier onglet pour ouvrir le menu latéral.</string>
     <string name="drawer_subtitle">Téléphone</string>
     <string name="content_desc_open_menu">Ouvrir le menu</string>
     <string name="settings_interface_colorful_avatars">Utiliser des avatars colorés</string>

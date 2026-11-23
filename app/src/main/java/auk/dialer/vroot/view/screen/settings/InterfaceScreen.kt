@@ -90,6 +90,7 @@ fun InterfaceScreen(
     var showPicture by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SHOW_PICTURE, true)) }
     var iconOnlyNav by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_ICON_ONLY_NAV, false)) }
     var sideMenu by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU, false)) }
+    var sideMenuSwipe by remember { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU_SWIPE, false)) }
     var transitionStyle by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_TRANSITION_STYLE, 0)) }
     var customPrimaryColor by remember { mutableStateOf(prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, CUSTOM_PRIMARY_COLOR_UNSET)) }
     var avatarShape by remember { mutableStateOf(prefs.getInt(PreferenceManager.KEY_AVATAR_SHAPE, 0)) }
@@ -438,6 +439,18 @@ fun InterfaceScreen(
                             onCheckedChange = {
                                 sideMenu = it
                                 prefs.setBoolean(PreferenceManager.KEY_SIDE_MENU, it)
+                            }
+                        )
+                        AukDivider(Modifier.padding(horizontal = 16.dp))
+                        AukSwitchListItem(
+                            headline = stringResource(R.string.settings_interface_side_menu_swipe),
+                            supporting = stringResource(R.string.settings_interface_side_menu_swipe_supporting),
+                            leadingIcon = Icons.Outlined.SwipeRight,
+                            checked = sideMenuSwipe,
+                            enabled = sideMenu,
+                            onCheckedChange = {
+                                sideMenuSwipe = it
+                                prefs.setBoolean(PreferenceManager.KEY_SIDE_MENU_SWIPE, it)
                             }
                         )
                         AukDivider(Modifier.padding(horizontal = 16.dp))

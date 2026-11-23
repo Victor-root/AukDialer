@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -49,6 +50,7 @@ import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukNavigationDrawer
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.view.components.BottomBar
+import auk.dialer.vroot.view.components.rememberDrawerSwipeOpener
 import auk.dialer.vroot.view.components.LocalMainPageBottomInset
 import auk.dialer.vroot.view.components.OngoingCallBanner
 import auk.dialer.vroot.view.components.TopBar
@@ -86,7 +88,10 @@ fun MainScreen(
     }
     val filtersVisible by prefs.showHeaderFilters.collectAsState()
     val sideMenu = remember(settingsState) { prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU, false) }
+    val sideMenuSwipe = remember(settingsState) { prefs.getBoolean(PreferenceManager.KEY_SIDE_MENU_SWIPE, false) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val swipeOpensMenu = sideMenu && sideMenuSwipe
+    val drawerSwipeOpener = rememberDrawerSwipeOpener(drawerState)
 
     val requestedTab = initialTab ?: defaultTab
     val startPage = visibleTabs.indexOf(requestedTab).coerceAtLeast(0)
@@ -251,7 +256,8 @@ fun MainScreen(
                     // in the middle of the page animation.
                     HorizontalPager(
                         state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
+                            .then(if (swipeOpensMenu) Modifier.nestedScroll(drawerSwipeOpener) else Modifier),
                         beyondViewportPageCount = visibleTabs.size
                     ) { page ->
                         val inReach by remember(page) {
@@ -317,10 +323,9 @@ fun MainScreen(
         }
         BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
         val edgeToEdge = LocalEdgeToEdge.current
-        // Opened from its button only: a swipe from the edge would fight the pages' own swipe.
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = drawerState.isOpen,
+            gesturesEnabled = swipeOpensMenu || drawerState.isOpen,
             drawerContent = {
                 AukNavigationDrawer(
                     tabs = visibleTabs,
