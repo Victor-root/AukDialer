@@ -50,7 +50,8 @@ object BlockedCallNotifier {
  * Tells about the calls Android's block list stopped. Those never reach the app: Telecom rejects
  * them before the in-call service hears of them, and only writes them to the call log. So this
  * watches the call log, woken by WorkManager whenever it changes, and notifies each blocked call
- * logged since it last looked.
+ * logged since it last looked. Calls a caller ID and spam app stopped are left to that app, which
+ * has its own setting for telling about them.
  */
 class BlockedCallWorker(
     appContext: Context,
@@ -73,8 +74,12 @@ class BlockedCallWorker(
                 context.contentResolver.query(
                     CallLog.Calls.CONTENT_URI,
                     arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE),
-                    "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.DATE} > ?",
-                    arrayOf(CallLog.Calls.BLOCKED_TYPE.toString(), seenUntil.toString()),
+                    "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.DATE} > ? AND ${CallLog.Calls.BLOCK_REASON} != ?",
+                    arrayOf(
+                        CallLog.Calls.BLOCKED_TYPE.toString(),
+                        seenUntil.toString(),
+                        CallLog.Calls.BLOCK_REASON_CALL_SCREENING_SERVICE.toString(),
+                    ),
                     "${CallLog.Calls.DATE} ASC"
                 )?.use { cursor ->
                     while (cursor.moveToNext()) {
