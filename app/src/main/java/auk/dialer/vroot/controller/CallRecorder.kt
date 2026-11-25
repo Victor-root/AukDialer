@@ -264,16 +264,23 @@ object CallRecorder {
     data class Recording(val file: File, val caller: String, val startedAt: Long, val durationMs: Long)
 
     private const val FILE_STAMP_PATTERN = "yyyyMMdd_HHmmss"
+    private const val DURATIONS_FILE = "auk_recording_durations"
 
     // Files are named after the caller, then the time recording started: Marie_Dupont_20261101_141502.
     private val FILE_NAME = Regex("""^(.*)_(\d{8}_\d{6})$""")
 
-    /** The saved recordings, newest first. Blocking: each file is opened to read its duration. */
+    /**
+     * The saved recordings, newest first. Blocking: a file is opened to read its duration the first
+     * time it is seen at its size, which is then remembered. A file still being written is read again
+     * once it has grown.
+     */
     fun loadRecordings(context: Context): List<Recording> {
         val files = getRecordingsDirectory(context).listFiles()
             ?.filter { it.isFile && it.length() > 0 }
             ?: return emptyList()
-        return files.map { file ->
+        val durations = context.getSharedPreferences(DURATIONS_FILE, Context.MODE_PRIVATE)
+        val known = durations.all
+        val recordings = files.map { file ->
             val parts = FILE_NAME.find(file.nameWithoutExtension)
             val startedAt = parts?.groupValues?.get(2)
                 ?.let { runCatching { SimpleDateFormat(FILE_STAMP_PATTERN, Locale.US).parse(it)?.time }.getOrNull() }
@@ -282,10 +289,18 @@ object CallRecorder {
                 file = file,
                 caller = (parts?.groupValues?.get(1) ?: file.nameWithoutExtension).replace('_', ' ').trim(),
                 startedAt = startedAt,
-                durationMs = durationMsOf(file)
+                durationMs = known[durationKey(file)] as? Long ?: durationMsOf(file)
             )
         }.sortedByDescending { it.startedAt }
+        // Only the files still there are kept.
+        val current = recordings.associate { durationKey(it.file) to it.durationMs }
+        if (current != known) {
+            durations.edit().clear().apply { current.forEach { (key, value) -> putLong(key, value) } }.apply()
+        }
+        return recordings
     }
+
+    private fun durationKey(file: File) = "${file.name}:${file.length()}"
 
     private fun durationMsOf(file: File): Long = runCatching {
         MediaMetadataRetriever().use { retriever ->

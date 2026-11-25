@@ -33,15 +33,12 @@ import auk.dialer.vroot.view.components.rememberCurrentDay
 import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.CallRecorder
-import auk.dialer.vroot.controller.util.PerfLog
+import auk.dialer.vroot.controller.CallRecordingsViewModel
+import auk.dialer.vroot.controller.RecordingEntry
 import auk.dialer.vroot.controller.util.SpeechPlayer
-import auk.dialer.vroot.controller.util.areNumbersEqual
 import auk.dialer.vroot.controller.util.formatDateHeader
 import auk.dialer.vroot.controller.util.formatDuration
-import auk.dialer.vroot.controller.util.formatPhoneNumber
 import auk.dialer.vroot.controller.util.formatTime
-import auk.dialer.vroot.modal.`interface`.ICallLogRepository
-import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.view.components.AudioMessageRow
 import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukConfirmationDialog
@@ -54,9 +51,7 @@ import auk.dialer.vroot.view.theme.aukExceptBottom
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @Destination<RootGraph>
 @Composable
@@ -80,11 +75,8 @@ fun CallRecordingsContent(
     onSelectionStateChange: ((Boolean, (@Composable () -> Unit)?) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    var refreshKey by remember { mutableIntStateOf(0) }
-    val contactsRepo = koinInject<IContactsRepository>()
-    val callLogRepo = koinInject<ICallLogRepository>()
-    val unknownLabel = stringResource(R.string.label_unknown)
-    var recordings by remember { mutableStateOf<List<RecordingEntry>?>(null) }
+    val viewModel: CallRecordingsViewModel = koinActivityViewModel()
+    val recordings by viewModel.recordings.collectAsState()
     var pendingDelete by remember { mutableStateOf<CallRecorder.Recording?>(null) }
     val shareTitle = stringResource(R.string.call_recordings_share)
 
@@ -115,7 +107,7 @@ fun CallRecordingsContent(
     DisposableEffect(lifecycleOwner) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             when (event) {
-                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> refreshKey++
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> viewModel.refresh()
                 androidx.lifecycle.Lifecycle.Event.ON_STOP -> player.release()
                 else -> {}
             }
@@ -128,16 +120,6 @@ fun CallRecordingsContent(
     }
     LaunchedEffect(isShown) {
         if (!isShown) player.release()
-    }
-
-    LaunchedEffect(refreshKey) {
-        // The first read comes with the ON_RESUME the observer receives as soon as it is added.
-        if (refreshKey == 0) return@LaunchedEffect
-        recordings = withContext(Dispatchers.IO) {
-            PerfLog.timed("recordings read") {
-                identifyCallers(CallRecorder.loadRecordings(context), contactsRepo, callLogRepo, unknownLabel)
-            }
-        }
     }
 
     var selectedPaths by remember { mutableStateOf(setOf<String>()) }
@@ -158,7 +140,7 @@ fun CallRecordingsContent(
                 if (playingPath in selectedPaths) player.release()
                 selectedPaths.forEach { CallRecorder.delete(File(it)) }
                 selectedPaths = emptySet()
-                refreshKey++
+                viewModel.refresh()
             }
         )
     }
@@ -259,7 +241,7 @@ fun CallRecordingsContent(
             onConfirm = {
                 CallRecorder.delete(recording.file)
                 pendingDelete = null
-                refreshKey++
+                viewModel.refresh()
             },
             title = stringResource(R.string.call_recordings_delete_title),
             message = stringResource(R.string.call_recordings_delete_message),
@@ -267,42 +249,6 @@ fun CallRecordingsContent(
             icon = Icons.Default.Delete,
             isDestructive = true
         )
-    }
-}
-
-/**
- * A recording with who it was with, as known now rather than when it was recorded: a number not in
- * the contacts then may be a contact since, or carry the name the call log got after the call
- * (a business name, for instance).
- */
-private data class RecordingEntry(
-    val recording: CallRecorder.Recording,
-    val name: String,
-    val photoUri: String?,
-    val isIdentified: Boolean
-)
-
-/** Blocking: looks numbers up in the contacts, then in the call log. */
-private fun identifyCallers(
-    recordings: List<CallRecorder.Recording>,
-    contacts: IContactsRepository,
-    callLog: ICallLogRepository,
-    unknownLabel: String
-): List<RecordingEntry> {
-    // Only read when a recording carries a number nobody in the contacts has.
-    val calls by lazy { runCatching { callLog.getCalls() }.getOrDefault(emptyList()) }
-    return recordings.map { recording ->
-        val caller = recording.caller
-        // Recorded under the contact's name when it was known, under the number otherwise.
-        val isNumber = caller.isNotEmpty() && caller.all { it.isDigit() || it == '+' }
-        if (!isNumber) {
-            return@map RecordingEntry(recording, caller.ifEmpty { unknownLabel }, null, caller.isNotEmpty())
-        }
-        val contact = runCatching { contacts.getContactByNumber(caller) }.getOrNull()
-        val name = contact?.name ?: calls.firstOrNull { call ->
-            call.name != null && call.name != call.number && areNumbersEqual(call.number, caller)
-        }?.name
-        RecordingEntry(recording, name ?: formatPhoneNumber(caller), contact?.photoUri, name != null)
     }
 }
 

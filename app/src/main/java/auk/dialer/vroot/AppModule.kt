@@ -4,6 +4,7 @@ import androidx.room.Room
 import auk.dialer.vroot.modal.db.AukDatabase
 import auk.dialer.vroot.controller.BackupViewModel
 import auk.dialer.vroot.controller.CallLogViewModel
+import auk.dialer.vroot.controller.CallRecordingsViewModel
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.VoicemailViewModel
 import auk.dialer.vroot.modal.`interface`.ICallLogRepository
@@ -52,4 +53,5 @@ val appModule = module {
     viewModel { CallLogViewModel(get(), androidContext().contentResolver) }
     viewModel { BackupViewModel(get(), get()) }
     viewModel { VoicemailViewModel(get(), androidContext().contentResolver, androidContext()) }
+    viewModel { CallRecordingsViewModel(androidContext(), get(), get()) }
 }
