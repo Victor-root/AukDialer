@@ -13,7 +13,7 @@ def minutesTo2024 = 28_401_120L
 def versionCodeValue = (int) (System.currentTimeMillis().intdiv(60_000) - minutesTo2024)
 // Always three numbers: update checkers compare them one by one, and read "1.0"
 // as older than "1.0.0".
-def baseVersionName = "0.9.0-alpha"
+def baseVersionName = "0.9.1-alpha"
 
 // Signing details come from keystore.properties, or from the environment. The
 // file is untracked because it holds passwords, so see keystore.properties.example

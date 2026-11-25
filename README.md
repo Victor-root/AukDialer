@@ -7,7 +7,7 @@
 **A modern, free and open-source Phone app for Android.**<br>
 **No ads, no tracking, no Google services.**
 
-![Version](https://img.shields.io/badge/version-0.9.0--alpha-bf8700?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.9.1--alpha-bf8700?style=for-the-badge)
 ![Android](https://img.shields.io/badge/Android-12%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL%20v3-1976D2?style=for-the-badge)
 
