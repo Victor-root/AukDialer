@@ -45,6 +45,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import auk.dialer.vroot.controller.CallRecordingsViewModel
 import auk.dialer.vroot.controller.util.PerfLog
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.view.components.AukNavigationDrawer
@@ -71,6 +72,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @Destination<RootGraph>(start = true, style = NoTransitions::class)
 @Composable
@@ -107,6 +109,12 @@ fun MainScreen(
 
     var isSelectingVoicemail by remember { mutableStateOf(false) }
     var voicemailActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
+    // Read as the app starts, so the tab opens on its list: the recordings take longer to read than
+    // the voicemails, each caller being looked up in the contacts.
+    if (PreferenceManager.TAB_RECORDINGS in visibleTabs) {
+        val recordingsViewModel: CallRecordingsViewModel = koinActivityViewModel()
+        LaunchedEffect(recordingsViewModel) { recordingsViewModel.refresh() }
+    }
     var isSelectingRecordings by remember { mutableStateOf(false) }
     var recordingsActionBar by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
     var isSelectingRecents by remember { mutableStateOf(false) }
