@@ -427,8 +427,11 @@ class CallService : InCallService() {
         val contactPhoto = getContactBitmap(privacy.photo(contact?.photoUri))
 
         val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+        // Which SIM took the call only means something when there is more than one.
         val simLabel = call.details.accountHandle?.let {
-            try { telecomManager.getPhoneAccount(it)?.label?.toString() } catch (e: SecurityException) { null }
+            try {
+                if (telecomManager.callCapablePhoneAccounts.size > 1) telecomManager.getPhoneAccount(it)?.label?.toString() else null
+            } catch (e: SecurityException) { null }
         }
 
         val intent = Intent(this, auk.dialer.vroot.MainActivity::class.java).apply {
