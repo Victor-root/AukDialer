@@ -177,7 +177,7 @@ object VoicemailDiagnostics {
             appendLine("  usable=${credentials.hasUsableImapCredentials()}")
             // The return code is what a carrier uses to explain a refusal.
             appendLine("  returnCode=${credentials.returnCode ?: "<none>"} subscriberType=${credentials.subscriberType ?: "<none>"}")
-            appendLine("  imapServer=${credentials.imapServer ?: "<none>"} port=${credentials.imapPort ?: 0} ssl=${credentials.imapUseSsl}")
+            appendLine("  imapServer=${credentials.imapServer ?: "<none>"} port=${credentials.imapPort ?: 0}")
             appendLine("  smtpPort=${credentials.smtpPort ?: 0}")
             appendLine("  hasUser=${!credentials.imapUsername.isNullOrBlank()} hasPassword=${!credentials.imapPassword.isNullOrBlank()}")
             appendLine("  hasTui=${!credentials.tuiAccessNumber.isNullOrBlank()} language=${credentials.language ?: "<none>"}")
@@ -292,9 +292,9 @@ object VoicemailDiagnostics {
                             VvmNetwork.Route.FELL_BACK -> "default (carrier cellular unavailable)"
                         }
                     },
-                ) { VvmImapClient(credentials).inspect() }
+                ) { VvmImapClient(credentials, config.sslEnabled).inspect() }
             } else {
-                VvmImapClient(credentials).inspect()
+                VvmImapClient(credentials, config.sslEnabled).inspect()
             }
             appendLine("subId=$subId route=$route")
             if (!inspection.connected) {

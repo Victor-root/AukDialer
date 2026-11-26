@@ -1,7 +1,6 @@
 package auk.dialer.vroot.controller.vvm
 
 import android.telecom.PhoneAccountHandle
-import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
 import android.telephony.VisualVoicemailService
 import android.telephony.VisualVoicemailSms
@@ -67,15 +66,9 @@ class AukVisualVoicemailService : VisualVoicemailService() {
     ) {
         val subscriptionId = subscriptionIdFor(accountId)
 
-        // STATUS bodies don't say whether IMAP wants TLS from byte zero or
-        // STARTTLS on a plaintext port; CarrierConfig is authoritative, so the
-        // answer is resolved once here and committed with the credentials.
-        val sslEnabled = subscriptionId?.let { resolveSslEnabledForSub(it) } ?: false
-        val enrichedStatus = status.copy(imapUseSsl = sslEnabled)
-
         if (subscriptionId != null) {
             try {
-                VvmCredentialsStore(this).store(subscriptionId, enrichedStatus)
+                VvmCredentialsStore(this).store(subscriptionId, status)
             } catch (e: Exception) {
                 Log.w(LOG_TAG, "Credentials store failed subId=$subscriptionId", e)
             }
@@ -160,11 +153,6 @@ class AukVisualVoicemailService : VisualVoicemailService() {
             task.finish()
         } catch (_: Exception) {
         }
-    }
-
-    private fun resolveSslEnabledForSub(subscriptionId: Int): Boolean {
-        val key = CarrierConfigManager.KEY_VVM_SSL_ENABLED_BOOL
-        return VvmCarrierConfig.carrierValues(this, subscriptionId, key)?.getBoolean(key, false) ?: false
     }
 
     companion object {

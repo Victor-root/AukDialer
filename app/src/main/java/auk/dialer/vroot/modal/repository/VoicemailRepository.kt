@@ -368,7 +368,9 @@ class VoicemailRepository(
         val subId = subscriptionIdFor(meta.phoneAccountId) ?: return
         val credentials = VvmCredentialsStore(context).load(subId)
             ?.takeIf { it.hasUsableImapCredentials() } ?: return
-        onCarrierNetwork(subId) { VvmImapClient(credentials).setSeenFlag(meta.serverUid, isRead) }
+        // Write-backs reach the same servers as the sync, so they need the same route.
+        val config = VvmCarrierConfig.read(context, subId)
+        VvmNetwork.forCarrier(context, config) { VvmImapClient(credentials, config.sslEnabled).setSeenFlag(meta.serverUid, isRead) }
     }
 
     private fun pushDeleteToServer(rowId: Long) {
@@ -376,17 +378,10 @@ class VoicemailRepository(
         val subId = subscriptionIdFor(meta.phoneAccountId) ?: return
         val credentials = VvmCredentialsStore(context).load(subId)
             ?.takeIf { it.hasUsableImapCredentials() } ?: return
-        onCarrierNetwork(subId) { VvmImapClient(credentials).deleteMessage(meta.serverUid) }
+        val config = VvmCarrierConfig.read(context, subId)
+        VvmNetwork.forCarrier(context, config) { VvmImapClient(credentials, config.sslEnabled).deleteMessage(meta.serverUid) }
     }
 
-    /** Write-backs reach the same servers as the sync, so they need the same route. */
-    private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
-        return if (VvmCarrierConfig.read(context, subscriptionId).cellularDataRequired) {
-            VvmNetwork.onCellular(context, subscriptionId, block = block)
-        } else {
-            block()
-        }
-    }
 
     private data class OwnedRowMeta(val serverUid: Long, val phoneAccountId: String?)
 

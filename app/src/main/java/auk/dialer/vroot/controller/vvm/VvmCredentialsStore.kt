@@ -24,7 +24,6 @@ class VvmCredentialsStore(private val context: Context) {
             putStringOrRemove("${p}subscriber_type", status.subscriberType)
             putStringOrRemove("${p}imap_server", status.imapServer)
             putIntOrRemove("${p}imap_port", status.imapPort)
-            putBoolean("${p}imap_use_ssl", status.imapUseSsl)
             putStringOrRemove("${p}smtp_server", status.smtpServer)
             putIntOrRemove("${p}smtp_port", status.smtpPort)
             putStringOrRemove("${p}imap_user", status.imapUsername)
@@ -63,7 +62,6 @@ class VvmCredentialsStore(private val context: Context) {
             language = prefs.getString("${p}lang", null),
             maxGreetingLengthSeconds = prefs.getInt("${p}greeting_max_s", 0).takeIf { it > 0 },
             maxVoicemailLengthSeconds = prefs.getInt("${p}voicemail_max_s", 0).takeIf { it > 0 },
-            imapUseSsl = prefs.getBoolean("${p}imap_use_ssl", false),
         )
     }
 

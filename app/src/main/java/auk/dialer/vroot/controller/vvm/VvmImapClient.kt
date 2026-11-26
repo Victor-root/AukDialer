@@ -22,7 +22,11 @@ import javax.mail.internet.MimeBodyPart
  * Every call here is blocking I/O: callers MUST run on a background thread.
  * This class never spawns threads of its own.
  */
-class VvmImapClient(private val credentials: OmtpStatusMessage) {
+/**
+ * [useImaps] is true when the mailbox expects TLS from the first byte ("imaps", usually port 993),
+ * false for plaintext IMAP with optional STARTTLS. STATUS replies don't say, the carrier config does.
+ */
+class VvmImapClient(private val credentials: OmtpStatusMessage, private val useImaps: Boolean) {
 
     /**
      * One decoded IMAP message. [audioBytes] holds the first MIME part whose
@@ -341,9 +345,6 @@ class VvmImapClient(private val credentials: OmtpStatusMessage) {
         val password = credentials.imapPassword?.takeIf { it.isNotBlank() } ?: return null
         return ImapEndpoint(server, port, username, password)
     }
-
-    private val useImaps: Boolean
-        get() = credentials.imapUseSsl
 
     private val protocolStoreName: String
         get() = if (useImaps) "imaps" else "imap"

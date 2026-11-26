@@ -60,8 +60,9 @@ class VvmSyncEngine(private val context: Context) {
         if (BuildConfig.DEBUG_TOOLS) {
             Log.d(LOG_TAG, "Sync subId=$subscriptionId account=$phoneAccountId knownUids=${knownUids.size}")
         }
-        val result = onCarrierNetwork(subscriptionId) {
-            VvmImapClient(credentials).syncNewMessages(
+        val config = VvmCarrierConfig.read(context, subscriptionId)
+        val result = VvmNetwork.forCarrier(context, config) {
+            VvmImapClient(credentials, config.sslEnabled).syncNewMessages(
                 isAlreadyKnown = { uid -> uid in knownUids },
                 onNewMessage = { fetched ->
                     val written = writer.writeFetchedMessage(phoneAccountId, fetched)
@@ -95,16 +96,6 @@ class VvmSyncEngine(private val context: Context) {
                 errorType = result.errorType,
                 errorMessage = result.errorMessage,
             )
-        }
-    }
-
-    /** Pins the work to the carrier's own network when it demands one. */
-    private fun <T> onCarrierNetwork(subscriptionId: Int, block: () -> T): T {
-        val config = VvmCarrierConfig.read(context, subscriptionId)
-        return if (config.cellularDataRequired) {
-            VvmNetwork.onCellular(context, subscriptionId, block = block)
-        } else {
-            block()
         }
     }
 

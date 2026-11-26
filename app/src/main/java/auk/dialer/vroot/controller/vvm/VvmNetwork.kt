@@ -93,6 +93,10 @@ object VvmNetwork {
         }
     }
 
+    /** Runs [block] on the carrier's own network when [config] demands one, on the default one otherwise. */
+    fun <T> forCarrier(context: Context, config: VvmCarrierConfig, block: () -> T): T =
+        if (config.cellularDataRequired) onCellular(context, config.subscriptionId, block = block) else block()
+
     private fun cellularRequest(subscriptionId: Int): NetworkRequest {
         return NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)

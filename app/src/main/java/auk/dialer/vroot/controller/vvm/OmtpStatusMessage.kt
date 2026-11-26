@@ -23,12 +23,6 @@ data class OmtpStatusMessage(
     val language: String?,
     val maxGreetingLengthSeconds: Int?,
     val maxVoicemailLengthSeconds: Int?,
-    /**
-     * True when the carrier IMAP endpoint expects TLS from the first byte
-     * ("imaps", usually port 993), false for plaintext IMAP with optional
-     * STARTTLS. Filled from CarrierConfig, since STATUS replies don't carry it.
-     */
-    val imapUseSsl: Boolean = false,
 ) {
     /**
      * A STATUS reply is usable only when the carrier acknowledges the subscriber
