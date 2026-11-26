@@ -260,13 +260,28 @@ object VoicemailDiagnostics {
         }
     }
 
+    /** How [connectionSteps] opens the connection. */
+    private enum class Probe { PLAIN, TLS, TLS_1_2 }
+
     /**
      * Each step of reaching the mailbox, timed, up to its greeting: a mail library failing says
      * "timed out" whether the server was never reached, refused the encryption or stayed silent.
+     * An encrypted mailbox is also tried with TLS 1.2 alone, whose opening message is far smaller,
+     * and on the usual plaintext port, to tell a server that never answers from one that chokes on
+     * the encryption Android offers.
      */
     private fun connectionSteps(credentials: OmtpStatusMessage, useImaps: Boolean): String {
         val server = credentials.imapServer ?: return "no server"
         val port = credentials.imapPort ?: return "no port"
+        if (!useImaps) return connectionSteps(server, port, Probe.PLAIN)
+        return listOf(
+            "tls" to connectionSteps(server, port, Probe.TLS),
+            "tls1.2" to connectionSteps(server, port, Probe.TLS_1_2),
+            "plain:$PLAIN_IMAP_PORT" to connectionSteps(server, PLAIN_IMAP_PORT, Probe.PLAIN),
+        ).joinToString("\n    ") { (name, steps) -> "$name: $steps" }
+    }
+
+    private fun connectionSteps(server: String, port: Int, probe: Probe): String {
         val steps = mutableListOf<String>()
         val startedAt = SystemClock.elapsedRealtime()
         fun step(what: String) = steps.add("$what (${SystemClock.elapsedRealtime() - startedAt}ms)")
@@ -277,14 +292,15 @@ object VoicemailDiagnostics {
                 raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
                 raw.soTimeout = STEP_TIMEOUT_MS
                 step("tcp=ok")
-                val socket = if (useImaps) {
+                val socket = if (probe == Probe.PLAIN) {
+                    raw
+                } else {
                     val tls = (SSLSocketFactory.getDefault() as SSLSocketFactory)
                         .createSocket(raw, server, port, true) as SSLSocket
+                    if (probe == Probe.TLS_1_2) tls.enabledProtocols = arrayOf("TLSv1.2")
                     tls.startHandshake()
                     step("tls=${tls.session.protocol} ${tls.session.cipherSuite}")
                     tls
-                } else {
-                    raw
                 }
                 val greeting = socket.getInputStream().bufferedReader().readLine()
                 step("greeting=${greeting?.take(60) ?: "<closed>"}")
@@ -339,7 +355,7 @@ object VoicemailDiagnostics {
             }
             val (steps, inspection) = checked
             appendLine("subId=$subId route=$route")
-            appendLine("  steps: $steps")
+            appendLine("  steps:\n    $steps")
             if (!inspection.connected) {
                 appendLine("  FAILED over ${inspection.protocol}: ${inspection.error}")
                 continue
@@ -432,4 +448,5 @@ object VoicemailDiagnostics {
 
     private const val MAX_ROWS = 25
     private const val STEP_TIMEOUT_MS = 15_000
+    private const val PLAIN_IMAP_PORT = 143
 }
