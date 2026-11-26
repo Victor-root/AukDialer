@@ -114,7 +114,9 @@ class VvmImapClient(private val credentials: OmtpStatusMessage, private val useI
             ServerInspection(
                 connected = false,
                 protocol = protocolStoreName,
-                error = "${e.javaClass.simpleName}: ${e.message ?: "<no message>"}",
+                // The cause says which step gave up, the library's own message rarely does.
+                error = "${e.javaClass.simpleName}: ${e.message ?: "<no message>"}" +
+                    (e.cause?.let { " (${it.javaClass.simpleName}: ${it.message})" } ?: ""),
                 capabilities = emptyList(),
                 messageCount = 0,
                 unseenCount = 0,

@@ -1,6 +1,7 @@
 package auk.dialer.vroot.controller.vvm
 
 import android.content.Context
+import android.os.SystemClock
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -10,6 +11,11 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.telephony.VisualVoicemailService
 import auk.dialer.vroot.controller.util.isAlreadyDefaultDialer
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.SSLSocketFactory
 
 /**
  * Snapshot of everything the voicemail feature depends on, meant to be copied
@@ -255,6 +261,41 @@ object VoicemailDiagnostics {
     }
 
     /**
+     * Each step of reaching the mailbox, timed, up to its greeting: a mail library failing says
+     * "timed out" whether the server was never reached, refused the encryption or stayed silent.
+     */
+    private fun connectionSteps(credentials: OmtpStatusMessage, useImaps: Boolean): String {
+        val server = credentials.imapServer ?: return "no server"
+        val port = credentials.imapPort ?: return "no port"
+        val steps = mutableListOf<String>()
+        val startedAt = SystemClock.elapsedRealtime()
+        fun step(what: String) = steps.add("$what (${SystemClock.elapsedRealtime() - startedAt}ms)")
+        try {
+            val address = InetAddress.getByName(server)
+            step("dns=${address.hostAddress}")
+            Socket().use { raw ->
+                raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
+                raw.soTimeout = STEP_TIMEOUT_MS
+                step("tcp=ok")
+                val socket = if (useImaps) {
+                    val tls = (SSLSocketFactory.getDefault() as SSLSocketFactory)
+                        .createSocket(raw, server, port, true) as SSLSocket
+                    tls.startHandshake()
+                    step("tls=${tls.session.protocol} ${tls.session.cipherSuite}")
+                    tls
+                } else {
+                    raw
+                }
+                val greeting = socket.getInputStream().bufferedReader().readLine()
+                step("greeting=${greeting?.take(60) ?: "<closed>"}")
+            }
+        } catch (e: Exception) {
+            step("stopped: ${e.javaClass.simpleName}: ${e.message ?: "<no message>"}")
+        }
+        return steps.joinToString(", ")
+    }
+
+    /**
      * Connects to the carrier mailbox with the stored credentials, so a report
      * proves the whole chain works without waiting for someone to leave an
      * actual message.
@@ -282,7 +323,7 @@ object VoicemailDiagnostics {
             // that only answers on that network fails identically either way,
             // so a report naming the requested route explains nothing.
             var route = if (config.cellularDataRequired) "carrier cellular (pending)" else "default"
-            val inspection = if (config.cellularDataRequired) {
+            val checked = if (config.cellularDataRequired) {
                 VvmNetwork.onCellular(
                     context,
                     subId,
@@ -292,11 +333,13 @@ object VoicemailDiagnostics {
                             VvmNetwork.Route.FELL_BACK -> "default (carrier cellular unavailable)"
                         }
                     },
-                ) { VvmImapClient(credentials, config.sslEnabled).inspect() }
+                ) { connectionSteps(credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect() }
             } else {
-                VvmImapClient(credentials, config.sslEnabled).inspect()
+                connectionSteps(credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect()
             }
+            val (steps, inspection) = checked
             appendLine("subId=$subId route=$route")
+            appendLine("  steps: $steps")
             if (!inspection.connected) {
                 appendLine("  FAILED over ${inspection.protocol}: ${inspection.error}")
                 continue
@@ -388,4 +431,5 @@ object VoicemailDiagnostics {
     }
 
     private const val MAX_ROWS = 25
+    private const val STEP_TIMEOUT_MS = 15_000
 }
