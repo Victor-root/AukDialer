@@ -323,7 +323,7 @@ private fun EmptyRecordingsState() {
             modifier = Modifier
                 .size(120.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = RoundedCornerShape(28.dp)
                 ),
             contentAlignment = Alignment.Center
