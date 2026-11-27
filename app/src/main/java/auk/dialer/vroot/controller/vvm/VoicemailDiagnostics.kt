@@ -134,6 +134,7 @@ object VoicemailDiagnostics {
             appendLine("  destination=${config.destinationNumber.ifBlank { "<none>" }}")
             appendLine("  port=${config.portNumber}")
             appendLine("  clientPrefix=${config.clientPrefix}")
+            appendLine("  clientType=${VvmKnownCarriers.clientType(context, config.subscriptionId) ?: "<app default>"}")
             appendLine("  ssl=${config.sslEnabled}")
             appendLine("  cellularRequired=${config.cellularDataRequired}")
             appendExtraCarrierKeys(context, config.subscriptionId)

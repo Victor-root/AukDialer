@@ -37,10 +37,20 @@ object VvmRequestSender {
     private const val LOG_TAG = "VvmRequestSender"
 
     fun sendStatus(context: Context, config: VvmCarrierConfig): Result =
-        send(context, config, STATUS_REQUEST)
+        send(context, config, request(context, config, STATUS_REQUEST))
 
     fun sendActivate(context: Context, config: VvmCarrierConfig): Result =
-        send(context, config, "$ACTIVATE_REQUEST:pv=$PROTOCOL_VERSION;ct=$CLIENT_TYPE")
+        send(context, config, request(context, config, ACTIVATE_REQUEST))
+
+    /**
+     * A carrier that expects a client type gets the full OMTP form, with it, the application port
+     * and the client prefix; the others keep the forms already known to work with them.
+     */
+    private fun request(context: Context, config: VvmCarrierConfig, keyword: String): String {
+        val clientType = VvmKnownCarriers.clientType(context, config.subscriptionId)
+            ?: return if (keyword == STATUS_REQUEST) STATUS_REQUEST else "$keyword:pv=$PROTOCOL_VERSION;ct=$CLIENT_TYPE"
+        return "$keyword:pv=$PROTOCOL_VERSION;ct=$clientType;pt=${config.portNumber};${config.clientPrefix}"
+    }
 
     private fun send(context: Context, config: VvmCarrierConfig, body: String): Result {
         if (!config.isSupported) {

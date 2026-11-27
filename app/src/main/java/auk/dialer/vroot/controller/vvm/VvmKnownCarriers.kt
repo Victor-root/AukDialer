@@ -38,8 +38,17 @@ object VvmKnownCarriers {
         put("20815", Entry("2051", 5499, cellularDataRequired = true, sslEnabled = true))
     }
 
+    // Free Mobile gives its mailbox only to the clients it knows: one that reached it, in 2013,
+    // asked as Free's own app, "STATUS:pv=13;ct=free.VVM.10;pt=5499;//VVM"
+    // (talk.maemo.org/showthread.php?t=89093).
+    private val CLIENT_TYPE_BY_MCC_MNC: Map<String, String> = mapOf("20815" to "free.VVM.10")
+
     fun lookup(context: Context, subscriptionId: Int): Entry? =
         BY_MCC_MNC[simOperator(context, subscriptionId)]
+
+    /** The client type a carrier expects its requests to name, null for one that does not say. */
+    fun clientType(context: Context, subscriptionId: Int): String? =
+        CLIENT_TYPE_BY_MCC_MNC[simOperator(context, subscriptionId)]
 
     private fun simOperator(context: Context, subscriptionId: Int): String? {
         return try {
