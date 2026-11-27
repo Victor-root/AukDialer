@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.PhoneMissed
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.util.AukHaptics
 import auk.dialer.vroot.controller.util.PreferenceManager
+import auk.dialer.vroot.controller.util.DialpadTones
 import auk.dialer.vroot.view.components.AukDialog
 import auk.dialer.vroot.view.components.AukDialogAction
 import auk.dialer.vroot.view.components.AukDivider
@@ -56,6 +58,7 @@ fun SoundVibrationScreen(
 
     var hapticListScroll by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_HAPTIC_LIST_SCROLL, false)) }
     var showIntensityDialog by rememberSaveable { mutableStateOf(false) }
+    var showToneVolumeDialog by rememberSaveable { mutableStateOf(false) }
     var missedCallNotifications by remember(settingsState) { mutableStateOf(prefs.getBoolean(PreferenceManager.KEY_MISSED_CALL_NOTIFICATIONS, true)) }
 
     AukScaffold(
@@ -89,6 +92,14 @@ fun SoundVibrationScreen(
                             dtmfTone = it
                             prefs.setBoolean(PreferenceManager.KEY_DTMF_TONE, it)
                         }
+                    )
+                    AukDivider(Modifier.padding(horizontal = 16.dp))
+                    AukListItem(
+                        headline = stringResource(R.string.settings_sound_dtmf_volume),
+                        supporting = stringResource(R.string.settings_sound_dtmf_volume_supporting),
+                        leadingIcon = Icons.AutoMirrored.Outlined.VolumeUp,
+                        enabled = dtmfTone,
+                        onClick = { showToneVolumeDialog = true }
                     )
                     AukDivider(Modifier.padding(horizontal = 16.dp))
                     AukSwitchListItem(
@@ -180,6 +191,34 @@ fun SoundVibrationScreen(
 
     if (showIntensityDialog) {
         VibrationIntensityDialog(prefs = prefs, onDismissRequest = { showIntensityDialog = false })
+    }
+    if (showToneVolumeDialog) {
+        ToneVolumeDialog(prefs = prefs, onDismissRequest = { showToneVolumeDialog = false })
+    }
+}
+
+/** The key tones' volume, each step of the slider playing a key at the new level. */
+@Composable
+private fun ToneVolumeDialog(prefs: PreferenceManager, onDismissRequest: () -> Unit) {
+    var volume by remember { mutableIntStateOf(DialpadTones.volume(prefs)) }
+    AukDialog(
+        onDismissRequest = onDismissRequest,
+        title = stringResource(R.string.settings_sound_dtmf_volume),
+        icon = Icons.AutoMirrored.Outlined.VolumeUp,
+        confirmAction = AukDialogAction(
+            label = stringResource(R.string.action_done),
+            onClick = onDismissRequest
+        )
+    ) {
+        IntensitySlider(
+            label = stringResource(R.string.settings_sound_dtmf_volume_slider),
+            value = volume,
+            onValueChange = {
+                volume = it
+                DialpadTones.sample(it)
+            },
+            onValueChangeFinished = { prefs.setInt(PreferenceManager.KEY_DTMF_TONE_VOLUME, volume) }
+        )
     }
 }
 

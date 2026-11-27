@@ -3,7 +3,6 @@ package auk.dialer.vroot.view.screen
 import auk.dialer.vroot.view.components.LocalPrivacyMask
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
 import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Build
@@ -80,6 +79,7 @@ import auk.dialer.vroot.R
 import auk.dialer.vroot.view.components.AukTopBarTitle
 import auk.dialer.vroot.controller.ContactsViewModel
 import auk.dialer.vroot.controller.util.AukHaptics
+import auk.dialer.vroot.controller.util.DialpadTones
 import auk.dialer.vroot.controller.util.PreferenceManager
 import auk.dialer.vroot.controller.util.SocialUtils
 import auk.dialer.vroot.controller.ShizukuBridge
@@ -179,8 +179,7 @@ fun DialPadScreen(
         }
     }
 
-    // Null when the audio service has no tone generator to spare: the keys then just stay silent.
-    val toneGenerator = remember { runCatching { ToneGenerator(AudioManager.STREAM_DTMF, 80) }.getOrNull() }
+    val toneGenerator = remember { DialpadTones.generator(DialpadTones.volume(prefs)) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -781,8 +780,8 @@ fun DialPadKey(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = {
-                    if (prefs.getBoolean(PreferenceManager.KEY_DTMF_TONE, true)) {
-                        playDtmf(number, toneGenerator)
+                    if (DialpadTones.shouldPlay(context, prefs)) {
+                        DialpadTones.play(toneGenerator, number)
                     }
                     if (prefs.getBoolean(PreferenceManager.KEY_DIALPAD_VIBRATION, true)) {
                         AukHaptics.play(context, AukHaptics.Vibration.Dialpad, prefs)
@@ -876,27 +875,6 @@ object T9Matcher {
         '8' -> '8'
         '9' -> '9'
         else -> ' '
-    }
-}
-
-private fun playDtmf(key: String, toneGenerator: ToneGenerator?) {
-    val toneType = when (key) {
-        "1" -> ToneGenerator.TONE_DTMF_1
-        "2" -> ToneGenerator.TONE_DTMF_2
-        "3" -> ToneGenerator.TONE_DTMF_3
-        "4" -> ToneGenerator.TONE_DTMF_4
-        "5" -> ToneGenerator.TONE_DTMF_5
-        "6" -> ToneGenerator.TONE_DTMF_6
-        "7" -> ToneGenerator.TONE_DTMF_7
-        "8" -> ToneGenerator.TONE_DTMF_8
-        "9" -> ToneGenerator.TONE_DTMF_9
-        "0" -> ToneGenerator.TONE_DTMF_0
-        "*" -> ToneGenerator.TONE_DTMF_S
-        "#" -> ToneGenerator.TONE_DTMF_P
-        else -> -1
-    }
-    if (toneType != -1) {
-        toneGenerator?.startTone(toneType, 120)
     }
 }
 

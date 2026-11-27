@@ -377,6 +377,9 @@
     <string name="settings_sound_title">Sound &amp; vibration</string>
     <string name="settings_sound_dtmf_tone">DTMF tone</string>
     <string name="settings_sound_dtmf_tone_supporting">Dialpad tone that plays during keypress</string>
+    <string name="settings_sound_dtmf_volume">Key tone volume</string>
+    <string name="settings_sound_dtmf_volume_supporting">Share of the ring volume the keys play at. Silent in silent and vibrate modes</string>
+    <string name="settings_sound_dtmf_volume_slider">Ring volume used</string>
     <string name="settings_sound_dialpad_vibration">Dialpad vibration</string>
     <string name="settings_sound_dialpad_vibration_supporting">Dialpad vibration that plays during keypress</string>
     <string name="settings_sound_vibrate_on_answer">Vibrate on answer</string>

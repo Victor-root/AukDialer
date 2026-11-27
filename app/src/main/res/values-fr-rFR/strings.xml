@@ -347,6 +347,9 @@
     <string name="settings_sound_title">Son et vibration</string>
     <string name="settings_sound_dtmf_tone">Tonalité DTMF</string>
     <string name="settings_sound_dtmf_tone_supporting">Tonalité du clavier lors de la saisie</string>
+    <string name="settings_sound_dtmf_volume">Volume des touches</string>
+    <string name="settings_sound_dtmf_volume_supporting">Part du volume de sonnerie utilisée par les touches. Muettes en mode silencieux et vibreur</string>
+    <string name="settings_sound_dtmf_volume_slider">Volume de sonnerie utilisé</string>
     <string name="settings_sound_dialpad_vibration">Vibration du clavier</string>
     <string name="settings_sound_dialpad_vibration_supporting">Vibration du clavier lors de la saisie</string>
     <string name="settings_sound_vibrate_on_answer">Vibrer au décrochage</string>
