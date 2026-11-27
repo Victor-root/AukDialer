@@ -2,6 +2,7 @@ package auk.dialer.vroot.view.screen.settings
 
 import androidx.compose.material.icons.outlined.ContentCopy
 import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
+import auk.dialer.vroot.view.components.AukSmallProgressIndicator
 import auk.dialer.vroot.view.components.AukScaffold
 import auk.dialer.vroot.controller.vvm.VvmNotifier
 import android.Manifest
@@ -290,7 +291,12 @@ fun VoicemailScreen(
                         headline = stringResource(R.string.voicemail_copy_diagnostics),
                         supporting = stringResource(R.string.voicemail_copy_diagnostics_supporting),
                         leadingIcon = Icons.Outlined.ContentCopy,
-                        onClick = diagnostics.copy
+                        onClick = diagnostics.copy,
+                        trailingContent = if (diagnostics.inProgress) {
+                            { AukSmallProgressIndicator() }
+                        } else {
+                            null
+                        }
                     )
                 }
             }

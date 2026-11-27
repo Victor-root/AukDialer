@@ -41,6 +41,7 @@ import auk.dialer.vroot.view.components.AudioMessageRow
 import auk.dialer.vroot.view.components.AudioRowAction
 import auk.dialer.vroot.view.components.AukExpressiveCardSegment
 import auk.dialer.vroot.view.components.AukLoadingIndicatorView
+import auk.dialer.vroot.view.components.AukSmallProgressIndicator
 import auk.dialer.vroot.view.components.AukPullToRefreshIndicator
 import auk.dialer.vroot.view.components.AukSectionHeader
 import auk.dialer.vroot.view.components.PermissionDeniedView
@@ -461,6 +462,10 @@ private fun VoicemailStatusState(
         if (offersDiagnostics) {
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = diagnostics.copy, enabled = !diagnostics.inProgress) {
+                if (diagnostics.inProgress) {
+                    AukSmallProgressIndicator()
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Text(stringResource(R.string.voicemail_copy_diagnostics))
             }
         }

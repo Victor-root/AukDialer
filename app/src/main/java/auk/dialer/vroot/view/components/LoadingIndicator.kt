@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,16 @@ fun AukLoadingIndicatorView(modifier: Modifier = Modifier) {
             trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     }
+}
+
+/** A spinner the size of an icon, for a row or a button whose action is under way. */
+@Composable
+fun AukSmallProgressIndicator(modifier: Modifier = Modifier) {
+    CircularProgressIndicator(
+        modifier = modifier.size(20.dp),
+        color = MaterialTheme.colorScheme.primary,
+        strokeWidth = 2.dp
+    )
 }
 
 @Composable
