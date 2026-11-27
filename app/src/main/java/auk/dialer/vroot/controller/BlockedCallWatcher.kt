@@ -1,6 +1,7 @@
 package auk.dialer.vroot.controller
 
 import auk.dialer.vroot.controller.util.PrivacyMask
+import auk.dialer.vroot.controller.util.hiddenCallerLabel
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -25,7 +26,9 @@ import org.koin.core.component.inject
 object BlockedCallNotifier {
     private const val CHANNEL_ID = "blocked_call_channel"
 
-    fun notify(context: Context, number: String, privacy: PrivacyMask) {
+    /** [presentation] is the call log's (or Telecom's, the same values): a withheld caller has no number to show. */
+    fun notify(context: Context, number: String, presentation: Int, privacy: PrivacyMask) {
+        val caller = hiddenCallerLabel(context, number, presentation) ?: privacy.number(number)
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(
             NotificationChannel(
@@ -38,7 +41,7 @@ object BlockedCallNotifier {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
             .setContentTitle(context.getString(R.string.notif_blocked_call_title))
-            .setContentText(context.getString(R.string.notif_blocked_call_text, privacy.number(number)))
+            .setContentText(context.getString(R.string.notif_blocked_call_text, caller))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
 
@@ -73,7 +76,7 @@ class BlockedCallWorker(
             runCatching {
                 context.contentResolver.query(
                     CallLog.Calls.CONTENT_URI,
-                    arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE),
+                    arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE, CallLog.Calls.NUMBER_PRESENTATION),
                     "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.DATE} > ? AND ${CallLog.Calls.BLOCK_REASON} != ?",
                     arrayOf(
                         CallLog.Calls.BLOCKED_TYPE.toString(),
@@ -83,7 +86,7 @@ class BlockedCallWorker(
                     "${CallLog.Calls.DATE} ASC"
                 )?.use { cursor ->
                     while (cursor.moveToNext()) {
-                        BlockedCallNotifier.notify(context, cursor.getString(0).orEmpty(), privacy)
+                        BlockedCallNotifier.notify(context, cursor.getString(0).orEmpty(), cursor.getInt(2), privacy)
                         latest = maxOf(latest, cursor.getLong(1))
                     }
                 }

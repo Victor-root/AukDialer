@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.ComponentName
 import android.content.ContentValues
 import auk.dialer.vroot.R
+import auk.dialer.vroot.controller.util.hiddenCallerLabel
 import auk.dialer.vroot.modal.`interface`.ICallLogRepository
 import auk.dialer.vroot.modal.data.CallLogEntry
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
@@ -146,13 +147,7 @@ class CallLogRepository(
             val presentation = if (presentationIdx != -1) cursor.getInt(presentationIdx) else CallLog.Calls.PRESENTATION_ALLOWED
             // A withheld or unknown caller has no number to show, call back, save or block: keep it
             // empty and name the row after the reason instead of leaving it blank.
-            val hiddenLabel = when {
-                presentation == CallLog.Calls.PRESENTATION_RESTRICTED -> context.getString(R.string.label_private_number)
-                presentation == CallLog.Calls.PRESENTATION_PAYPHONE -> context.getString(R.string.label_payphone)
-                presentation != CallLog.Calls.PRESENTATION_ALLOWED -> context.getString(R.string.label_unknown_number)
-                cursor.getString(numberIdx).isNullOrBlank() -> context.getString(R.string.label_unknown_number)
-                else -> null
-            }
+            val hiddenLabel = hiddenCallerLabel(context, cursor.getString(numberIdx), presentation)
             val number = if (hiddenLabel != null) "" else cursor.getString(numberIdx) ?: unknownLabel
             val type = cursor.getInt(typeIdx)
             val date = cursor.getLong(dateIdx)

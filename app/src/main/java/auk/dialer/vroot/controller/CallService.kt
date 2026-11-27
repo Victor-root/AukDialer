@@ -389,7 +389,7 @@ class CallService : InCallService() {
     private fun handleBlockedCall(call: Call, number: String) {
         call.reject(Call.REJECT_REASON_DECLINED)
         if (preferenceManager.getBoolean(PreferenceManager.KEY_BLOCK_NOTIFICATION, true)) {
-            BlockedCallNotifier.notify(this, number, PrivacyMask.of(this, preferenceManager))
+            BlockedCallNotifier.notify(this, number, call.details.handlePresentation, PrivacyMask.of(this, preferenceManager))
         }
     }
 
