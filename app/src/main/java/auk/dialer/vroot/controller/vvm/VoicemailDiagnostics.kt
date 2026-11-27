@@ -264,37 +264,43 @@ object VoicemailDiagnostics {
     }
 
     /**
-     * One way of reaching an encrypted mailbox: [maxSegment] asks the server for packets no larger
-     * than that many bytes, null leaves the size to the network.
+     * One way of reaching a mailbox: encrypted from the first byte or not, [maxSegment] asking the
+     * server for packets no larger than that many bytes, [firstLine] sent before waiting for it.
      */
-    private class TlsVariant(val name: String, val maxSegment: Int? = null)
+    private class Probe(
+        val name: String,
+        val tls: Boolean,
+        val maxSegment: Int? = null,
+        val firstLine: String? = null,
+    )
 
-    // Free's mailbox opens the connection, then never gets its first encrypted answer through, on
-    // every phone tried and whatever the encryption: the answer carries its certificate, the first
-    // large packets of the exchange, which a network that drops oversized packets loses silently.
-    private val TLS_VARIANTS = listOf(
-        TlsVariant("tls"),
-        TlsVariant("tls-mss1200", maxSegment = 1200),
-        TlsVariant("tls-mss536", maxSegment = 536),
+    // Free's mailbox opens the connection, then never answers the encryption, on every phone tried
+    // and whatever its version or packet size. Two more readings fit: a server waiting for the
+    // client to speak first in plain text, or one that only takes smaller packets than asked.
+    private val ENCRYPTED_MAILBOX_PROBES = listOf(
+        Probe("tls", tls = true),
+        Probe("tls-mss536", tls = true, maxSegment = 536),
+        Probe("plain-command", tls = false, firstLine = "a1 CAPABILITY"),
+        Probe("plain-newline", tls = false, firstLine = ""),
     )
 
     /**
      * Each step of reaching the mailbox, timed, up to its greeting: a mail library failing says
      * "timed out" whether the server was never reached, refused the encryption or stayed silent.
-     * An encrypted mailbox is tried with each of [TLS_VARIANTS].
+     * An encrypted mailbox is tried with each of [ENCRYPTED_MAILBOX_PROBES].
      */
     private fun connectionSteps(context: Context, credentials: OmtpStatusMessage, useImaps: Boolean): String {
         val server = credentials.imapServer ?: return "no server"
         val port = credentials.imapPort ?: return "no port"
-        if (!useImaps) return connectionSteps(server, port, null)
+        if (!useImaps) return connectionSteps(server, port, Probe("plain", tls = false))
         val connectivity = context.getSystemService(ConnectivityManager::class.java)
         val network = connectivity?.boundNetworkForProcess ?: connectivity?.activeNetwork
         val mtu = network?.let { connectivity.getLinkProperties(it)?.mtu }?.takeIf { it > 0 }
         return "network mtu=${mtu ?: "<default>"}\n    " +
-            TLS_VARIANTS.joinToString("\n    ") { "${it.name}: ${connectionSteps(server, port, it)}" }
+            ENCRYPTED_MAILBOX_PROBES.joinToString("\n    ") { "${it.name}: ${connectionSteps(server, port, it)}" }
     }
 
-    private fun connectionSteps(server: String, port: Int, variant: TlsVariant?): String {
+    private fun connectionSteps(server: String, port: Int, probe: Probe): String {
         val steps = mutableListOf<String>()
         val startedAt = SystemClock.elapsedRealtime()
         fun step(what: String) = steps.add("$what (${SystemClock.elapsedRealtime() - startedAt}ms)")
@@ -302,7 +308,7 @@ object VoicemailDiagnostics {
             val address = InetAddress.getByName(server)
             step("dns=${address.hostAddress}")
             Socket().use { raw ->
-                variant?.maxSegment?.let { size ->
+                probe.maxSegment?.let { size ->
                     // The segment size is agreed while connecting, so it is set on a socket bound
                     // but not yet connected. Android names no constant for it: 2 is Linux's own.
                     raw.bind(null)
@@ -313,17 +319,21 @@ object VoicemailDiagnostics {
                 raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
                 raw.soTimeout = PROBE_READ_TIMEOUT_MS
                 step("tcp=ok")
-                val socket = if (variant == null) {
-                    raw
-                } else {
+                val socket = if (probe.tls) {
                     val tls = (SSLSocketFactory.getDefault() as SSLSocketFactory)
                         .createSocket(raw, server, port, true) as SSLSocket
                     tls.startHandshake()
                     step("tls=${tls.session.protocol} ${tls.session.cipherSuite}")
                     tls
+                } else {
+                    raw
                 }
-                val greeting = socket.getInputStream().bufferedReader().readLine()
-                step("greeting=${greeting?.take(60) ?: "<closed>"}")
+                probe.firstLine?.let { line ->
+                    socket.getOutputStream().apply { write("$line\r\n".toByteArray()); flush() }
+                    step("sent=${line.ifEmpty { "<newline>" }}")
+                }
+                val answer = socket.getInputStream().bufferedReader().readLine()
+                step("answer=${answer?.take(80) ?: "<closed>"}")
             }
         } catch (e: Exception) {
             step("stopped: ${e.javaClass.simpleName}: ${e.message ?: "<no message>"}")
