@@ -1,10 +1,7 @@
 package auk.dialer.vroot.controller.vvm
 
 import android.content.Context
-import android.os.ParcelFileDescriptor
 import android.os.SystemClock
-import android.system.Os
-import android.system.OsConstants
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -264,24 +261,21 @@ object VoicemailDiagnostics {
     }
 
     /**
-     * One way of reaching a mailbox: encrypted from the first byte or not, [maxSegment] asking the
-     * server for packets no larger than that many bytes, [firstLine] sent before waiting for it.
+     * One way of reaching a mailbox: encrypted from the first byte or not, [firstLine] sent before
+     * waiting for it.
      */
     private class Probe(
         val name: String,
         val tls: Boolean,
-        val maxSegment: Int? = null,
         val firstLine: String? = null,
     )
 
-    // Free's mailbox opens the connection, then never answers the encryption, on every phone tried
-    // and whatever its version or packet size. Two more readings fit: a server waiting for the
-    // client to speak first in plain text, or one that only takes smaller packets than asked.
+    // Free's mailbox opens the connection, then never sends a byte, on every phone tried, whatever
+    // the encryption, the packet size or a plain command sent first: whatever accepts it drops what
+    // comes from the internet connection. Each probe is also run over the SIM's MMS connection.
     private val ENCRYPTED_MAILBOX_PROBES = listOf(
         Probe("tls", tls = true),
-        Probe("tls-mss536", tls = true, maxSegment = 536),
         Probe("plain-command", tls = false, firstLine = "a1 CAPABILITY"),
-        Probe("plain-newline", tls = false, firstLine = ""),
     )
 
     /**
@@ -308,14 +302,6 @@ object VoicemailDiagnostics {
             val address = InetAddress.getByName(server)
             step("dns=${address.hostAddress}")
             Socket().use { raw ->
-                probe.maxSegment?.let { size ->
-                    // The segment size is agreed while connecting, so it is set on a socket bound
-                    // but not yet connected. Android names no constant for it: 2 is Linux's own.
-                    raw.bind(null)
-                    ParcelFileDescriptor.fromSocket(raw).use { fd ->
-                        Os.setsockoptInt(fd.fileDescriptor, OsConstants.IPPROTO_TCP, TCP_MAXSEG, size)
-                    }
-                }
                 raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
                 raw.soTimeout = PROBE_READ_TIMEOUT_MS
                 step("tcp=ok")
@@ -386,6 +372,7 @@ object VoicemailDiagnostics {
             val (steps, inspection) = checked
             appendLine("subId=$subId route=$route")
             appendLine("  steps:\n    $steps")
+            if (config.cellularDataRequired) appendMmsRouteCheck(context, subId, credentials, config.sslEnabled)
             if (!inspection.connected) {
                 appendLine("  FAILED over ${inspection.protocol}: ${inspection.error}")
                 continue
@@ -395,6 +382,24 @@ object VoicemailDiagnostics {
             appendLine("  capabilities=${inspection.capabilities.joinToString(",").ifBlank { "<none advertised>" }}")
             appendLine("  newest=${inspection.newestMessageShape ?: "<no message to inspect>"}")
         }
+    }
+
+    /** The same probes over the SIM's MMS connection, which reaches the carrier's own servers. */
+    private fun StringBuilder.appendMmsRouteCheck(context: Context, subId: Int, credentials: OmtpStatusMessage, useImaps: Boolean) {
+        var route = "carrier mms (pending)"
+        val steps = VvmNetwork.onCellular(
+            context,
+            subId,
+            capability = NetworkCapabilities.NET_CAPABILITY_MMS,
+            onRoute = { taken ->
+                route = when (taken) {
+                    VvmNetwork.Route.PINNED -> "carrier mms"
+                    VvmNetwork.Route.FELL_BACK -> "default (carrier mms unavailable)"
+                }
+            },
+        ) { connectionSteps(context, credentials, useImaps) }
+        appendLine("  over mms: route=$route")
+        appendLine("    $steps")
     }
 
     private fun configurationStateLabel(value: Int?): String = when (value) {
@@ -480,5 +485,4 @@ object VoicemailDiagnostics {
     private const val STEP_TIMEOUT_MS = 15_000
     // A server that answers does so within a second; this keeps the whole series short.
     private const val PROBE_READ_TIMEOUT_MS = 10_000
-    private const val TCP_MAXSEG = 2
 }

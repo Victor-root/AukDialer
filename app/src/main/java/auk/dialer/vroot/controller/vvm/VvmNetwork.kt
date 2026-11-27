@@ -50,6 +50,8 @@ object VvmNetwork {
     fun <T> onCellular(
         context: Context,
         subscriptionId: Int,
+        // Which of the SIM's mobile connections: its internet one unless told otherwise.
+        capability: Int = NetworkCapabilities.NET_CAPABILITY_INTERNET,
         onRoute: (Route) -> Unit = {},
         block: () -> T,
     ): T {
@@ -63,7 +65,7 @@ object VvmNetwork {
         val callback = holder.callback
         return try {
             connectivityManager.requestNetwork(
-                cellularRequest(subscriptionId),
+                cellularRequest(subscriptionId, capability),
                 callback,
                 REQUEST_TIMEOUT_MS,
             )
@@ -97,10 +99,10 @@ object VvmNetwork {
     fun <T> forCarrier(context: Context, config: VvmCarrierConfig, block: () -> T): T =
         if (config.cellularDataRequired) onCellular(context, config.subscriptionId, block = block) else block()
 
-    private fun cellularRequest(subscriptionId: Int): NetworkRequest {
+    private fun cellularRequest(subscriptionId: Int, capability: Int): NetworkRequest {
         return NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addCapability(capability)
             .setNetworkSpecifier(
                 TelephonyNetworkSpecifier.Builder()
                     .setSubscriptionId(subscriptionId)
