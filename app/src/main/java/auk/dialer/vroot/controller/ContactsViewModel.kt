@@ -39,13 +39,15 @@ class ContactsViewModel(
 ) : ViewModel() {
 
     // Contacts added or edited elsewhere (another app, account sync) show up without a manual
-    // refresh. A sync writes in bursts, taken here as one change.
+    // refresh, and so does an account added to the phone, whose sync brings them. A sync writes
+    // in bursts, taken here as one change.
     private val contactsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
             observerJob?.cancel()
             observerJob = viewModelScope.launch {
                 delay(CHANGE_DEBOUNCE_MS)
                 fetchContacts()
+                fetchAccounts()
             }
         }
     }

@@ -128,6 +128,9 @@ fun ContactEditScreen(
     val leave: () -> Unit = { if (hasChanges) showDiscardDialog = true else navigator.navigateUp() }
     BackHandler(enabled = hasChanges && !isSaving) { showDiscardDialog = true }
 
+    // An account added to the phone since the list was read, still without contacts, is offered too.
+    LaunchedEffect(Unit) { contactsVM.fetchAccounts() }
+
     LaunchedEffect(contactId, availableAccounts) {
         cloudDefaultAccount = contactsVM.getCloudDefaultAccount()
         if (contactId != null && contactId != "0" && contactId != "null") {
