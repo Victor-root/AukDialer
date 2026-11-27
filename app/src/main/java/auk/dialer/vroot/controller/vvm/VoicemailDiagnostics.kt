@@ -260,28 +260,48 @@ object VoicemailDiagnostics {
         }
     }
 
-    /** How [connectionSteps] opens the connection. */
-    private enum class Probe { PLAIN, TLS, TLS_1_2 }
+    /**
+     * One way of opening the encryption: [protocols] null leaves Android's own versions, [sni] false
+     * leaves out the server's name, [legacyCiphers] keeps the old RSA key exchange suites alone.
+     */
+    private class TlsVariant(
+        val name: String,
+        val protocols: List<String>? = null,
+        val sni: Boolean = true,
+        val legacyCiphers: Boolean = false,
+    )
+
+    // Some mailboxes stay silent rather than refuse an opening message they do not handle (Free's,
+    // on every phone tried): each variant changes one detail of it, then a few together.
+    private val TLS_VARIANTS = listOf(
+        TlsVariant("tls"),
+        TlsVariant("tls1.2", protocols = listOf("TLSv1.2")),
+        TlsVariant("tls-nosni", sni = false),
+        TlsVariant("tls1.2-nosni", protocols = listOf("TLSv1.2"), sni = false),
+        TlsVariant("tls1.0-1.1", protocols = listOf("TLSv1", "TLSv1.1")),
+        TlsVariant("tls1.2-rsa", protocols = listOf("TLSv1.2"), legacyCiphers = true),
+        TlsVariant("old-rsa-nosni", protocols = listOf("TLSv1", "TLSv1.1", "TLSv1.2"), sni = false, legacyCiphers = true),
+    )
 
     /**
      * Each step of reaching the mailbox, timed, up to its greeting: a mail library failing says
      * "timed out" whether the server was never reached, refused the encryption or stayed silent.
-     * An encrypted mailbox is also tried with TLS 1.2 alone, whose opening message is far smaller,
-     * and on the usual plaintext port, to tell a server that never answers from one that chokes on
-     * the encryption Android offers.
+     * An encrypted mailbox is tried with each of [TLS_VARIANTS].
      */
     private fun connectionSteps(credentials: OmtpStatusMessage, useImaps: Boolean): String {
         val server = credentials.imapServer ?: return "no server"
         val port = credentials.imapPort ?: return "no port"
-        if (!useImaps) return connectionSteps(server, port, Probe.PLAIN)
-        return listOf(
-            "tls" to connectionSteps(server, port, Probe.TLS),
-            "tls1.2" to connectionSteps(server, port, Probe.TLS_1_2),
-            "plain:$PLAIN_IMAP_PORT" to connectionSteps(server, PLAIN_IMAP_PORT, Probe.PLAIN),
-        ).joinToString("\n    ") { (name, steps) -> "$name: $steps" }
+        if (!useImaps) return connectionSteps(server, port, null)
+        val factory = SSLSocketFactory.getDefault() as SSLSocketFactory
+        val supported = runCatching {
+            (factory.createSocket() as SSLSocket).use { it.supportedProtocols.joinToString("/") }
+        }.getOrDefault("<unknown>")
+        val rsaSuites = factory.supportedCipherSuites.count { it.startsWith("TLS_RSA_WITH_") }
+        return "android supports $supported, $rsaSuites rsa suites\n    " +
+            TLS_VARIANTS.joinToString("\n    ") { "${it.name}: ${connectionSteps(server, port, it)}" }
     }
 
-    private fun connectionSteps(server: String, port: Int, probe: Probe): String {
+    private fun connectionSteps(server: String, port: Int, variant: TlsVariant?): String {
         val steps = mutableListOf<String>()
         val startedAt = SystemClock.elapsedRealtime()
         fun step(what: String) = steps.add("$what (${SystemClock.elapsedRealtime() - startedAt}ms)")
@@ -290,14 +310,31 @@ object VoicemailDiagnostics {
             step("dns=${address.hostAddress}")
             Socket().use { raw ->
                 raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
-                raw.soTimeout = STEP_TIMEOUT_MS
+                raw.soTimeout = PROBE_READ_TIMEOUT_MS
                 step("tcp=ok")
-                val socket = if (probe == Probe.PLAIN) {
+                val socket = if (variant == null) {
                     raw
                 } else {
+                    // Named by its address, the server is not named in the opening message.
+                    val name = if (variant.sni) server else address.hostAddress
                     val tls = (SSLSocketFactory.getDefault() as SSLSocketFactory)
-                        .createSocket(raw, server, port, true) as SSLSocket
-                    if (probe == Probe.TLS_1_2) tls.enabledProtocols = arrayOf("TLSv1.2")
+                        .createSocket(raw, name, port, true) as SSLSocket
+                    variant.protocols?.let { wanted ->
+                        val available = wanted.filter { it in tls.supportedProtocols }
+                        if (available.isEmpty()) {
+                            step("skipped: ${wanted.joinToString("/")} not available")
+                            return steps.joinToString(", ")
+                        }
+                        tls.enabledProtocols = available.toTypedArray()
+                    }
+                    if (variant.legacyCiphers) {
+                        val legacy = tls.supportedCipherSuites.filter { it.startsWith("TLS_RSA_WITH_") }
+                        if (legacy.isEmpty()) {
+                            step("skipped: no rsa suite available")
+                            return steps.joinToString(", ")
+                        }
+                        tls.enabledCipherSuites = legacy.toTypedArray()
+                    }
                     tls.startHandshake()
                     step("tls=${tls.session.protocol} ${tls.session.cipherSuite}")
                     tls
@@ -448,5 +485,6 @@ object VoicemailDiagnostics {
 
     private const val MAX_ROWS = 25
     private const val STEP_TIMEOUT_MS = 15_000
-    private const val PLAIN_IMAP_PORT = 143
+    // A server that answers does so within a second; this keeps the whole series short.
+    private const val PROBE_READ_TIMEOUT_MS = 10_000
 }
