@@ -1,7 +1,10 @@
 package auk.dialer.vroot.controller.vvm
 
 import android.content.Context
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.system.Os
+import android.system.OsConstants
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -261,26 +264,18 @@ object VoicemailDiagnostics {
     }
 
     /**
-     * One way of opening the encryption: [protocols] null leaves Android's own versions, [sni] false
-     * leaves out the server's name, [legacyCiphers] keeps the old RSA key exchange suites alone.
+     * One way of reaching an encrypted mailbox: [maxSegment] asks the server for packets no larger
+     * than that many bytes, null leaves the size to the network.
      */
-    private class TlsVariant(
-        val name: String,
-        val protocols: List<String>? = null,
-        val sni: Boolean = true,
-        val legacyCiphers: Boolean = false,
-    )
+    private class TlsVariant(val name: String, val maxSegment: Int? = null)
 
-    // Some mailboxes stay silent rather than refuse an opening message they do not handle (Free's,
-    // on every phone tried): each variant changes one detail of it, then a few together.
+    // Free's mailbox opens the connection, then never gets its first encrypted answer through, on
+    // every phone tried and whatever the encryption: the answer carries its certificate, the first
+    // large packets of the exchange, which a network that drops oversized packets loses silently.
     private val TLS_VARIANTS = listOf(
         TlsVariant("tls"),
-        TlsVariant("tls1.2", protocols = listOf("TLSv1.2")),
-        TlsVariant("tls-nosni", sni = false),
-        TlsVariant("tls1.2-nosni", protocols = listOf("TLSv1.2"), sni = false),
-        TlsVariant("tls1.0-1.1", protocols = listOf("TLSv1", "TLSv1.1")),
-        TlsVariant("tls1.2-rsa", protocols = listOf("TLSv1.2"), legacyCiphers = true),
-        TlsVariant("old-rsa-nosni", protocols = listOf("TLSv1", "TLSv1.1", "TLSv1.2"), sni = false, legacyCiphers = true),
+        TlsVariant("tls-mss1200", maxSegment = 1200),
+        TlsVariant("tls-mss536", maxSegment = 536),
     )
 
     /**
@@ -288,16 +283,14 @@ object VoicemailDiagnostics {
      * "timed out" whether the server was never reached, refused the encryption or stayed silent.
      * An encrypted mailbox is tried with each of [TLS_VARIANTS].
      */
-    private fun connectionSteps(credentials: OmtpStatusMessage, useImaps: Boolean): String {
+    private fun connectionSteps(context: Context, credentials: OmtpStatusMessage, useImaps: Boolean): String {
         val server = credentials.imapServer ?: return "no server"
         val port = credentials.imapPort ?: return "no port"
         if (!useImaps) return connectionSteps(server, port, null)
-        val factory = SSLSocketFactory.getDefault() as SSLSocketFactory
-        val supported = runCatching {
-            (factory.createSocket() as SSLSocket).use { it.supportedProtocols.joinToString("/") }
-        }.getOrDefault("<unknown>")
-        val rsaSuites = factory.supportedCipherSuites.count { it.startsWith("TLS_RSA_WITH_") }
-        return "android supports $supported, $rsaSuites rsa suites\n    " +
+        val connectivity = context.getSystemService(ConnectivityManager::class.java)
+        val network = connectivity?.boundNetworkForProcess ?: connectivity?.activeNetwork
+        val mtu = network?.let { connectivity.getLinkProperties(it)?.mtu }?.takeIf { it > 0 }
+        return "network mtu=${mtu ?: "<default>"}\n    " +
             TLS_VARIANTS.joinToString("\n    ") { "${it.name}: ${connectionSteps(server, port, it)}" }
     }
 
@@ -309,32 +302,22 @@ object VoicemailDiagnostics {
             val address = InetAddress.getByName(server)
             step("dns=${address.hostAddress}")
             Socket().use { raw ->
+                variant?.maxSegment?.let { size ->
+                    // The segment size is agreed while connecting, so it is set on a socket bound
+                    // but not yet connected. Android names no constant for it: 2 is Linux's own.
+                    raw.bind(null)
+                    ParcelFileDescriptor.fromSocket(raw).use { fd ->
+                        Os.setsockoptInt(fd.fileDescriptor, OsConstants.IPPROTO_TCP, TCP_MAXSEG, size)
+                    }
+                }
                 raw.connect(InetSocketAddress(address, port), STEP_TIMEOUT_MS)
                 raw.soTimeout = PROBE_READ_TIMEOUT_MS
                 step("tcp=ok")
                 val socket = if (variant == null) {
                     raw
                 } else {
-                    // Named by its address, the server is not named in the opening message.
-                    val name = if (variant.sni) server else address.hostAddress
                     val tls = (SSLSocketFactory.getDefault() as SSLSocketFactory)
-                        .createSocket(raw, name, port, true) as SSLSocket
-                    variant.protocols?.let { wanted ->
-                        val available = wanted.filter { it in tls.supportedProtocols }
-                        if (available.isEmpty()) {
-                            step("skipped: ${wanted.joinToString("/")} not available")
-                            return steps.joinToString(", ")
-                        }
-                        tls.enabledProtocols = available.toTypedArray()
-                    }
-                    if (variant.legacyCiphers) {
-                        val legacy = tls.supportedCipherSuites.filter { it.startsWith("TLS_RSA_WITH_") }
-                        if (legacy.isEmpty()) {
-                            step("skipped: no rsa suite available")
-                            return steps.joinToString(", ")
-                        }
-                        tls.enabledCipherSuites = legacy.toTypedArray()
-                    }
+                        .createSocket(raw, server, port, true) as SSLSocket
                     tls.startHandshake()
                     step("tls=${tls.session.protocol} ${tls.session.cipherSuite}")
                     tls
@@ -386,9 +369,9 @@ object VoicemailDiagnostics {
                             VvmNetwork.Route.FELL_BACK -> "default (carrier cellular unavailable)"
                         }
                     },
-                ) { connectionSteps(credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect() }
+                ) { connectionSteps(context, credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect() }
             } else {
-                connectionSteps(credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect()
+                connectionSteps(context, credentials, config.sslEnabled) to VvmImapClient(credentials, config.sslEnabled).inspect()
             }
             val (steps, inspection) = checked
             appendLine("subId=$subId route=$route")
@@ -487,4 +470,5 @@ object VoicemailDiagnostics {
     private const val STEP_TIMEOUT_MS = 15_000
     // A server that answers does so within a second; this keeps the whole series short.
     private const val PROBE_READ_TIMEOUT_MS = 10_000
+    private const val TCP_MAXSEG = 2
 }
