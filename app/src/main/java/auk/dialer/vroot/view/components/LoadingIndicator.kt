@@ -13,6 +13,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -31,10 +32,13 @@ fun AukLoadingIndicatorView(modifier: Modifier = Modifier) {
 
 /** A spinner the size of an icon, for a row or a button whose action is under way. */
 @Composable
-fun AukSmallProgressIndicator(modifier: Modifier = Modifier) {
+fun AukSmallProgressIndicator(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
     CircularProgressIndicator(
         modifier = modifier.size(20.dp),
-        color = MaterialTheme.colorScheme.primary,
+        color = color,
         strokeWidth = 2.dp
     )
 }

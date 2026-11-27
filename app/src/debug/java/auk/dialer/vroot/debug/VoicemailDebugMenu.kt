@@ -3,6 +3,7 @@ package auk.dialer.vroot.debug
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import auk.dialer.vroot.modal.`interface`.IContactsRepository
 import auk.dialer.vroot.modal.`interface`.IVoicemailRepository
+import auk.dialer.vroot.view.components.AukSmallProgressIndicator
 import auk.dialer.vroot.view.components.rememberVoicemailDiagnosticsCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,7 +52,13 @@ fun VoicemailDebugMenu(onChanged: () -> Unit) {
 
     // Filled, as it floats over the voicemail list rather than sitting in a toolbar.
     FilledTonalIconButton(onClick = { expanded = true }) {
-        Icon(Icons.Outlined.BugReport, contentDescription = "Debug tools")
+        // The report takes a while, as it tries the mailbox connection several ways.
+        if (diagnostics.inProgress) {
+            // In the icon's colour: the button can be filled with the accent itself.
+            AukSmallProgressIndicator(color = LocalContentColor.current)
+        } else {
+            Icon(Icons.Outlined.BugReport, contentDescription = "Debug tools")
+        }
     }
 
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
